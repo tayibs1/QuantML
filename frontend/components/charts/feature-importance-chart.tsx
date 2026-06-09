@@ -12,11 +12,17 @@ import {
 import { featureImportance } from "@/lib/mock-data";
 import { ChartTooltip } from "./chart-tooltip";
 
-export function FeatureImportanceChart({ height = 320 }: { height?: number }) {
+export function FeatureImportanceChart({
+  height = 320,
+  data = featureImportance,
+}: {
+  height?: number;
+  data?: { feature: string; importance: number }[];
+}) {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart
-        data={featureImportance}
+        data={data}
         layout="vertical"
         margin={{ top: 0, right: 16, left: 8, bottom: 0 }}
       >
@@ -46,7 +52,7 @@ export function FeatureImportanceChart({ height = 320 }: { height?: number }) {
           }
         />
         <Bar dataKey="importance" name="Importance" radius={[0, 6, 6, 0]} barSize={14}>
-          {featureImportance.map((_, i) => (
+          {data.map((_, i) => (
             <Cell key={i} fill="url(#fiBar)" />
           ))}
         </Bar>

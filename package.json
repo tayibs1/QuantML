@@ -1,0 +1,24 @@
+{
+  "name": "quantml",
+  "version": "0.1.0",
+  "private": true,
+  "description": "QuantML — full-stack ML trading-research platform (Next.js frontend + FastAPI backend + ML pipeline).",
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "start": "npm --prefix frontend run start",
+    "lint": "npm --prefix frontend run lint",
+    "install:frontend": "npm --prefix frontend install",
+    "setup:backend": "python -m venv backend/.venv && backend/.venv/Scripts/pip install -r backend/requirements.txt",
+    "backend": "cd backend && uvicorn main:app --reload --port 8000",
+    "dev:all": "concurrently -n web,api -c cyan,magenta \"npm run dev\" \"npm run backend\""
+  },
+  "keywords": [
+    "quant",
+    "machine-learning",
+    "trading",
+    "fastapi",
+    "nextjs"
+  ],
+  "license": "UNLICENSED"
+}

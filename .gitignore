@@ -1,0 +1,110 @@
+# ── AI / editor metadata ─────────────────────────────────────────────────────
+
+.claude/
+.cursor/
+.vscode/
+.idea/
+
+# ── Frontend (Next.js / Node) ────────────────────────────────────────────────
+
+**/node_modules/
+.pnp
+.pnp.*
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/next-env.d.ts
+*.tsbuildinfo
+
+# Package manager logs / caches
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# ── Backend / ML (Python) ───────────────────────────────────────────────────
+
+**pycache**/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+**/.venv/
+**/venv/
+**/env/
+.python-version
+.ipynb_checkpoints/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# ── Data & model artifacts: large / regenerated, keep out of git ─────────────
+
+data/raw/*
+data/processed/*
+data/cache/*
+data/models/*
+data/vectorstore/*
+data/exports/*
+exports/
+
+# Keep placeholder files so folders can exist in Git
+
+!data/**/.gitkeep
+
+# Common data/model file formats
+
+*.csv
+*.parquet
+*.duckdb
+*.sqlite
+*.sqlite3
+*.db
+*.pkl
+*.pickle
+*.joblib
+*.onnx
+*.pt
+*.pth
+*.h5
+*.hdf5
+
+# Allow small committed sample data if you create this folder
+
+!data/samples/
+!data/samples/**
+data/samples/*.parquet
+data/samples/*.pkl
+data/samples/*.joblib
+
+# ── MLflow / experiment artifacts ───────────────────────────────────────────
+
+mlruns/
+mlartifacts/
+
+# ── Environment & secrets ───────────────────────────────────────────────────
+
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+
+# ── Logs & runtime files ────────────────────────────────────────────────────
+
+logs/
+*.log
+tmp/
+temp/
+
+# ── OS cruft ────────────────────────────────────────────────────────────────
+
+.DS_Store
+Thumbs.db
+desktop.ini

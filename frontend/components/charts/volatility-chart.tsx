@@ -19,11 +19,17 @@ const axisStyle = {
   fill: "rgba(148,163,184,0.6)",
 };
 
-export function VolatilityChart({ height = 240 }: { height?: number }) {
+export function VolatilityChart({
+  height = 240,
+  data = volatilityRegime,
+}: {
+  height?: number;
+  data?: { t: number; vix: number; realized: number }[];
+}) {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <AreaChart
-        data={volatilityRegime}
+        data={data}
         margin={{ top: 8, right: 8, left: -16, bottom: 0 }}
       >
         <defs>

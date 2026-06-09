@@ -19,6 +19,16 @@ import type {
   MetricPoint,
 } from "./mock-data";
 
+/** Aggregated risk summary returned by GET /api/risk. */
+export interface RiskSummary {
+  flags: RiskFlag[];
+  budget: { label: string; used: number; limit: number }[];
+  exposureByAsset: { name: string; value: number }[];
+  exposureBySector: { name: string; value: number }[];
+  volatilityRegime: { t: number; vix: number; realized: number }[];
+  positionRules: string[];
+}
+
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 async function get<T>(path: string, init?: RequestInit): Promise<T> {
@@ -39,7 +49,7 @@ export const api = {
     get<Signal[]>(`/api/signals${type ? `?type=${type}` : ""}`),
   models: () => get<{ models: ModelRecord[]; featureImportance: unknown[] }>("/api/models"),
   trades: () => get<Trade[]>("/api/trades"),
-  risk: () => get<{ flags: RiskFlag[]; [k: string]: unknown }>("/api/risk"),
+  risk: () => get<RiskSummary>("/api/risk"),
   research: (prompt: string) =>
     get<RagResponse>("/api/research", {
       method: "POST",

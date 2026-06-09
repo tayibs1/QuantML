@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { Gauge, ListChecks, ShieldAlert } from "lucide-react";
 import { PageTransition } from "@/components/motion-primitives";
@@ -9,12 +10,15 @@ import { Badge } from "@/components/ui/badge";
 import { RiskAlert } from "@/components/risk-alert";
 import { ExposureDonut, exposurePalette } from "@/components/charts/exposure-donut";
 import { VolatilityChart } from "@/components/charts/volatility-chart";
+import { api } from "@/lib/api";
 import {
-  exposureByAsset,
-  exposureBySector,
-  positionRules,
-  riskBudget,
-  riskFlags,
+  exposureByAsset as mockExposureByAsset,
+  exposureBySector as mockExposureBySector,
+  positionRules as mockPositionRules,
+  riskBudget as mockRiskBudget,
+  riskFlags as mockRiskFlags,
+  volatilityRegime as mockVolatilityRegime,
+  type RiskFlag,
 } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
@@ -52,6 +56,36 @@ function DonutCard({
 }
 
 export default function RiskPage() {
+  const [exposureByAsset, setExposureByAsset] = useState(mockExposureByAsset);
+  const [exposureBySector, setExposureBySector] = useState(mockExposureBySector);
+  const [riskBudget, setRiskBudget] = useState(mockRiskBudget);
+  const [riskFlags, setRiskFlags] = useState<RiskFlag[]>(mockRiskFlags);
+  const [positionRules, setPositionRules] = useState<string[]>(mockPositionRules);
+  const [volatilityRegime, setVolatilityRegime] = useState(mockVolatilityRegime);
+  const [live, setLive] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    api
+      .risk()
+      .then((d) => {
+        if (!active || !d) return;
+        if (Array.isArray(d.exposureByAsset)) setExposureByAsset(d.exposureByAsset);
+        if (Array.isArray(d.exposureBySector)) setExposureBySector(d.exposureBySector);
+        if (Array.isArray(d.budget)) setRiskBudget(d.budget);
+        if (Array.isArray(d.flags)) setRiskFlags(d.flags as RiskFlag[]);
+        if (Array.isArray(d.positionRules)) setPositionRules(d.positionRules);
+        if (Array.isArray(d.volatilityRegime)) setVolatilityRegime(d.volatilityRegime);
+        setLive(true);
+      })
+      .catch(() => {
+        /* keep mock fallback */
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const degradation = riskFlags.filter(
     (f) => f.level === "critical" || f.level === "warning"
   );
@@ -62,7 +96,15 @@ export default function RiskPage() {
         eyebrow="Risk Controls"
         title="Risk Management"
         description="Exposure, volatility regime, drawdown limits and the position-sizing rules the strategy obeys."
-        actions={<Badge variant="bear">Elevated regime</Badge>}
+        actions={
+          <>
+            <Badge variant={live ? "bull" : "outline"} className="hidden sm:inline-flex">
+              <span className={`size-1.5 rounded-full ${live ? "bg-bull" : "bg-slate-500"}`} />
+              {live ? "Live risk" : "Sample data"}
+            </Badge>
+            <Badge variant="bear">Elevated regime</Badge>
+          </>
+        }
       />
 
       {/* Top alert banner */}
@@ -119,7 +161,7 @@ export default function RiskPage() {
             </div>
           </div>
           <div className="p-4">
-            <VolatilityChart height={260} />
+            <VolatilityChart height={260} data={volatilityRegime} />
           </div>
         </GlassPanel>
 

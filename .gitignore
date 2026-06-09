@@ -15,6 +15,8 @@ frontend/out/
 frontend/build/
 frontend/next-env.d.ts
 *.tsbuildinfo
+.vercel/
+.turbo/
 
 # Package manager logs / caches
 
@@ -40,6 +42,8 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
+.pyright/
+.cache/
 .coverage
 htmlcov/
 
@@ -97,10 +101,15 @@ mlartifacts/
 *.key
 *.crt
 
+# ── Reports / generated outputs ─────────────────────────────────────────────
+
+reports/generated/
+
 # ── Logs & runtime files ────────────────────────────────────────────────────
 
 logs/
 *.log
+*.pid
 tmp/
 temp/
 

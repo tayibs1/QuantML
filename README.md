@@ -230,9 +230,9 @@ BROKER_PROVIDER=none             # none | alpaca
 
 | Adapter | Status | Implementation |
 |---|---|---|
-| `BacktestExecutionAdapter` | ✅ **Implemented** | Simulated fills: price + slippage + commission model |
-| `PaperExecutionAdapter` | 🔷 **Stub** | `NotImplementedError` — Alpaca API interface designed and ready |
-| `LiveExecutionAdapter` | 🔒 **Hard-gated** | Raises `RuntimeError` unless `LIVE_TRADING_ENABLED=true` |
+| `BacktestExecutionAdapter` |  **Implemented** | Simulated fills: price + slippage + commission model |
+| `PaperExecutionAdapter` |  **Stub** | `NotImplementedError` — Alpaca API interface designed and ready |
+| `LiveExecutionAdapter` |  **Hard-gated** | Raises `RuntimeError` unless `LIVE_TRADING_ENABLED=true` |
 
 Adding Alpaca paper trading means implementing one method in `execution/paper.py`. The signal engine, risk layer, and frontend are untouched.
 
@@ -305,9 +305,9 @@ QuantML/
 ├── backend/                    FastAPI
 │   ├── execution/              ExecutionAdapter hierarchy
 │   │   ├── base.py             ProposedOrder, Fill, ExecutionResult ABCs
-│   │   ├── backtest.py         ✅ Simulated fills + slippage + commission
-│   │   ├── paper.py            🔷 Alpaca stub (interface defined)
-│   │   └── live.py             🔒 Hard-gated
+│   │   ├── backtest.py         Simulated fills + slippage + commission
+│   │   ├── paper.py            Alpaca stub (interface defined)
+│   │   └── live.py             Hard-gated
 │   ├── portfolio/
 │   │   └── risk_engine.py      Signals → sized proposed orders
 │   ├── services/
@@ -409,27 +409,6 @@ DATA_DIR=./data
 SIGNALS_DIR=./data/signals
 MODELS_DIR=./data/models
 ```
-
----
-
-## Roadmap
-
-| Milestone | Status |
-|---|---|
-| Market data pipeline (55 NASDAQ names, 2018→2026) | ✅ Done |
-| 24-feature engineering with causal guarantees | ✅ Done |
-| 6-fold walk-forward training + honest OOS evaluation | ✅ Done |
-| Per-row SHAP attribution (explainable AI) | ✅ Done |
-| FastAPI backend with `/api/*` contract | ✅ Done |
-| Execution adapter interface (backtest/paper/live) | ✅ Done |
-| Portfolio risk engine (vol-scaled, capped sizing) | ✅ Done |
-| Next.js 15 dashboard (6 pages, full design system) | ✅ Done |
-| `/signals` page wired to real model output | ✅ Done |
-| Wire dashboard/models/risk pages to real API | 🔄 In progress |
-| Real backtest engine (equity curve, trade ledger) | ⬜ Next |
-| Alpaca paper trading adapter | ⬜ Planned |
-| Daily cron for automated pipeline re-scoring | ⬜ Planned |
-| RAG research assistant (LLM integration) | ⬜ Deferred |
 
 ---
 

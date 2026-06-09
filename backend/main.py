@@ -1,0 +1,199 @@
+"""
+QuantML API — FastAPI backend.
+
+Serves the JSON the Next.js frontend consumes, under the `/api` prefix so the
+frontend's api client works identically against this backend or its built-in
+mock route handlers. `/api/signals` and `/api/models` are **real** once the ML
+pipeline has run (they read artifacts from data/); otherwise everything falls
+back to seeded mock data so the API always works.
+
+Architecture enforced here:
+    Signal Engine (ml/)  →  Portfolio/Risk (portfolio/)  →  Execution (execution/)
+Signal endpoints only read predictions. Turning signals into orders happens in
+the risk layer; acting on orders happens only in an execution adapter chosen by
+EXECUTION_MODE (backtest implemented; paper/live gated).
+
+Run (from backend/):
+    uvicorn main:app --reload --port 8000
+
+Point the frontend at it via frontend/.env.local:
+    NEXT_PUBLIC_API_URL=http://localhost:8000
+"""
+from __future__ import annotations
+
+import asyncio
+import random
+
+from fastapi import APIRouter, FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
+
+import mock_data as mock
+from config import settings
+from execution import get_execution_adapter
+from portfolio import propose_orders
+from schemas import Metric, MetricPoint, RagResponse, ResearchRequest, Signal, Trade
+from services import store
+
+app = FastAPI(title="QuantML API", version="0.2.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins_list,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Everything under /api so the swap with the Next.js mock routes is seamless.
+api = APIRouter(prefix="/api")
+
+
+@app.get("/")
+def root():
+    return {"name": "QuantML API", "version": "0.2.0", "docs": "/docs", "api": "/api"}
+
+
+# --------------------------------------------------------------------------- #
+# Health / status                                                             #
+# --------------------------------------------------------------------------- #
+@api.get("/health")
+def health():
+    _, source = store.get_signals()
+    return {
+        "status": "operational",
+        "model": settings.default_model,
+        "universe": settings.universe,
+        "paperMode": settings.trading_mode == "paper",
+        "version": "0.2.0",
+        "signalsSource": source,             # "live" once the pipeline has run
+        "executionMode": settings.execution_mode,
+        "liveTradingEnabled": settings.live_trading_enabled,
+    }
+
+
+# --------------------------------------------------------------------------- #
+# Signals — REAL (model.predict_proba via ml/inference artifacts)             #
+# --------------------------------------------------------------------------- #
+@api.get("/signals", response_model=list[Signal])
+def signals(type: str | None = None):
+    data, _ = store.get_signals(type)
+    return data
+
+
+@api.get("/signals/meta")
+def signals_meta():
+    return {**store.signals_meta(), "source": store.get_signals()[1]}
+
+
+# --------------------------------------------------------------------------- #
+# Models — REAL (registry + SHAP importance from ml/training)                 #
+# --------------------------------------------------------------------------- #
+@api.get("/models")
+def models():
+    data, _ = store.get_models()
+    return data
+
+
+# --------------------------------------------------------------------------- #
+# Portfolio / Risk — signals → proposed orders (no execution)                 #
+# --------------------------------------------------------------------------- #
+@api.get("/portfolio/proposed-orders")
+def proposed_orders():
+    sigs, source = store.get_signals()
+    result = propose_orders(sigs)
+    return {
+        "source": source,
+        "orders": [o.model_dump() for o in result["orders"]],
+        "summary": result["summary"],
+    }
+
+
+# --------------------------------------------------------------------------- #
+# Execution — status + a safe end-to-end preview (never live)                 #
+# --------------------------------------------------------------------------- #
+@api.get("/execution")
+def execution_status():
+    adapter = get_execution_adapter(settings)
+    return {
+        "mode": settings.execution_mode,
+        "broker": settings.broker_provider,
+        "liveTradingEnabled": settings.live_trading_enabled,
+        "adapter": adapter.health(),
+    }
+
+
+@api.get("/execution/preview")
+def execution_preview():
+    """Run signals → risk → execution adapter once, to demonstrate the chain."""
+    sigs, source = store.get_signals()
+    proposed = propose_orders(sigs)["orders"]
+    adapter = get_execution_adapter(settings)
+    try:
+        result = adapter.submit(proposed, store.latest_prices())
+        return {"source": source, "result": result.model_dump()}
+    except NotImplementedError as e:
+        return {"source": source, "result": None, "note": str(e), "adapter": adapter.health()}
+
+
+# --------------------------------------------------------------------------- #
+# Still mock (next milestones): metrics, equity, trades, risk, research        #
+# --------------------------------------------------------------------------- #
+@api.get("/metrics", response_model=list[Metric])
+def metrics():
+    return mock.METRICS  # TODO: from live portfolio NAV + latest backtest
+
+
+@api.get("/equity", response_model=list[MetricPoint])
+def equity(range: int = 0):
+    series = mock.equity_series()  # TODO: from the backtest results store
+    return series[-range:] if range > 0 else series
+
+
+@api.get("/trades", response_model=list[Trade])
+def trades():
+    return mock.trades()  # TODO: from the backtest / paper ledger
+
+
+@api.get("/risk")
+def risk():
+    return {  # TODO: aggregate from live positions + drift monitoring
+        "flags": mock.RISK_FLAGS,
+        "budget": mock.RISK_BUDGET,
+        "exposureByAsset": mock.EXPOSURE_BY_ASSET,
+        "exposureBySector": mock.EXPOSURE_BY_SECTOR,
+        "volatilityRegime": mock.volatility_regime(),
+        "positionRules": mock.POSITION_RULES,
+    }
+
+
+@api.post("/research", response_model=RagResponse)
+async def research(req: ResearchRequest):
+    await asyncio.sleep(0.4)  # TODO: real RAG (LLM deferred for now)
+    return mock.rag_response(req.prompt)
+
+
+# --------------------------------------------------------------------------- #
+# WebSocket — real-time price / signal ticks (path: /api/ws/signals)          #
+# --------------------------------------------------------------------------- #
+@api.websocket("/ws/signals")
+async def ws_signals(ws: WebSocket):
+    await ws.accept()
+    rng = random.Random()
+    try:
+        while True:
+            base, _ = store.get_signals()
+            tick = [
+                {
+                    "ticker": s["ticker"],
+                    "price": round(s["price"] * (1 + (rng.random() - 0.5) * 0.004), 2),
+                    "change": round(s["change"] + (rng.random() - 0.5) * 0.2, 2),
+                    "confidence": min(99, max(1, int(s["confidence"] + (rng.random() - 0.5) * 4))),
+                }
+                for s in base
+            ]
+            await ws.send_json({"type": "tick", "data": tick})
+            await asyncio.sleep(1.5)
+    except WebSocketDisconnect:
+        return
+
+
+app.include_router(api)

@@ -1,0 +1,8 @@
+# QuantML API (FastAPI) runtime deps.
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.1
+
+# The API reads ML artifacts from data/ produced by ml/ (see ml/requirements.txt).
+# For RAG (deferred): langchain, sentence-transformers, chromadb/pgvector + an LLM SDK.

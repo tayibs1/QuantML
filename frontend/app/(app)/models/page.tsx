@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { FlaskConical, GitCommitHorizontal, Plus } from "lucide-react";
 import { PageTransition } from "@/components/motion-primitives";
@@ -9,8 +10,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ModelRegistryCard } from "@/components/model-registry-card";
 import { FeatureImportanceChart } from "@/components/charts/feature-importance-chart";
-import { models } from "@/lib/mock-data";
+import { api } from "@/lib/api";
+import {
+  models as mockModels,
+  featureImportance as mockFeatureImportance,
+  type ModelRecord,
+} from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+
+type FeatureImportance = { feature: string; importance: number };
 
 const EXPERIMENTS = [
   { id: "exp-2055", model: "LSTM experimental", metric: "Sharpe 0.88", status: "running", time: "2h ago" },
@@ -21,6 +29,33 @@ const EXPERIMENTS = [
 ];
 
 export default function ModelsPage() {
+  const [models, setModels] = useState<ModelRecord[]>(mockModels);
+  const [featureImportance, setFeatureImportance] =
+    useState<FeatureImportance[]>(mockFeatureImportance);
+  const [live, setLive] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    api
+      .models()
+      .then((d) => {
+        if (!active || !d) return;
+        if (Array.isArray(d.models) && d.models.length) {
+          setModels(d.models as ModelRecord[]);
+          setLive(true);
+        }
+        if (Array.isArray(d.featureImportance) && d.featureImportance.length) {
+          setFeatureImportance(d.featureImportance as FeatureImportance[]);
+        }
+      })
+      .catch(() => {
+        /* keep mock fallback */
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <PageTransition className="space-y-6">
       <PageHeader
@@ -29,6 +64,10 @@ export default function ModelsPage() {
         description="Versioned models, walk-forward metrics, feature attribution and experiment tracking."
         actions={
           <>
+            <Badge variant={live ? "bull" : "outline"} className="hidden sm:inline-flex">
+              <span className={`size-1.5 rounded-full ${live ? "bg-bull" : "bg-slate-500"}`} />
+              {live ? "Live registry" : "Sample data"}
+            </Badge>
             <Button variant="secondary" size="sm">
               <FlaskConical className="size-4" /> Experiments
             </Button>
@@ -146,7 +185,7 @@ export default function ModelsPage() {
             <p className="text-[11px] text-slate-500">XGBoost-v3 · mean |SHAP|</p>
           </div>
           <div className="p-4">
-            <FeatureImportanceChart height={340} />
+            <FeatureImportanceChart height={340} data={featureImportance} />
           </div>
         </GlassPanel>
       </div>

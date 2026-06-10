@@ -55,7 +55,7 @@ export function VolatilityChart({
         <Area
           type="monotone"
           dataKey="vix"
-          name="Implied (VIX)"
+          name="Realized 21d"
           stroke="#f59e0b"
           strokeWidth={2}
           fill="url(#volFill)"
@@ -64,7 +64,7 @@ export function VolatilityChart({
         <Line
           type="monotone"
           dataKey="realized"
-          name="Realized"
+          name="Realized 10d"
           stroke="#2dd4bf"
           strokeWidth={1.5}
           dot={false}

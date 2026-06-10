@@ -32,7 +32,7 @@ from config import settings
 from execution import get_execution_adapter
 from portfolio import propose_orders
 from schemas import Metric, MetricPoint, RagResponse, ResearchRequest, Signal, Trade
-from services import store
+from services import risk_service, store
 
 app = FastAPI(title="QuantML API", version="0.2.0")
 
@@ -155,14 +155,8 @@ def trades():
 
 @api.get("/risk")
 def risk():
-    return {  # TODO: aggregate from live positions + drift monitoring
-        "flags": mock.RISK_FLAGS,
-        "budget": mock.RISK_BUDGET,
-        "exposureByAsset": mock.EXPOSURE_BY_ASSET,
-        "exposureBySector": mock.EXPOSURE_BY_SECTOR,
-        "volatilityRegime": mock.volatility_regime(),
-        "positionRules": mock.POSITION_RULES,
-    }
+    """Real portfolio risk — aggregated from the live proposed book + price data."""
+    return risk_service.build_risk_summary()
 
 
 @api.post("/research", response_model=RagResponse)

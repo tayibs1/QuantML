@@ -148,15 +148,15 @@ export default function RiskPage() {
                 Volatility Regime
               </h3>
               <p className="text-[11px] text-slate-500">
-                Implied (VIX) vs realized · 40 sessions
+                QQQ realized volatility · 10d vs 21d · last 40 sessions
               </p>
             </div>
             <div className="flex items-center gap-3 font-mono text-[10px]">
               <span className="flex items-center gap-1.5 text-slate-400">
-                <span className="size-2 rounded-full bg-hold" /> Implied
+                <span className="size-2 rounded-full bg-hold" /> Realized 21d
               </span>
               <span className="flex items-center gap-1.5 text-slate-400">
-                <span className="size-2 rounded-full bg-brand-400" /> Realized
+                <span className="size-2 rounded-full bg-brand-400" /> Realized 10d
               </span>
             </div>
           </div>

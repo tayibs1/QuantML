@@ -26,6 +26,9 @@ MODEL_META_PATH = MODELS_DIR / "xgb_signal.meta.json"
 MODEL_CARD_PATH = MODELS_DIR / "model_card.json"
 SIGNALS_PATH = SIGNALS_DIR / "latest.json"
 
+RESEARCH_DIR = DATA_DIR / "research"
+TRIALS_PATH = RESEARCH_DIR / "trials.jsonl"
+
 
 def ensure_dirs() -> None:
     for d in (RAW_DIR, PROCESSED_DIR, MODELS_DIR, SIGNALS_DIR):

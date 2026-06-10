@@ -54,6 +54,7 @@ data/processed/*
 data/cache/*
 data/models/*
 data/signals/*
+data/backtests/*
 data/vectorstore/*
 data/exports/*
 exports/

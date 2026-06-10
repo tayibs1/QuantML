@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download, Maximize2, TrendingUp } from "lucide-react";
+import { Download, TrendingUp } from "lucide-react";
 import { PageTransition } from "@/components/motion-primitives";
 import { PageHeader } from "@/components/page-header";
 import { MetricCard } from "@/components/metric-card";
@@ -16,11 +16,25 @@ import { RiskAlert } from "@/components/risk-alert";
 import { api } from "@/lib/api";
 import {
   dashboardMetrics,
+  equitySeries,
   riskFlags as mockRiskFlags,
   signals as mockSignals,
+  type MetricPoint,
   type RiskFlag,
   type Signal,
 } from "@/lib/mock-data";
+
+type KpiMetric = {
+  key: string;
+  label: string;
+  value: number;
+  decimals?: number;
+  prefix?: string;
+  suffix?: string;
+  delta: number;
+  spark: number;
+  up: boolean;
+};
 
 function PanelTitle({
   title,
@@ -45,7 +59,12 @@ function PanelTitle({
 export default function DashboardPage() {
   const [signals, setSignals] = useState<Signal[]>(mockSignals);
   const [flags, setFlags] = useState<RiskFlag[]>(mockRiskFlags);
+  const [metrics, setMetrics] = useState<KpiMetric[]>(
+    dashboardMetrics as unknown as KpiMetric[]
+  );
+  const [equity, setEquity] = useState<MetricPoint[]>(equitySeries);
   const [live, setLive] = useState(false);
+  const [perfLive, setPerfLive] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -66,6 +85,25 @@ export default function DashboardPage() {
         if (active && d && Array.isArray(d.flags) && d.flags.length) {
           setFlags(d.flags as RiskFlag[]);
         }
+      })
+      .catch(() => {
+        /* keep mock fallback */
+      });
+    api
+      .metrics()
+      .then((d) => {
+        if (active && Array.isArray(d) && d.length) {
+          setMetrics(d as KpiMetric[]);
+          setPerfLive(true);
+        }
+      })
+      .catch(() => {
+        /* keep mock fallback */
+      });
+    api
+      .equity()
+      .then((d) => {
+        if (active && Array.isArray(d) && d.length) setEquity(d);
       })
       .catch(() => {
         /* keep mock fallback */
@@ -95,14 +133,14 @@ export default function DashboardPage() {
 
       {/* Metrics grid */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        {dashboardMetrics.map((m, i) => (
+        {metrics.map((m, i) => (
           <MetricCard
             key={m.key}
             label={m.label}
             value={m.value}
             decimals={m.decimals}
-            prefix={"prefix" in m ? (m.prefix as string) : ""}
-            suffix={"suffix" in m ? (m.suffix as string) : ""}
+            prefix={m.prefix ?? ""}
+            suffix={m.suffix ?? ""}
             delta={m.delta}
             positiveIsGood={m.key !== "drawdown" && m.key !== "exposure"}
             sparkSeed={m.spark}
@@ -119,10 +157,14 @@ export default function DashboardPage() {
           <GlassPanel strong>
             <PanelTitle
               title="Equity Curve"
-              subtitle="Strategy vs QQQ benchmark · cumulative, rebased to 100"
+              subtitle="Walk-forward backtest · net of costs · rebased to 100"
             >
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-3 font-mono text-[10px]">
+                <Badge variant={perfLive ? "bull" : "outline"}>
+                  <span className={`size-1.5 rounded-full ${perfLive ? "bg-bull" : "bg-slate-500"}`} />
+                  {perfLive ? "Live backtest" : "Sample data"}
+                </Badge>
+                <div className="hidden items-center gap-3 font-mono text-[10px] sm:flex">
                   <span className="flex items-center gap-1.5 text-slate-400">
                     <span className="size-2 rounded-full bg-brand-400" /> Strategy
                   </span>
@@ -130,20 +172,17 @@ export default function DashboardPage() {
                     <span className="size-2 rounded-full bg-violet-glow" /> QQQ
                   </span>
                 </div>
-                <button className="hidden text-slate-500 hover:text-slate-300 sm:block">
-                  <Maximize2 className="size-4" />
-                </button>
               </div>
             </PanelTitle>
             <div className="p-4">
-              <EquityCurveChart height={300} />
+              <EquityCurveChart height={300} data={equity} />
             </div>
           </GlassPanel>
 
           <GlassPanel strong>
             <PanelTitle title="Drawdown" subtitle="Underwater curve · peak-to-trough" />
             <div className="p-4">
-              <DrawdownChart height={180} />
+              <DrawdownChart height={180} data={equity} />
             </div>
           </GlassPanel>
 

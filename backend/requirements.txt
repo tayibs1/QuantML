@@ -10,5 +10,10 @@ pandas==2.2.3
 numpy==2.1.3
 pyarrow==18.1.0
 
+# The backtest engine serves + re-simulates from cached predictions using only
+# the pandas/numpy/pyarrow above. A cold first-run (no oos_predictions.parquet)
+# regenerates walk-forward predictions and reuses ml/ deps (xgboost, scikit-learn,
+# joblib) lazily, so they aren't required just to run the API.
+#
 # The API reads ML artifacts from data/ produced by ml/ (see ml/requirements.txt).
 # For RAG (deferred): langchain, sentence-transformers, chromadb/pgvector + an LLM SDK.

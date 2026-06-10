@@ -31,8 +31,16 @@ import mock_data as mock
 from config import settings
 from execution import get_execution_adapter
 from portfolio import propose_orders
-from schemas import Metric, MetricPoint, RagResponse, ResearchRequest, Signal, Trade
-from services import risk_service, store
+from schemas import (
+    BacktestRequest,
+    Metric,
+    MetricPoint,
+    RagResponse,
+    ResearchRequest,
+    Signal,
+    Trade,
+)
+from services import backtest_service, risk_service, store
 
 app = FastAPI(title="QuantML API", version="0.2.0")
 
@@ -135,22 +143,33 @@ def execution_preview():
 
 
 # --------------------------------------------------------------------------- #
-# Still mock (next milestones): metrics, equity, trades, risk, research        #
+# Backtest — REAL (walk-forward, cost-aware) + the series it feeds              #
 # --------------------------------------------------------------------------- #
 @api.get("/metrics", response_model=list[Metric])
 def metrics():
-    return mock.METRICS  # TODO: from live portfolio NAV + latest backtest
+    """Dashboard KPIs — six from the latest backtest, two from the live book."""
+    return backtest_service.dashboard_metrics()
 
 
 @api.get("/equity", response_model=list[MetricPoint])
 def equity(range: int = 0):
-    series = mock.equity_series()  # TODO: from the backtest results store
+    series = backtest_service.equity_series()  # real backtest NAV vs QQQ
     return series[-range:] if range > 0 else series
 
 
 @api.get("/trades", response_model=list[Trade])
 def trades():
-    return mock.trades()  # TODO: from the backtest / paper ledger
+    return backtest_service.trades()  # real closed-trade ledger from the backtest
+
+
+@api.post("/backtests")
+def backtests(req: BacktestRequest | None = None):
+    """Run a walk-forward, cost-aware backtest and return the full result.
+
+    Honest by construction: walk-forward OOS signals → the live risk engine →
+    net-of-cost equity vs buy-and-hold QQQ. Re-runs are fast (cached predictions).
+    """
+    return backtest_service.run((req or BacktestRequest()).to_engine_config())
 
 
 @api.get("/risk")

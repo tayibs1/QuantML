@@ -113,3 +113,21 @@ class RagResponse(BaseModel):
 
 class ResearchRequest(BaseModel):
     prompt: str
+
+
+class BacktestRequest(BaseModel):
+    """Caller-tunable backtest settings (camelCase to match the frontend form)."""
+    rebalance: Literal["Daily", "Weekly", "Monthly"] = "Weekly"
+    topN: int = 20
+    commissionBps: float = 5.0
+    slippageBps: float = 8.0
+    model: str = "XGBoost-v3"
+
+    def to_engine_config(self) -> dict:
+        return {
+            "rebalance": self.rebalance,
+            "top_n": self.topN,
+            "commission_bps": self.commissionBps,
+            "slippage_bps": self.slippageBps,
+            "model": self.model,
+        }

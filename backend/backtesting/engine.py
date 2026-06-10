@@ -309,13 +309,42 @@ def _load_prices() -> tuple[dict, dict]:
     return close, bench
 
 
-def run_backtest(cfg: BacktestConfig | None = None, force_oos: bool = False) -> dict:
-    """Full pipeline: OOS predictions → portfolio simulation → result dict."""
+def _record_trial(cfg: BacktestConfig, result: dict) -> None:
+    """Append this run to the research trial registry (best-effort, non-fatal)."""
+    try:
+        if str(REPO_ROOT) not in sys.path:
+            sys.path.insert(0, str(REPO_ROOT))
+        from ml.research.trial_registry import log_trial
+
+        m = result["metrics"]
+        keys = ("cagr", "sharpe", "sortino", "maxDrawdown", "totalReturn",
+                "benchTotalReturn", "turnover", "winRate", "profitFactor")
+        log_trial(
+            kind="backtest",
+            config=asdict(cfg),
+            metrics={**{k: m.get(k) for k in keys}, "nObs": result["window"]["rebalances"]},
+            tags=["walk-forward", "net-of-cost"],
+            notes=f"{result['window']['start']}..{result['window']['end']}",
+        )
+    except Exception:  # noqa: BLE001 — telemetry must never break a backtest
+        pass
+
+
+def run_backtest(
+    cfg: BacktestConfig | None = None, force_oos: bool = False, log_trial: bool = True
+) -> dict:
+    """Full pipeline: OOS predictions → portfolio simulation → result dict.
+
+    Each run is recorded in the research trial registry (unless `log_trial=False`),
+    so the count and dispersion of trials are available for selection-bias checks.
+    """
     cfg = cfg or BacktestConfig()
     oos = generate_oos_predictions(force=force_oos)
     close, bench = _load_prices()
     result = simulate(oos, close, bench, cfg)
     result["generatedAt"] = datetime.now(timezone.utc).isoformat()
+    if log_trial:
+        _record_trial(cfg, result)
     return result
 
 

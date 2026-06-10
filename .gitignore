@@ -55,6 +55,7 @@ data/cache/*
 data/models/*
 data/signals/*
 data/backtests/*
+data/research/*
 data/vectorstore/*
 data/exports/*
 exports/

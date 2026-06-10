@@ -1,8 +1,10 @@
 "use client";
 
 import { motion } from "motion/react";
-import { monthlyReturns } from "@/lib/mock-data";
+import { monthlyReturns as mockMonthlyReturns } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+
+type MonthlyRow = { year: number; months: (number | null)[] };
 
 const MONTHS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
 
@@ -22,7 +24,12 @@ function cellStyle(v: number | null): React.CSSProperties {
     : { backgroundColor: `rgba(244,63,94,${a})` };
 }
 
-export function MonthlyHeatmap() {
+export function MonthlyHeatmap({
+  data = mockMonthlyReturns,
+}: {
+  data?: MonthlyRow[];
+}) {
+  const rows = data.length ? data : mockMonthlyReturns;
   return (
     <div className="overflow-x-auto no-scrollbar">
       <div className="min-w-[480px]">
@@ -40,7 +47,7 @@ export function MonthlyHeatmap() {
         </div>
         {/* Rows */}
         <div className="space-y-1">
-          {monthlyReturns.map((row, ri) => (
+          {rows.map((row, ri) => (
             <div
               key={row.year}
               className="grid grid-cols-[40px_repeat(12,1fr)] gap-1"

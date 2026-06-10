@@ -2,10 +2,10 @@
 
 import { motion } from "motion/react";
 import { Badge } from "./ui/badge";
-import { trades } from "@/lib/mock-data";
+import { trades as mockTrades, type Trade } from "@/lib/mock-data";
 import { cn, formatSignedPct } from "@/lib/utils";
 
-export function TradeHistoryTable() {
+export function TradeHistoryTable({ data = mockTrades }: { data?: Trade[] }) {
   return (
     <div className="overflow-x-auto no-scrollbar">
       <table className="w-full min-w-[640px] border-collapse text-sm">
@@ -24,7 +24,7 @@ export function TradeHistoryTable() {
           </tr>
         </thead>
         <tbody>
-          {trades.map((t, i) => (
+          {data.map((t, i) => (
             <motion.tr
               key={t.id}
               initial={{ opacity: 0 }}

@@ -19,6 +19,31 @@ import type {
   MetricPoint,
 } from "./mock-data";
 
+/** Config the Backtests page sends to POST /api/backtests. */
+export interface BacktestConfig {
+  rebalance?: "Daily" | "Weekly" | "Monthly";
+  topN?: number;
+  commissionBps?: number;
+  slippageBps?: number;
+  model?: string;
+}
+
+/** Full result returned by POST /api/backtests. */
+export interface BacktestResult {
+  source: "live" | "mock";
+  config: Record<string, unknown>;
+  window: { start: string; end: string; rebalances: number };
+  metrics: Record<string, number> & {
+    timeUnderWater?: { fraction: number; longestDays: number };
+  };
+  summaryCards: { label: string; value: string; tone: "bull" | "bear" | "neutral" }[];
+  equity: MetricPoint[];
+  trades: Trade[];
+  tradeCount: number;
+  monthlyReturns: { year: number; months: (number | null)[] }[];
+  note?: string;
+}
+
 /** Aggregated risk summary returned by GET /api/risk. */
 export interface RiskSummary {
   flags: RiskFlag[];
@@ -49,6 +74,11 @@ export const api = {
     get<Signal[]>(`/api/signals${type ? `?type=${type}` : ""}`),
   models: () => get<{ models: ModelRecord[]; featureImportance: unknown[] }>("/api/models"),
   trades: () => get<Trade[]>("/api/trades"),
+  backtests: (config?: BacktestConfig) =>
+    get<BacktestResult>("/api/backtests", {
+      method: "POST",
+      body: JSON.stringify(config ?? {}),
+    }),
   risk: () => get<RiskSummary>("/api/risk"),
   research: (prompt: string) =>
     get<RagResponse>("/api/research", {

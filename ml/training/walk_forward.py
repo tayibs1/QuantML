@@ -31,9 +31,8 @@ from xgboost import XGBClassifier
 from ml import paths
 from ml.features.build import FEATURE_COLS, FEATURE_LABELS
 
-# class indices
-AVOID, HOLD, BUY = 0, 1, 2
-CLASS_TO_SIGNAL = {AVOID: "AVOID", HOLD: "HOLD", BUY: "BUY"}
+# Label semantics live in one place (ml.labels) — the explicit Y of the problem.
+from ml.labels.outperformance import AVOID, BUY, CLASS_TO_SIGNAL, HOLD, make_labels
 
 N_FOLDS = 6
 INITIAL_TRAIN_FRAC = 0.40
@@ -55,14 +54,6 @@ XGB_PARAMS = dict(
     random_state=SEED,
     n_jobs=0,
 )
-
-
-def make_labels(df: pd.DataFrame) -> pd.DataFrame:
-    """Cross-sectional tercile labels from the forward return."""
-    d = df.dropna(subset=["fwd_ret_5"]).copy()
-    pct = d.groupby("date")["fwd_ret_5"].rank(pct=True)
-    d["label"] = np.where(pct >= 2 / 3, BUY, np.where(pct <= 1 / 3, AVOID, HOLD))
-    return d
 
 
 def _new_model() -> XGBClassifier:

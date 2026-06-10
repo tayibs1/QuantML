@@ -14,9 +14,18 @@ from __future__ import annotations
 
 import statistics
 from collections import Counter
+from functools import lru_cache
+from pathlib import Path
 
+from config import settings
 from portfolio import RiskParams, propose_orders
 from services import store
+
+# Realized-volatility regime windows (trading days) and history length.
+_VOL_WINDOW_SHORT = 10
+_VOL_WINDOW_LONG = 21
+_VOL_POINTS = 40
+_TRADING_DAYS = 252
 
 # Accurate description of what the risk engine actually enforces (see
 # portfolio/risk_engine.py). These are policy statements, not generated data.
@@ -131,8 +140,51 @@ def _flags(signals, summary, orders, source, conf) -> list[dict]:
     return flags
 
 
+def _benchmark_path() -> Path:
+    return settings.raw_dir / "benchmark.parquet"
+
+
+@lru_cache(maxsize=4)
+def _regime_cached(mtime: float) -> tuple:
+    """Realized vol of the benchmark (QQQ) at two horizons, last N sessions.
+
+    Cached by the parquet's mtime so it recomputes only when the data refreshes.
+    Returns (t, long_vol, short_vol) tuples — annualized vol in percent.
+    """
+    import numpy as np
+    import pandas as pd
+
+    df = pd.read_parquet(_benchmark_path()).sort_values("date")
+    ret = df["close"].pct_change()
+    short = ret.rolling(_VOL_WINDOW_SHORT).std() * np.sqrt(_TRADING_DAYS) * 100
+    long = ret.rolling(_VOL_WINDOW_LONG).std() * np.sqrt(_TRADING_DAYS) * 100
+
+    tail = df.index[-_VOL_POINTS:]
+    rows = []
+    for t, idx in enumerate(tail):
+        s, l = short.loc[idx], long.loc[idx]
+        if pd.isna(s) or pd.isna(l):
+            continue
+        rows.append((t, round(float(l), 2), round(float(s), 2)))
+    return tuple(rows)
+
+
 def _volatility_regime() -> list[dict]:
-    """Placeholder until price-history-based regime lands (next commit)."""
+    """Realized-vol regime from real benchmark prices; mock fallback if absent.
+
+    `realized` is short-horizon (10d) realized vol; `regime` is the smoother
+    long-horizon (21d) realized vol. Both are honest realized measures derived
+    from QQQ closes — no implied/VIX series is fabricated.
+    """
+    try:
+        path = _benchmark_path()
+        if not path.exists():
+            raise FileNotFoundError(path)
+        rows = _regime_cached(path.stat().st_mtime)
+        if rows:
+            return [{"t": t, "vix": long_v, "realized": short_v} for t, long_v, short_v in rows]
+    except Exception:
+        pass
     import mock_data as mock
     return mock.volatility_regime()
 

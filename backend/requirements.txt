@@ -4,5 +4,11 @@ uvicorn[standard]==0.34.0
 pydantic==2.10.4
 pydantic-settings==2.7.1
 
+# Risk service reads price artifacts (benchmark/OHLCV parquet) for the realized
+# volatility regime. Shared with the ML pipeline (see ml/requirements.txt).
+pandas==2.2.3
+numpy==2.1.3
+pyarrow==18.1.0
+
 # The API reads ML artifacts from data/ produced by ml/ (see ml/requirements.txt).
 # For RAG (deferred): langchain, sentence-transformers, chromadb/pgvector + an LLM SDK.

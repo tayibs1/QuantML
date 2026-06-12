@@ -1,10 +1,10 @@
 """
-Deterministic mock data for the QuantML backend.
+Deterministic mock data for the backend.
 
-Mirrors `lib/mock-data.ts`. In a real deployment these functions would be
-replaced by: a market-data store (OHLCV), a feature store, the trained model's
-`predict_proba`, a backtest results table, and a vector store for RAG — but the
-*return shapes* stay identical so the frontend never changes.
+Mirrors lib/mock-data.ts. In a real deployment these would be backed by a
+market-data store (OHLCV), a feature store, the model's predict_proba, a backtest
+results table, and a vector store for RAG. The return shapes stay identical
+either way, so the frontend never has to know which one it's talking to.
 """
 from __future__ import annotations
 
@@ -17,9 +17,7 @@ def _rng(seed: int) -> random.Random:
     return random.Random(seed)
 
 
-# --------------------------------------------------------------------------- #
-# Time series                                                                  #
-# --------------------------------------------------------------------------- #
+# --- time series ---
 def equity_series(points: int = 180) -> list[dict]:
     r = _rng(42)
     strat = bench = peak = 100.0
@@ -42,9 +40,7 @@ def equity_series(points: int = 180) -> list[dict]:
     return out
 
 
-# --------------------------------------------------------------------------- #
-# Dashboard metrics                                                            #
-# --------------------------------------------------------------------------- #
+# --- dashboard metrics ---
 METRICS = [
     {"key": "portfolio", "label": "Portfolio Value", "value": 1284500, "prefix": "$", "decimals": 0, "delta": 3.2, "spark": 1, "up": True},
     {"key": "strategy", "label": "Strategy Return", "value": 28.4, "suffix": "%", "decimals": 1, "delta": 28.4, "spark": 2, "up": True},
@@ -57,9 +53,7 @@ METRICS = [
 ]
 
 
-# --------------------------------------------------------------------------- #
-# Signals                                                                      #
-# --------------------------------------------------------------------------- #
+# --- signals ---
 SIGNALS = [
     {"ticker": "NVDA", "company": "NVIDIA Corp.", "signal": "BUY", "confidence": 78, "expectedReturn5d": 2.1, "risk": "High", "model": "XGBoost-v3", "drivers": ["Momentum (20d)", "Volume spike", "Relative strength", "Earnings revision"], "price": 121.4, "change": 1.8, "sector": "Semiconductors"},
     {"ticker": "MSFT", "company": "Microsoft Corp.", "signal": "HOLD", "confidence": 54, "expectedReturn5d": 0.4, "risk": "Low", "model": "XGBoost-v3", "drivers": ["Trend stability", "Low volatility", "Neutral flow"], "price": 441.2, "change": 0.3, "sector": "Software"},
@@ -72,9 +66,7 @@ SIGNALS = [
 ]
 
 
-# --------------------------------------------------------------------------- #
-# Models                                                                       #
-# --------------------------------------------------------------------------- #
+# --- models ---
 MODELS = [
     {"id": "xgb-v3", "name": "XGBoost-v3", "family": "Gradient Boosting", "status": "Production candidate", "trainingWindow": "2018-2024", "validation": "Walk-forward (12 folds)", "sharpe": 1.02, "cagr": 19.4, "maxDrawdown": -15.4, "drift": "Low", "auc": 0.64, "accuracy": 0.583, "features": 84, "lastTrained": "2026-06-01", "experimentId": "exp-2041"},
     {"id": "lgbm-v2", "name": "LightGBM-v2", "family": "Gradient Boosting", "status": "Champion", "trainingWindow": "2018-2024", "validation": "Walk-forward (12 folds)", "sharpe": 0.96, "cagr": 17.8, "maxDrawdown": -16.9, "drift": "Low", "auc": 0.62, "accuracy": 0.571, "features": 84, "lastTrained": "2026-05-28", "experimentId": "exp-2033"},
@@ -98,9 +90,7 @@ FEATURE_IMPORTANCE = [
 ]
 
 
-# --------------------------------------------------------------------------- #
-# Trades                                                                       #
-# --------------------------------------------------------------------------- #
+# --- trades ---
 def trades() -> list[dict]:
     r = _rng(11)
     tickers = ["NVDA", "MSFT", "AAPL", "AMZN", "TSLA", "GOOGL", "META", "AMD"]
@@ -128,9 +118,7 @@ def trades() -> list[dict]:
     return out
 
 
-# --------------------------------------------------------------------------- #
-# Risk                                                                         #
-# --------------------------------------------------------------------------- #
+# --- risk ---
 EXPOSURE_BY_ASSET = [
     {"name": "NVDA", "value": 18}, {"name": "MSFT", "value": 14},
     {"name": "AAPL", "value": 12}, {"name": "META", "value": 10},
@@ -176,9 +164,7 @@ def volatility_regime() -> list[dict]:
     ]
 
 
-# --------------------------------------------------------------------------- #
-# RAG                                                                          #
-# --------------------------------------------------------------------------- #
+# --- rag ---
 RAG_DEFAULT = {
     "prompt": "Why did the model generate a BUY signal for NVDA?",
     "answer": "XGBoost-v3 issued a BUY for NVDA with 78% confidence. The decision is dominated by strong 20-day momentum and a volume spike (+2.3 sigma vs trailing mean), reinforced by positive analyst earnings revisions over the past two weeks. Relative strength versus the semiconductor peer group sits in the 88th percentile. The model projects a +2.1% five-day forward return, though it flags the signal as High risk given elevated implied volatility.",

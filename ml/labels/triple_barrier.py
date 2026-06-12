@@ -1,24 +1,22 @@
 """
-Triple-barrier labelling — research-grade alternative (López de Prado, AFML §3).
+Triple-barrier labelling - a research alternative (AFML ch.3).
 
-Status: **scaffold.** Implemented for a single price series and runnable as a demo,
-but deliberately *not* wired into the production training pipeline, which uses the
-cross-sectional `outperformance` label. Promoting this to production would also
-mean adding meta-labelling and event sampling (§3.6, §3.8) — future work.
+Scaffold only. Works on a single price series and runs as a demo, but it's not
+hooked into the production pipeline (that uses the cross-sectional outperformance
+label). Taking this to production would also need meta-labelling and event
+sampling, which I haven't done yet.
 
-Idea
-----
-Instead of a fixed h-day horizon, each bet is closed by whichever of three barriers
-is touched first:
+The idea: instead of a fixed h-day horizon, close each bet at whichever of three
+barriers gets hit first.
 
-    upper  (profit-take) : price * (1 + pt · σ_t)      → label +1
-    lower  (stop-loss)   : price * (1 - sl · σ_t)      → label -1
-    vertical (time-out)  : t0 + max_horizon bars       → label  0 (or sign of ret)
+    upper  (profit-take) : price * (1 + pt * sigma_t)   -> label +1
+    lower  (stop-loss)   : price * (1 - sl * sigma_t)   -> label -1
+    vertical (time-out)  : t0 + max_horizon bars        -> label  0
 
-Barrier widths scale with a rolling volatility estimate σ_t, so the labels adapt to
-each name's regime rather than imposing one return threshold on everything. The
-result is a label whose *event time* t1 is data-dependent — exactly the structure
-the sample-weighting in `outperformance.average_uniqueness` is designed to handle.
+Barrier widths scale with a rolling vol estimate sigma_t, so they adapt to each
+name's regime instead of forcing one return threshold on everything. The catch
+is that the event time t1 becomes data-dependent, which is exactly what the
+average-uniqueness weighting in outperformance.py is there to handle.
 """
 from __future__ import annotations
 
@@ -27,7 +25,7 @@ import pandas as pd
 
 
 def daily_volatility(close: pd.Series, span: int = 20) -> pd.Series:
-    """Exponentially-weighted volatility of daily returns (barrier scale σ_t)."""
+    """EWM volatility of daily returns - this is the sigma_t the barriers scale by."""
     returns = close.pct_change()
     return returns.ewm(span=span).std()
 
@@ -39,13 +37,13 @@ def apply_triple_barrier(
     sl: float = 2.0,
     max_horizon: int = 10,
 ) -> pd.DataFrame:
-    """First-touch labelling for every bar of a single name's close series.
+    """First-touch labelling for every bar of one name's close series.
 
-    Returns a frame indexed by event start t0 with columns:
-        t1     — bar at which the first barrier was touched (or the time-out bar)
-        ret    — realised return from t0 to t1
-        label  — +1 upper, -1 lower, 0 time-out
-        touch  — which barrier closed the bet ('pt' | 'sl' | 'time')
+    Frame indexed by event start t0:
+        t1     bar where the first barrier was touched (or the time-out bar)
+        ret    realised return from t0 to t1
+        label  +1 upper, -1 lower, 0 time-out
+        touch  which barrier closed it ('pt' | 'sl' | 'time')
     """
     close = close.sort_index()
     idx = close.index
@@ -83,13 +81,13 @@ def triple_barrier_labels(
     max_horizon: int = 10,
     vol_span: int = 20,
 ) -> pd.DataFrame:
-    """Convenience wrapper: estimate σ_t then apply the barriers to one series."""
+    """Estimate sigma_t, then run the barriers over one series."""
     vol = daily_volatility(close, span=vol_span)
     return apply_triple_barrier(close, vol, pt=pt, sl=sl, max_horizon=max_horizon)
 
 
 def main() -> None:
-    """Demo on one name so the scaffold is runnable and verifiable."""
+    """Demo on a single name so the scaffold actually runs and can be checked."""
     from ml import paths
 
     if not paths.OHLCV_PATH.exists():

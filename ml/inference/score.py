@@ -1,13 +1,13 @@
 """
-Stage 4 — Inference.
+Stage 4: inference.
 
-Loads the trained model, scores the latest cross-section, and writes signals in
-the exact shape the frontend/backend expect. This is the ONLY thing the ML side
-publishes for live use — it emits signals, never orders.
+Load the trained model, score the latest cross-section, write signals in the
+shape the frontend/backend already expect. This is the only thing the ML side
+publishes for live use, and it only ever emits signals - never orders.
 
     python -m ml.inference.score
 
-Output:
+Writes:
     data/signals/latest.json   Signal[]  (matches backend/schemas.py::Signal)
 """
 from __future__ import annotations
@@ -29,7 +29,7 @@ TOP_DRIVERS = 3
 
 
 def _finite(x, default: float = 0.0) -> float:
-    """Coerce to a JSON-safe float (NaN/inf → default)."""
+    """Force to a JSON-safe float; NaN/inf fall back to default."""
     try:
         x = float(x)
         return x if math.isfinite(x) else default
@@ -38,7 +38,7 @@ def _finite(x, default: float = 0.0) -> float:
 
 
 def _risk_levels(ohlcv: pd.DataFrame, asof: pd.Timestamp) -> dict[str, str]:
-    """Bucket each name by its realized-vol percentile across the universe."""
+    """Bucket each name by where its realised vol sits in the universe."""
     px = ohlcv[ohlcv["date"] <= asof].sort_values(["ticker", "date"])
     vol = (
         px.groupby("ticker")["close"]
@@ -55,13 +55,17 @@ def _risk_levels(ohlcv: pd.DataFrame, asof: pd.Timestamp) -> dict[str, str]:
 
 
 def _drivers(model: xgb.XGBClassifier, X: pd.DataFrame, pred_class: np.ndarray) -> list[list[str]]:
-    """Top-|SHAP| features per row for its predicted class (xgboost native contribs)."""
+    """Top features by |contribution| per row, for its predicted class.
+
+    Uses xgboost's native pred_contribs (SHAP values) rather than pulling in the
+    shap package - saves a heavy dependency for the same numbers.
+    """
     n, nfeat = X.shape
     try:
         booster = model.get_booster()
         dmat = xgb.DMatrix(X.values, feature_names=list(X.columns))
         contribs = booster.predict(dmat, pred_contribs=True)
-        contribs = np.asarray(contribs).reshape(n, 3, nfeat + 1)  # (rows, classes, feats+bias)
+        contribs = np.asarray(contribs).reshape(n, 3, nfeat + 1)  # rows x classes x (feats+bias)
         result = []
         for i in range(n):
             row = np.abs(contribs[i, int(pred_class[i]), :nfeat])
@@ -69,7 +73,8 @@ def _drivers(model: xgb.XGBClassifier, X: pd.DataFrame, pred_class: np.ndarray) 
             result.append([FEATURE_LABELS[FEATURE_COLS[j]] for j in top])
         return result
     except Exception:
-        # Fallback: global gain importance (same drivers for all rows)
+        # if contribs blow up, fall back to global gain importance (every row
+        # then shows the same drivers, but at least it doesn't crash)
         imp = pd.Series(model.feature_importances_, index=FEATURE_COLS)
         top = imp.sort_values(ascending=False).head(TOP_DRIVERS).index
         labels = [FEATURE_LABELS[f] for f in top]
@@ -101,7 +106,7 @@ def score() -> list[dict]:
     drivers = _drivers(model, X, pred)
     risk = _risk_levels(ohlcv, asof)
 
-    # latest price + 1d change per ticker (both ticker-indexed so they align)
+    # latest price and 1d change per ticker, both ticker-indexed so they line up
     recent = ohlcv[ohlcv["date"] <= asof].sort_values(["ticker", "date"])
     grp = recent.groupby("ticker")["close"]
     last_close = grp.last()
@@ -127,7 +132,7 @@ def score() -> list[dict]:
             }
         )
 
-    # Sort: BUY (high conf) → HOLD → AVOID
+    # order BUY (highest conf first) then HOLD then AVOID
     order = {"BUY": 0, "HOLD": 1, "AVOID": 2}
     signals.sort(key=lambda s: (order[s["signal"]], -s["confidence"]))
     return signals

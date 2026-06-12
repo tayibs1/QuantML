@@ -1,9 +1,9 @@
 """
-Portfolio / Risk layer.
+Portfolio / risk layer.
 
-The bridge between the signal engine and execution: it turns *signals* into
-*proposed orders* under explicit risk limits (sizing, per-name / per-sector caps,
-gross cap, regime gate). It is a pure transform — it proposes, it never executes.
+Sits between the signal engine and execution. Takes signals and turns them into
+proposed orders under explicit risk limits (sizing, per-name and per-sector caps,
+gross cap, regime gate). Pure transform - it proposes orders, it never places them.
 """
 from .risk_engine import RiskParams, propose_orders
 

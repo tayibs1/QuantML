@@ -1,9 +1,9 @@
 """
-Trading universe + static metadata (company name, sector).
+Trading universe plus static metadata (company name, sector).
 
-A curated, liquid subset of the NASDAQ-100. Cross-sectional features need a
-reasonable breadth of names, so we keep ~55. Swap/extend freely — everything
-downstream keys off `UNIVERSE`.
+A hand-picked, liquid slice of the NASDAQ-100. Cross-sectional features need a
+decent breadth of names to be meaningful, so I keep it around 55. Add or swap
+names freely; everything downstream just reads UNIVERSE.
 """
 from __future__ import annotations
 

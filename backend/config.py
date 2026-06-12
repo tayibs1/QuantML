@@ -28,20 +28,20 @@ BrokerProvider = Literal["none", "alpaca"]
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        # Find .env at repo root or backend/ ; ignore unknown keys.
+        # look for .env at the repo root or in backend/, ignore unknown keys
         env_file=(REPO_ROOT / ".env", ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
         case_sensitive=False,
     )
 
-    # ── App / API ───────────────────────────────────────────────────────────
+    # --- app / api ---
     app_env: str = "development"
     api_host: str = "0.0.0.0"
     api_port: int = 8000
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
 
-    # ── Market data ─────────────────────────────────────────────────────────
+    # --- market data ---
     market_data_provider: str = "yfinance"
     alpaca_api_key: str = ""
     alpaca_api_secret: str = ""
@@ -49,27 +49,27 @@ class Settings(BaseSettings):
     polygon_api_key: str = ""
     tiingo_api_key: str = ""
 
-    # ── ML / model ──────────────────────────────────────────────────────────
+    # --- ml / model ---
     mlflow_tracking_uri: str = "./mlruns"
     default_model: str = "XGBoost-v3"
     universe: str = "NASDAQ100"
 
-    # ── RAG (deferred for now) ──────────────────────────────────────────────
+    # --- rag (not building this yet) ---
     llm_provider: str = "anthropic"
     anthropic_api_key: str = ""
     openai_api_key: str = ""
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
 
-    # ── Execution architecture ──────────────────────────────────────────────
-    # backtest = simulated (implemented) · paper = Alpaca paper (stub) ·
-    # live = real orders (disabled). The ML engine NEVER executes — only the
-    # execution adapter selected here can act on proposed orders.
+    # --- execution architecture ---
+    # backtest = simulated (this is what's built), paper = Alpaca paper (stub),
+    # live = real orders (off). The ML engine never executes - only the adapter
+    # picked here ever touches the proposed orders.
     execution_mode: ExecutionMode = "backtest"
     broker_provider: BrokerProvider = "none"
     live_trading_enabled: bool = False
     trading_mode: str = "paper"
 
-    # ── Derived paths (always absolute, repo-root anchored) ─────────────────
+    # --- derived paths (always absolute, anchored at the repo root) ---
     @property
     def data_dir(self) -> Path:
         return REPO_ROOT / "data"
@@ -109,7 +109,7 @@ class Settings(BaseSettings):
             d.mkdir(parents=True, exist_ok=True)
 
     def assert_execution_allowed(self) -> None:
-        """Hard safety gate: never allow live orders unless explicitly enabled."""
+        """Hard gate: don't let live orders through unless someone flipped the flag."""
         if self.execution_mode == "live" and not self.live_trading_enabled:
             raise RuntimeError(
                 "EXECUTION_MODE=live but LIVE_TRADING_ENABLED=false. "

@@ -1,15 +1,15 @@
 """
 Execution layer.
 
-The ONLY place an order can be acted upon. Selected by `EXECUTION_MODE`:
+The only place an order can actually be acted on. Picked by EXECUTION_MODE:
 
-    backtest → BacktestExecutionAdapter  (simulated fills — implemented)
-    paper    → PaperExecutionAdapter     (Alpaca paper — stub interface)
-    live     → LiveExecutionAdapter      (real orders — disabled by design)
+    backtest -> BacktestExecutionAdapter  (simulated fills, implemented)
+    paper    -> PaperExecutionAdapter     (Alpaca paper, stub interface)
+    live     -> LiveExecutionAdapter      (real orders, off by design)
 
-The ML signal engine and the frontend never import or call adapters directly;
-they go through the Portfolio/Risk layer, which proposes orders that an adapter
-may (or may not) execute.
+Neither the signal engine nor the frontend ever import or call an adapter
+directly. They go through the risk layer, which proposes orders that an adapter
+may or may not execute.
 """
 from .base import (
     ExecutionAdapter,

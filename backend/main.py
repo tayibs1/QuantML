@@ -1,19 +1,19 @@
 """
-QuantML API — FastAPI backend.
+QuantML API - the FastAPI backend.
 
-Serves the JSON the Next.js frontend consumes, under the `/api` prefix so the
-frontend's api client works identically against this backend or its built-in
-mock route handlers. `/api/signals` and `/api/models` are **real** once the ML
-pipeline has run (they read artifacts from data/); otherwise everything falls
-back to seeded mock data so the API always works.
+Serves the JSON the Next.js frontend reads, all under /api so the frontend's api
+client behaves the same whether it's hitting this backend or its own built-in
+mock routes. /api/signals and /api/models go live the moment the ML pipeline has
+run (they read artifacts out of data/); until then everything drops back to
+seeded mock data, so the API is never down.
 
-Architecture enforced here:
-    Signal Engine (ml/)  →  Portfolio/Risk (portfolio/)  →  Execution (execution/)
-Signal endpoints only read predictions. Turning signals into orders happens in
-the risk layer; acting on orders happens only in an execution adapter chosen by
-EXECUTION_MODE (backtest implemented; paper/live gated).
+The architecture this enforces:
+    Signal Engine (ml/)  ->  Portfolio/Risk (portfolio/)  ->  Execution (execution/)
+Signal endpoints only read predictions. Turning signals into orders is the risk
+layer's job; acting on orders only ever happens inside the execution adapter that
+EXECUTION_MODE selects (backtest is built, paper/live are gated off).
 
-Run (from backend/):
+Run it from backend/:
     uvicorn main:app --reload --port 8000
 
 Point the frontend at it via frontend/.env.local:
@@ -51,7 +51,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Everything under /api so the swap with the Next.js mock routes is seamless.
+# everything lives under /api so swapping in for the Next.js mock routes is clean
 api = APIRouter(prefix="/api")
 
 
@@ -60,9 +60,7 @@ def root():
     return {"name": "QuantML API", "version": "0.2.0", "docs": "/docs", "api": "/api"}
 
 
-# --------------------------------------------------------------------------- #
-# Health / status                                                             #
-# --------------------------------------------------------------------------- #
+# --- health / status ---
 @api.get("/health")
 def health():
     _, source = store.get_signals()
@@ -78,9 +76,7 @@ def health():
     }
 
 
-# --------------------------------------------------------------------------- #
-# Signals — REAL (model.predict_proba via ml/inference artifacts)             #
-# --------------------------------------------------------------------------- #
+# --- signals: real, from model.predict_proba via the ml/inference artifacts ---
 @api.get("/signals", response_model=list[Signal])
 def signals(type: str | None = None):
     data, _ = store.get_signals(type)
@@ -92,18 +88,14 @@ def signals_meta():
     return {**store.signals_meta(), "source": store.get_signals()[1]}
 
 
-# --------------------------------------------------------------------------- #
-# Models — REAL (registry + SHAP importance from ml/training)                 #
-# --------------------------------------------------------------------------- #
+# --- models: real registry + feature importance from ml/training ---
 @api.get("/models")
 def models():
     data, _ = store.get_models()
     return data
 
 
-# --------------------------------------------------------------------------- #
-# Portfolio / Risk — signals → proposed orders (no execution)                 #
-# --------------------------------------------------------------------------- #
+# --- portfolio/risk: signals -> proposed orders, nothing executed ---
 @api.get("/portfolio/proposed-orders")
 def proposed_orders():
     sigs, source = store.get_signals()
@@ -115,9 +107,7 @@ def proposed_orders():
     }
 
 
-# --------------------------------------------------------------------------- #
-# Execution — status + a safe end-to-end preview (never live)                 #
-# --------------------------------------------------------------------------- #
+# --- execution: status + a safe end-to-end preview (never live) ---
 @api.get("/execution")
 def execution_status():
     adapter = get_execution_adapter(settings)
@@ -131,7 +121,7 @@ def execution_status():
 
 @api.get("/execution/preview")
 def execution_preview():
-    """Run signals → risk → execution adapter once, to demonstrate the chain."""
+    """Run signals -> risk -> execution adapter once, just to show the chain."""
     sigs, source = store.get_signals()
     proposed = propose_orders(sigs)["orders"]
     adapter = get_execution_adapter(settings)
@@ -142,12 +132,10 @@ def execution_preview():
         return {"source": source, "result": None, "note": str(e), "adapter": adapter.health()}
 
 
-# --------------------------------------------------------------------------- #
-# Backtest — REAL (walk-forward, cost-aware) + the series it feeds              #
-# --------------------------------------------------------------------------- #
+# --- backtest: real walk-forward, cost-aware, plus the series it feeds ---
 @api.get("/metrics", response_model=list[Metric])
 def metrics():
-    """Dashboard KPIs — six from the latest backtest, two from the live book."""
+    """Dashboard KPIs - six off the latest backtest, two off the live book."""
     return backtest_service.dashboard_metrics()
 
 
@@ -164,29 +152,27 @@ def trades():
 
 @api.post("/backtests")
 def backtests(req: BacktestRequest | None = None):
-    """Run a walk-forward, cost-aware backtest and return the full result.
+    """Run a walk-forward, cost-aware backtest and return the whole result.
 
-    Honest by construction: walk-forward OOS signals → the live risk engine →
-    net-of-cost equity vs buy-and-hold QQQ. Re-runs are fast (cached predictions).
+    The honest path: walk-forward OOS signals -> the live risk engine ->
+    net-of-cost equity vs buy-and-hold QQQ. Re-runs are fast off cached predictions.
     """
     return backtest_service.run((req or BacktestRequest()).to_engine_config())
 
 
 @api.get("/risk")
 def risk():
-    """Real portfolio risk — aggregated from the live proposed book + price data."""
+    """Real portfolio risk, aggregated from the live proposed book and price data."""
     return risk_service.build_risk_summary()
 
 
 @api.post("/research", response_model=RagResponse)
 async def research(req: ResearchRequest):
-    await asyncio.sleep(0.4)  # TODO: real RAG (LLM deferred for now)
+    await asyncio.sleep(0.4)  # TODO: swap in real RAG once the LLM side exists
     return mock.rag_response(req.prompt)
 
 
-# --------------------------------------------------------------------------- #
-# WebSocket — real-time price / signal ticks (path: /api/ws/signals)          #
-# --------------------------------------------------------------------------- #
+# --- websocket: live-ish price/signal ticks at /api/ws/signals ---
 @api.websocket("/ws/signals")
 async def ws_signals(ws: WebSocket):
     await ws.accept()

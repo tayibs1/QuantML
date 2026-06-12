@@ -1,14 +1,14 @@
 /**
  * QuantML API client.
  *
- * By default this calls the Next.js route handlers in `app/api/*` (same origin),
- * so the app is genuinely fetching its data over HTTP end-to-end with no extra
- * process. Point it at the Python FastAPI backend by setting:
+ * Out of the box this hits the Next.js route handlers in app/api/* (same origin),
+ * so the app really is fetching its data over HTTP, no separate process needed.
+ * To point it at the Python FastAPI backend instead, set:
  *
  *     NEXT_PUBLIC_API_URL=http://localhost:8000
  *
- * The FastAPI endpoints in `backend/` return the exact same shapes, so nothing
- * else changes. See BACKEND.md for the full contract.
+ * The FastAPI endpoints return the same shapes, so nothing else has to change.
+ * BACKEND.md has the full contract.
  */
 import type {
   ModelRecord,
@@ -61,7 +61,7 @@ async function get<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
     headers: { "Content-Type": "application/json", ...init?.headers },
   });
-  if (!res.ok) throw new Error(`QuantML API ${path} → ${res.status}`);
+  if (!res.ok) throw new Error(`QuantML API ${path} -> ${res.status}`);
   return (await res.json()) as T;
 }
 

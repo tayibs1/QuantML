@@ -1,10 +1,10 @@
 """
-Execution interface + shared order/fill models.
+Execution interface plus the shared order/fill models.
 
-`ProposedOrder` is what the Portfolio/Risk layer emits. An `ExecutionAdapter`
-turns proposed orders into `Fill`s (or rejects them). Every adapter — backtest,
-paper, live — implements the same `submit()` contract, so swapping execution
-modes never touches the signal engine, the risk layer, or the frontend.
+ProposedOrder is what the risk layer emits. An ExecutionAdapter turns proposed
+orders into Fills, or rejects them. Every adapter (backtest, paper, live)
+implements the same submit() contract, so switching execution modes never has to
+touch the signal engine, the risk layer, or the frontend.
 """
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ class OrderSide(str, Enum):
 
 
 class ProposedOrder(BaseModel):
-    """Output of the Portfolio/Risk layer — an intention, not an execution."""
+    """What the risk layer emits: an intention to trade, not a trade."""
     ticker: str
     side: OrderSide
     target_weight: float = Field(..., description="Target portfolio weight (0-1).")

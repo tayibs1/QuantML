@@ -1,10 +1,10 @@
 """
-Research bookkeeping.
+Research bookkeeping - the stuff that keeps me honest.
 
-Tools that keep the research process honest. The headline component is the
-**trial registry**: an append-only log of every backtest/experiment evaluated,
-which is the raw material for correcting performance statistics for the number of
-trials run (López de Prado's defence against backtest overfitting).
+Mostly the trial registry: an append-only log of every backtest I've evaluated,
+which is what the deflated-Sharpe correction needs to discount results for the
+number of trials run. Basic defence against fooling yourself with an overfit
+backtest.
 """
 from __future__ import annotations
 

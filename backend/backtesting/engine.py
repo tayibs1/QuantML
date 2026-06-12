@@ -1,30 +1,29 @@
 """
 Walk-forward backtest engine.
 
-This is the credibility centre of QuantML: a genuine, cost-aware, time-respecting
-simulation of the strategy the live system actually runs. It is honest by
-construction —
+This is the part of QuantML I'd actually stake the numbers on: a real,
+cost-aware, time-respecting simulation of the strategy the live system runs.
+What keeps it honest:
 
-  1. **No look-ahead.** Signals come from *walk-forward* out-of-sample predictions
-     (each fold trained only on its past), reusing the exact `ml.training`
-     procedure. The final all-data model is never used to "predict" history.
-  2. **Same risk engine.** At every rebalance the OOS signals are turned into a
-     book by the *same* `portfolio.propose_orders` the live `/risk` endpoint
-     uses — so the backtest tests the real strategy, not a toy.
-  3. **Net of costs.** Commission + slippage are charged on turnover every
-     rebalance, so equity, drawdown, Sharpe and every metric are after-cost.
-  4. **Benchmarked.** Performance is always shown against buy-and-hold QQQ over
-     the identical dates.
+  1. No look-ahead. Signals come from walk-forward out-of-sample predictions,
+     each fold trained only on its own past, using the same ml.training code.
+     The final all-data model never gets to "predict" history.
+  2. Same risk engine. Every rebalance turns the OOS signals into a book through
+     the same portfolio.propose_orders the live /risk endpoint calls, so this
+     tests the real strategy and not a stripped-down stand-in.
+  3. Net of costs. Commission + slippage hit turnover at every rebalance, so
+     equity, drawdown, Sharpe, all of it is after-cost.
+  4. Benchmarked. Always shown against buy-and-hold QQQ over the same dates.
 
-Two-stage design (so the API stays fast and dependency-light):
+Split in two so the API stays fast and doesn't drag in the ML deps:
 
-    generate_oos_predictions()   slow, retrains per fold → caches a parquet.
-                                  Needs the ML deps; run offline / once.
-    simulate(oos, …)             fast, pure pandas/numpy + the risk engine.
-                                  Re-runnable per request with new cost/rebalance
-                                  settings without ever retraining.
+    generate_oos_predictions()   slow - retrains per fold, caches a parquet.
+                                 Needs xgboost/sklearn, so run it offline / once.
+    simulate(oos, ...)           fast - pure pandas/numpy plus the risk engine.
+                                 Re-runs per request with new cost/rebalance
+                                 settings, no retraining.
 
-Run offline to (re)build the cached artifacts the API serves:
+Run it directly to (re)build the cached artifacts the API serves:
 
     cd backend && python -m backtesting.engine
 """
@@ -45,7 +44,7 @@ from portfolio import RiskParams, propose_orders
 from . import costs as cost_model
 from . import metrics as M
 
-# Artifacts live alongside every other data product, under data/ (gitignored).
+# artifacts sit under data/ with everything else (gitignored)
 BACKTEST_DIR = settings.data_dir / "backtests"
 OOS_CACHE = BACKTEST_DIR / "oos_predictions.parquet"
 RESULT_CACHE = BACKTEST_DIR / "latest.json"
@@ -83,20 +82,18 @@ def _risk_bucket(vol_z: float) -> str:
     return "Elevated"
 
 
-# --------------------------------------------------------------------------- #
-# Stage 1 — walk-forward OOS predictions (slow; reuses the ML training path)    #
-# --------------------------------------------------------------------------- #
+# --- stage 1: walk-forward OOS predictions (slow, reuses the ML training path) ---
 def generate_oos_predictions(force: bool = False) -> pd.DataFrame:
     """Return [date, ticker, pred, p_buy, fwd_ret_5, vol_z, sector], cached.
 
-    Reuses `ml.training.walk_forward` so the predictions are produced by the
-    identical, validated, no-look-ahead procedure used to report model metrics.
+    Goes through ml.training.walk_forward, so the predictions come out of the
+    same validated, no-look-ahead procedure that produced the model metrics.
     """
     if OOS_CACHE.exists() and not force:
         return pd.read_parquet(OOS_CACHE)
 
-    # Lazy import: the ML deps (xgboost/sklearn) are only needed for this slow
-    # offline step, keeping the API import-light.
+    # lazy import - xgboost/sklearn are only needed here, in the slow offline
+    # step, so the API never pays for importing them
     if str(REPO_ROOT) not in sys.path:
         sys.path.insert(0, str(REPO_ROOT))
     from ml import paths as ml_paths
@@ -108,8 +105,8 @@ def generate_oos_predictions(force: bool = False) -> pd.DataFrame:
     labelled = make_labels(feats)
     oos = walk_forward(labelled)  # [date, ticker, fwd_ret_5, label, pred, p_*]
 
-    # Attach the (raw, pre-zscore is unavailable) cross-sectional vol z-score and
-    # sector so the fast simulate step needs neither features nor the ML package.
+    # carry the vol proxy and sector along on the predictions so simulate() can
+    # run without the feature frame or the ml package in scope
     vol = feats[["date", "ticker", "vol_20"]]
     oos = oos.merge(vol, on=["date", "ticker"], how="left")
     oos["vol_z"] = oos["vol_20"].fillna(0.0)
@@ -118,22 +115,20 @@ def generate_oos_predictions(force: bool = False) -> pd.DataFrame:
 
     BACKTEST_DIR.mkdir(parents=True, exist_ok=True)
     oos.to_parquet(OOS_CACHE, index=False)
-    _ = FEATURE_COLS  # imported to assert the feature contract is importable
+    _ = FEATURE_COLS  # touch it so a broken feature contract fails loudly here
     return oos
 
 
-# --------------------------------------------------------------------------- #
-# Stage 2 — portfolio simulation (fast; pure pandas + the live risk engine)     #
-# --------------------------------------------------------------------------- #
+# --- stage 2: portfolio simulation (fast, pure pandas + the live risk engine) ---
 def _book_at(rows: pd.DataFrame, cfg: BacktestConfig) -> dict[str, float]:
-    """Construct the long-only book for one rebalance via the live risk engine."""
+    """Build the long-only book for one rebalance through the live risk engine."""
     sigs = [
         {
             "ticker": r.ticker,
             "signal": "BUY" if int(r.pred) == _CLASS_BUY else ("HOLD" if int(r.pred) == 1 else "AVOID"),
             "confidence": float(r.p_buy) * 100.0,
             "risk": _risk_bucket(float(r.vol_z)),
-            "sector": r.sector if isinstance(r.sector, str) else "—",
+            "sector": r.sector if isinstance(r.sector, str) else "Unknown",
         }
         for r in rows.itertuples(index=False)
     ]
@@ -147,7 +142,7 @@ def simulate(
     bench: dict,            # {date -> close}
     cfg: BacktestConfig,
 ) -> dict:
-    """Run the weekly/daily/monthly rebalance loop and assemble the full result."""
+    """Run the daily/weekly/monthly rebalance loop and assemble the result."""
     dates = sorted(oos["date"].unique())
     step = cfg.rebalance_days
     rebal = dates[::step]
@@ -259,7 +254,7 @@ def _close_trade(seq: int, ticker: str, pos: dict, exit_date, exit_price) -> dic
 
 
 def _monthly_returns(equity: list[dict], period_returns: list[float], rebal: list) -> list[dict]:
-    """Compound period returns into a year × month matrix for the heatmap."""
+    """Compound the period returns into a year-by-month grid for the heatmap."""
     df = pd.DataFrame({
         "date": pd.to_datetime([pd.Timestamp(d) for d in rebal[1:]]),
         "ret": period_returns,
@@ -296,9 +291,7 @@ def _summary_cards(perf: dict) -> list[dict]:
     ]
 
 
-# --------------------------------------------------------------------------- #
-# Orchestration                                                                 #
-# --------------------------------------------------------------------------- #
+# --- orchestration ---
 def _load_prices() -> tuple[dict, dict]:
     """Nested {date->{ticker->close}} and {date->close} for QQQ, from data/raw."""
     ohlcv = pd.read_parquet(settings.raw_dir / "ohlcv.parquet")[["date", "ticker", "close"]]
@@ -310,7 +303,7 @@ def _load_prices() -> tuple[dict, dict]:
 
 
 def _record_trial(cfg: BacktestConfig, result: dict) -> None:
-    """Append this run to the research trial registry (best-effort, non-fatal)."""
+    """Log this run to the trial registry. Best-effort - never fatal."""
     try:
         if str(REPO_ROOT) not in sys.path:
             sys.path.insert(0, str(REPO_ROOT))
@@ -326,17 +319,17 @@ def _record_trial(cfg: BacktestConfig, result: dict) -> None:
             tags=["walk-forward", "net-of-cost"],
             notes=f"{result['window']['start']}..{result['window']['end']}",
         )
-    except Exception:  # noqa: BLE001 — telemetry must never break a backtest
+    except Exception:  # noqa: BLE001 - logging a trial must never break a backtest
         pass
 
 
 def run_backtest(
     cfg: BacktestConfig | None = None, force_oos: bool = False, log_trial: bool = True
 ) -> dict:
-    """Full pipeline: OOS predictions → portfolio simulation → result dict.
+    """Full pipeline: OOS predictions -> portfolio simulation -> result dict.
 
-    Each run is recorded in the research trial registry (unless `log_trial=False`),
-    so the count and dispersion of trials are available for selection-bias checks.
+    Every run gets logged to the trial registry unless log_trial=False, so the
+    count and spread of trials are there when we want to check for selection bias.
     """
     cfg = cfg or BacktestConfig()
     oos = generate_oos_predictions(force=force_oos)

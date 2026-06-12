@@ -1,14 +1,14 @@
 """
 Portfolio risk aggregation.
 
-Turns the live signal set into a real risk picture by running it through the
-Portfolio/Risk engine (the same `propose_orders` used everywhere else) and
-summarising the resulting book: exposure by name and sector, hard-cap usage,
-concentration, model conviction, and auto-generated risk flags.
+Takes the live signal set, runs it through the risk engine (the same
+propose_orders used everywhere else), and summarises the book that comes out:
+exposure by name and sector, how much of each hard cap is used, concentration,
+model conviction, and a set of risk flags derived from all of it.
 
-This is read-only and side-effect free. It never executes — it only describes
-the *proposed* book. Everything here is derived from real model output when the
-ML pipeline has run; it degrades gracefully to sample signals otherwise.
+Read-only, no side effects. It never executes anything - it just describes the
+proposed book. When the ML pipeline has run this is all off real model output;
+otherwise it falls back to sample signals.
 """
 from __future__ import annotations
 
@@ -27,8 +27,8 @@ _VOL_WINDOW_LONG = 21
 _VOL_POINTS = 40
 _TRADING_DAYS = 252
 
-# Accurate description of what the risk engine actually enforces (see
-# portfolio/risk_engine.py). These are policy statements, not generated data.
+# what the risk engine actually enforces (see portfolio/risk_engine.py). fixed
+# policy text, not anything computed
 POSITION_RULES = [
     "Long-only book constructed from BUY signals above the confidence floor.",
     "Per-name exposure hard-capped at 20% of gross.",
@@ -47,7 +47,7 @@ def _pct(x: float) -> float:
 def _confidence_stats(signals: list[dict]) -> dict:
     confs = [float(s.get("confidence", 0)) for s in signals]
     buys = [float(s["confidence"]) for s in signals if s.get("signal") == "BUY"]
-    # Histogram in 10-point buckets across the model's typical range.
+    # bucket confidences into the bands the model usually lands in
     edges = [(0, 40), (40, 50), (50, 60), (60, 70), (70, 100)]
     hist = [
         {"range": f"{lo}-{hi}", "count": sum(1 for c in confs if lo <= c < hi)}
@@ -62,7 +62,7 @@ def _confidence_stats(signals: list[dict]) -> dict:
 
 
 def _flags(signals, summary, orders, source, conf) -> list[dict]:
-    """Generate real, data-driven risk flags from the proposed book."""
+    """Build the risk flags off the proposed book - all driven by the numbers."""
     flags: list[dict] = []
     gross = _pct(summary["grossExposure"])
     cash = _pct(summary["cashWeight"])
@@ -146,10 +146,10 @@ def _benchmark_path() -> Path:
 
 @lru_cache(maxsize=4)
 def _regime_cached(mtime: float) -> tuple:
-    """Realized vol of the benchmark (QQQ) at two horizons, last N sessions.
+    """Realised vol of QQQ at two horizons over the last N sessions.
 
-    Cached by the parquet's mtime so it recomputes only when the data refreshes.
-    Returns (t, long_vol, short_vol) tuples — annualized vol in percent.
+    Keyed on the parquet's mtime so it only recomputes when the data changes.
+    Returns (t, long_vol, short_vol) tuples, vol annualised and in percent.
     """
     import numpy as np
     import pandas as pd
@@ -170,11 +170,10 @@ def _regime_cached(mtime: float) -> tuple:
 
 
 def _volatility_regime() -> list[dict]:
-    """Realized-vol regime from real benchmark prices; mock fallback if absent.
+    """Realised-vol regime from benchmark prices, mock fallback if they're absent.
 
-    `realized` is short-horizon (10d) realized vol; `regime` is the smoother
-    long-horizon (21d) realized vol. Both are honest realized measures derived
-    from QQQ closes — no implied/VIX series is fabricated.
+    The short series is 10d realised vol, the smoother one is 21d. Both are actual
+    realised measures off QQQ closes - there's no made-up implied/VIX series here.
     """
     try:
         path = _benchmark_path()
@@ -192,7 +191,7 @@ def _volatility_regime() -> list[dict]:
 def build_risk_summary() -> dict:
     """Aggregate the live proposed book into the risk summary the UI consumes."""
     signals, source = store.get_signals()
-    sector_of = {s["ticker"]: s.get("sector", "—") for s in signals}
+    sector_of = {s["ticker"]: s.get("sector", "Unknown") for s in signals}
 
     result = propose_orders(signals)
     orders = result["orders"]
@@ -200,7 +199,7 @@ def build_risk_summary() -> dict:
 
     cash = _pct(summary["cashWeight"])
 
-    # Exposure by asset — real proposed weights, largest first, + cash.
+    # exposure by asset: proposed weights, largest first, then cash
     asset = sorted(
         ({"name": o.ticker, "value": _pct(o.target_weight)} for o in orders),
         key=lambda x: x["value"],
@@ -209,7 +208,7 @@ def build_risk_summary() -> dict:
     if cash > 0:
         asset.append({"name": "Cash", "value": cash})
 
-    # Exposure by sector — from the engine's own sector aggregation, + cash.
+    # exposure by sector: straight from the engine's sector aggregation, then cash
     sector = [
         {"name": k, "value": _pct(v)}
         for k, v in sorted(
@@ -221,7 +220,7 @@ def build_risk_summary() -> dict:
     if cash > 0:
         sector.append({"name": "Cash", "value": cash})
 
-    # Cap-usage budget — every line is a real number vs its hard limit.
+    # cap-usage budget: each line is the actual number against its hard limit
     largest_sector = _pct(max(summary.get("exposureBySector", {}).values(), default=0.0))
     budget = [
         {"label": "Gross exposure", "used": _pct(summary["grossExposure"]), "limit": 100},
@@ -231,7 +230,7 @@ def build_risk_summary() -> dict:
         {"label": "Cash buffer", "used": cash, "limit": 100},
     ]
 
-    # Concentration metrics (HHI is a real, standard concentration measure).
+    # concentration metrics - HHI is the standard Herfindahl measure
     weights = [o.target_weight for o in orders]
     hhi = round(sum(w * w for w in weights), 4)
     top3 = _pct(sum(sorted(weights, reverse=True)[:3]))

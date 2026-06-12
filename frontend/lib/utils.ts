@@ -38,7 +38,7 @@ export function formatNumber(value: number, digits = 2): string {
   }).format(value);
 }
 
-/** Deterministic seeded PRNG (mulberry32) — keeps SSR/CSR output identical. */
+/** Seeded PRNG (mulberry32). Deterministic, so SSR and CSR produce the same output. */
 export function seeded(seed: number): () => number {
   let a = seed >>> 0;
   return () => {

@@ -5,16 +5,16 @@ import { AnimatedGridBackground } from "@/components/animated-grid-background";
 
 /**
  * Layered hero background:
- *  1. WebGL shader  — aurora FBM noise + animated perspective grid + cursor light
- *  2. CSS/Motion   — drifting blur orbs + floating particles + scan line
+ *  1. WebGL shader: aurora FBM noise + animated perspective grid + cursor light
+ *  2. CSS/Motion:   drifting blur orbs + floating particles + scan line
  *
- * Both layers always render once the shader has loaded. While the shader is
- * loading (or if WebGL is unavailable) the CSS layer runs as the sole background
- * so the hero never looks empty.
+ * Both layers render once the shader's up. While it's still loading (or if WebGL
+ * isn't available at all) the CSS layer carries the background on its own, so the
+ * hero is never just empty.
  */
 const ShaderBackground = dynamic(
   () => import("./shader-background").then((m) => m.ShaderBackground),
-  // Fallback: full animated grid while the GPU shader hydrates
+  // while the GPU shader hydrates, show the full animated grid instead
   { ssr: false, loading: () => <AnimatedGridBackground scan orbs particles={28} /> }
 );
 

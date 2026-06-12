@@ -1,21 +1,20 @@
 """
-Research trial registry — an append-only experiment log.
+Append-only log of every backtest/experiment trial.
 
-Every backtest you run is a *trial*. If you try fifty configurations and report
-the best, its Sharpe is biased upward purely by selection — the more trials, the
-higher the best in-sample result you expect by luck alone. The defence (López de
-Prado, AFML §8 and *The Deflated Sharpe Ratio*) is to (a) record every trial and
-(b) deflate the winner's Sharpe by the number of trials and their dispersion.
+Each backtest is a trial. Run fifty configs and report the best one and its
+Sharpe is inflated by selection alone - the more you try, the higher the best
+in-sample number you'd expect from luck. The fix (AFML ch.8, and the Deflated
+Sharpe Ratio paper) is to write down every trial, then haircut the winner's
+Sharpe by how many trials you ran and how spread out they were.
 
-This module is the (a) — a tamper-evident, append-only JSONL log — plus the
-statistics for (b): the Probabilistic and Deflated Sharpe Ratios.
+This file is the writing-down part (a JSONL log, one trial per line) plus the
+stats for the haircut: Probabilistic and Deflated Sharpe.
 
-Design notes
-------------
-- **Append-only**: each trial is one JSON object on its own line. We never rewrite
-  history, so the log is a faithful record of how many configurations were tried.
-- **Self-contained**: pure standard library (no pandas/scipy), so it is safe to
-  import from anywhere — the ML pipeline or the API backend — with no heavy deps.
+A couple of decisions worth noting:
+  - Append-only, one JSON object per line, never rewritten. Keeps the count of
+    configs-tried honest.
+  - Standard library only (no pandas/scipy) so it imports cleanly from either
+    side, ML pipeline or API, without dragging heavy deps along.
 
     python -m ml.research.trial_registry        # print a summary of the log
 """
@@ -29,19 +28,17 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-# Self-contained path resolution (repo_root/data/research/trials.jsonl) so this
-# module has zero import-time dependencies on the rest of the package.
+# resolve the path ourselves (repo_root/data/research/trials.jsonl) so importing
+# this module pulls in nothing else from the package
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 TRIALS_PATH = _REPO_ROOT / "data" / "research" / "trials.jsonl"
 
 _EULER_MASCHERONI = 0.5772156649015329
 
 
-# --------------------------------------------------------------------------- #
-# Append-only log                                                              #
-# --------------------------------------------------------------------------- #
+# --- the log itself ---
 def _config_hash(config: dict) -> str:
-    """Stable short hash of a config, so repeated configurations are visible."""
+    """Short stable hash of a config so repeat configs are easy to spot."""
     blob = json.dumps(config, sort_keys=True, default=str)
     return hashlib.sha1(blob.encode()).hexdigest()[:10]
 
@@ -54,11 +51,11 @@ def log_trial(
     notes: str = "",
     path: Path = TRIALS_PATH,
 ) -> dict:
-    """Append one trial to the registry and return the written record.
+    """Append one trial and return the record we wrote.
 
-    `kind`    — e.g. "backtest", "training".
-    `config`  — the settings that define the trial (rebalance, costs, …).
-    `metrics` — the headline results (sharpe, cagr, maxDrawdown, …).
+    kind     "backtest", "training", etc.
+    config   the settings that define the trial (rebalance, costs, ...)
+    metrics  the headline results (sharpe, cagr, maxDrawdown, ...)
     """
     record = {
         "trial_id": uuid.uuid4().hex[:12],
@@ -77,7 +74,7 @@ def log_trial(
 
 
 def load_trials(path: Path = TRIALS_PATH) -> list[dict]:
-    """Read every trial from the log (skipping any corrupt lines)."""
+    """Read every trial, skipping any line that won't parse."""
     if not path.exists():
         return []
     out: list[dict] = []
@@ -93,7 +90,7 @@ def load_trials(path: Path = TRIALS_PATH) -> list[dict]:
 
 
 def summary(metric: str = "sharpe", path: Path = TRIALS_PATH) -> dict:
-    """Aggregate the log: trial count, distinct configs, and the best trial."""
+    """Roll the log up: how many trials, how many distinct configs, the best one."""
     trials = load_trials(path)
     if not trials:
         return {"numTrials": 0, "distinctConfigs": 0, "best": None}
@@ -112,9 +109,7 @@ def summary(metric: str = "sharpe", path: Path = TRIALS_PATH) -> dict:
     }
 
 
-# --------------------------------------------------------------------------- #
-# Selection-bias statistics (the reason the log exists)                        #
-# --------------------------------------------------------------------------- #
+# --- selection-bias stats (the whole reason the log exists) ---
 def _std(xs: list[float]) -> float:
     n = len(xs)
     if n < 2:
@@ -156,10 +151,10 @@ def _norm_ppf(p: float) -> float:
 def probabilistic_sharpe_ratio(
     sr: float, n_obs: int, sr_ref: float = 0.0, skew: float = 0.0, kurt: float = 3.0
 ) -> float:
-    """P(true Sharpe > sr_ref) given the estimate `sr` from `n_obs` observations.
+    """P(true Sharpe > sr_ref) given an estimate sr from n_obs observations.
 
-    Accounts for track-record length and the non-normality (skew/kurtosis) of
-    returns — a short, fat-tailed record makes a high Sharpe far less certain.
+    Factors in track-record length and the skew/kurtosis of returns: a short,
+    fat-tailed record makes a high Sharpe a lot less convincing.
     """
     if n_obs < 2:
         return 0.0
@@ -171,10 +166,10 @@ def probabilistic_sharpe_ratio(
 
 
 def expected_max_sharpe(n_trials: int, trial_sharpe_std: float) -> float:
-    """Expected maximum Sharpe across `n_trials` independent null strategies.
+    """Expected best Sharpe across n_trials independent no-skill strategies.
 
-    Under the null (true Sharpe = 0), the best of N trials is non-zero purely by
-    chance; this is the threshold a real strategy must clear (AFML, DSR paper).
+    Even with true Sharpe = 0 everywhere, the best of N trials comes out positive
+    by chance. That's the bar a real strategy has to clear (AFML / DSR paper).
     """
     if n_trials < 2 or trial_sharpe_std <= 0:
         return 0.0
@@ -193,11 +188,11 @@ def deflated_sharpe_ratio(
     skew: float = 0.0,
     kurt: float = 3.0,
 ) -> float:
-    """Probability the best-of-N strategy is genuinely skilful, not lucky.
+    """Probability the best-of-N strategy is actually skilful, not just lucky.
 
-    DSR = PSR evaluated against the expected-maximum-Sharpe benchmark instead of
-    zero. A DSR near 1 survives the multiple-testing correction; near 0.5 or below
-    means the result is consistent with luck across the trials run.
+    Same as PSR but measured against the expected-max-Sharpe bar instead of zero.
+    Near 1 means it survives the multiple-testing correction; around 0.5 or below
+    means it's consistent with luck given how many trials were run.
     """
     sr_ref = expected_max_sharpe(n_trials, trial_sharpe_std)
     return probabilistic_sharpe_ratio(sr, n_obs, sr_ref=sr_ref, skew=skew, kurt=kurt)
@@ -207,11 +202,11 @@ def main() -> None:
     s = summary()
     print(f"Trial registry · {TRIALS_PATH.relative_to(_REPO_ROOT)}")
     if not s["numTrials"]:
-        print("  (empty — run a backtest to record the first trial)")
+        print("  (empty - run a backtest to record the first trial)")
         return
     print(f"  trials          {s['numTrials']}  ({s['distinctConfigs']} distinct configs · {s['kinds']})")
     print(f"  best {s['metric']:<10} {s['bestValue']:.3f}   config={s['best']['config']}")
-    # If we have a spread of trial Sharpes, contextualise the best one.
+    # only worth contextualising the best one if the trials actually spread out
     if s["numTrials"] >= 2 and s["trialMetricStd"] > 0:
         bm = s["best"]["metrics"]
         n_obs = int(bm.get("nObs") or bm.get("rebalances") or 252)

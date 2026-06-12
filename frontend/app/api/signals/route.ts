@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { signals } from "@/lib/mock-data";
 
-// GET /api/signals?type=BUY — model-generated signals, optionally filtered
+// GET /api/signals?type=BUY - model-generated signals, optionally filtered
 export function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const type = searchParams.get("type");

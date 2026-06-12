@@ -1,9 +1,10 @@
 """
-Live execution — DISABLED BY DESIGN.
+Live execution. Off by design.
 
-Real-money orders. This adapter refuses to do anything unless
-LIVE_TRADING_ENABLED=true, and even then it is intentionally left unimplemented
-until a full risk + compliance review. Do not implement casually.
+Real-money orders. This adapter refuses to construct at all unless
+LIVE_TRADING_ENABLED=true, and even then submit() is deliberately left
+unimplemented until there's a proper risk and compliance review. Not something to
+flip on casually.
 """
 from __future__ import annotations
 

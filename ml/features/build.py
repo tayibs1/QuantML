@@ -1,17 +1,17 @@
 """
-Stage 2 — Feature engineering.
+Stage 2: feature engineering.
 
-Computes ~24 causal features per name (no future bars), then standardizes them
-**cross-sectionally per date** (z-score across the universe) so the model learns
-relative, not absolute, signals. Also attaches the 5-day forward-return target.
+~24 causal features per name (nothing peeks at future bars), then z-scored
+cross-sectionally per date (across the universe) so the model picks up relative
+rather than absolute signals. Also tacks on the 5-day forward-return target.
 
     python -m ml.features.build
 
-`compute_features()` is imported by both training and inference, guaranteeing the
-exact same transform is applied live as in training.
+compute_features() is imported by both training and inference, which is the whole
+point: the exact same transform runs live as ran in training, no drift.
 
 Output:
-    data/processed/features.parquet   [date, ticker, <features…>, fwd_ret_5]
+    data/processed/features.parquet   [date, ticker, <features...>, fwd_ret_5]
 """
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ from ml import paths
 
 FORWARD_HORIZON = 5  # predict the 5-day-ahead return
 
-# Feature column -> human-readable label (used for the UI "drivers" chips).
+# feature key -> readable label, used for the "drivers" chips in the UI
 FEATURE_LABELS: dict[str, str] = {
     "ret_5": "5-day momentum",
     "ret_20": "20-day momentum",
@@ -75,8 +75,8 @@ def _atr(df: pd.DataFrame, n: int = 14) -> pd.Series:
 
 def _per_ticker(df: pd.DataFrame) -> pd.DataFrame:
     """Causal time-series features for a single name (sorted by date)."""
-    # reset_index is essential: indicator Series must share an index with `out`,
-    # otherwise the column assignments below align to NaN.
+    # the reset_index matters: the indicator Series have to share an index with
+    # `out`, or the column assignments below silently align to NaN
     df = df.sort_values("date").reset_index(drop=True).copy()
     close, high, low, vol = df["close"], df["high"], df["low"], df["volume"]
     ret1 = close.pct_change()
@@ -125,9 +125,9 @@ def _per_ticker(df: pd.DataFrame) -> pd.DataFrame:
     out["ret_kurt_20"] = ret1.rolling(20).kurt()
     out["gap"] = df["open"] / close.shift(1) - 1
     out["intraday_range"] = (high - low) / close
-    out["rel_strength_20"] = out["ret_20"]  # vs-universe handled by x-sec z-score
+    out["rel_strength_20"] = out["ret_20"]  # the vs-universe part comes from the x-sec z-score
 
-    # Target: forward 5-day return (NaN for the last HORIZON rows)
+    # target: 5-day forward return. NaN on the last HORIZON rows, as expected
     out["fwd_ret_5"] = close.shift(-FORWARD_HORIZON) / close - 1
     return out
 
@@ -143,20 +143,21 @@ def _cross_sectional_zscore(df: pd.DataFrame, cols: list[str]) -> pd.DataFrame:
 
 
 def compute_features(ohlcv: pd.DataFrame, min_names: int = 10) -> pd.DataFrame:
-    """Full feature pipeline: per-name causal features → cross-sectional z-score.
+    """Per-name causal features, then a cross-sectional z-score.
 
-    Reused verbatim by training and inference.
+    Training and inference both call this, unchanged, so they can't diverge.
     """
     parts = [_per_ticker(g) for _, g in ohlcv.groupby("ticker", sort=False)]
     feats = pd.concat(parts, ignore_index=True)
 
-    # Need all features present (drops per-name warmup rows). Target may be NaN
-    # (latest rows) — that's fine; training drops them, inference uses them.
+    # every feature has to be present, which drops the per-name warmup rows. the
+    # target can still be NaN on the latest rows, and that's fine: training drops
+    # those, inference is exactly the rows that want them
     feats = feats.dropna(subset=FEATURE_COLS).reset_index(drop=True)
     feats = _cross_sectional_zscore(feats, FEATURE_COLS)
     feats = feats.dropna(subset=FEATURE_COLS).reset_index(drop=True)
 
-    # Drop sparse dates (too few names for a meaningful cross-section)
+    # drop dates with too few names to form a meaningful cross-section
     counts = feats.groupby("date")["ticker"].transform("count")
     feats = feats[counts >= min_names].reset_index(drop=True)
     return feats.sort_values(["date", "ticker"]).reset_index(drop=True)

@@ -1,9 +1,9 @@
 """
-Backtest / simulated execution — IMPLEMENTED.
+Backtest / simulated execution. This one is actually implemented.
 
-Fills every proposed order at the reference price plus slippage, and books a
-commission. No external broker; this is what powers backtests and the default
-EXECUTION_MODE=backtest.
+Fills every proposed order at the reference price plus slippage and books a
+commission. No broker involved. This is what powers the backtests and the
+default EXECUTION_MODE=backtest.
 """
 from __future__ import annotations
 
@@ -32,13 +32,13 @@ class BacktestExecutionAdapter(ExecutionAdapter):
                 rejected.append({"ticker": o.ticker, "reason": "no reference price"})
                 continue
 
-            # Slippage worsens the fill in the direction of the trade.
+            # slippage always moves the fill against us, in the trade's direction
             slip = price * self.slippage_bps / 10_000
             fill_price = price + slip if o.side == OrderSide.BUY else price - slip
 
             qty = o.quantity
             if qty is None:
-                qty = (o.target_weight * equity) / fill_price  # size from target weight
+                qty = (o.target_weight * equity) / fill_price  # back out shares from the target weight
 
             commission = abs(qty) * fill_price * self.commission_bps / 10_000
             accepted.append(

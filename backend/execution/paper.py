@@ -1,10 +1,10 @@
 """
-Paper execution — STUB (interface ready, not yet wired).
+Paper execution. Stub for now - the interface is here, the wiring isn't.
 
-This is where Alpaca paper trading plugs in later. The contract is identical to
-the backtest adapter, so enabling paper trading is purely additive: implement
-`submit()` against the Alpaca paper API and set EXECUTION_MODE=paper,
-BROKER_PROVIDER=alpaca. No changes to the signal engine, risk layer, or frontend.
+This is where Alpaca paper trading slots in later. Same contract as the backtest
+adapter, so turning it on is purely additive: implement submit() against the
+Alpaca paper API, set EXECUTION_MODE=paper and BROKER_PROVIDER=alpaca. Nothing in
+the signal engine, risk layer, or frontend has to change.
 """
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ class PaperExecutionAdapter(ExecutionAdapter):
         self.broker_provider = broker_provider
         self._api_key = api_key
         self._api_secret = api_secret
-        # When implemented:
+        # once this is real:
         #   from alpaca.trading.client import TradingClient
         #   self.client = TradingClient(api_key, api_secret, paper=True)
 
@@ -28,8 +28,8 @@ class PaperExecutionAdapter(ExecutionAdapter):
         prices: dict[str, float],
         equity: float = 1_000_000.0,
     ) -> ExecutionResult:
-        # TODO(paper): translate ProposedOrder → Alpaca MarketOrderRequest and
-        # submit to the paper account; map broker fills back to Fill[].
+        # TODO(paper): turn each ProposedOrder into an Alpaca MarketOrderRequest,
+        # submit to the paper account, then map the broker fills back to Fill[]
         raise NotImplementedError(
             "Paper trading is stubbed. Set BROKER_PROVIDER=alpaca, add ALPACA_API_KEY/"
             "ALPACA_API_SECRET, and implement submit() against the Alpaca paper API."
@@ -43,5 +43,5 @@ class PaperExecutionAdapter(ExecutionAdapter):
             "implemented": False,
             "broker": self.broker_provider,
             "configured": configured,
-            "note": "Interface ready; wire Alpaca paper to enable.",
+            "note": "Interface is ready - wire up Alpaca paper to enable it.",
         }

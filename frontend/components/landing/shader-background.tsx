@@ -5,9 +5,9 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
 /**
- * Fullscreen GLSL shader background — an animated perspective grid with a
- * teal/violet aurora and a cursor light. Renders on the GPU as a single
- * fullscreen quad, so it stays cheap (capped DPR, one draw call).
+ * Fullscreen GLSL shader background: an animated perspective grid with a
+ * teal/violet aurora and a cursor light. It's one fullscreen quad on the GPU,
+ * so it stays cheap - capped DPR, a single draw call.
  */
 
 const vertexShader = /* glsl */ `

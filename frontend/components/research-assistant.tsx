@@ -58,12 +58,12 @@ export function ResearchAssistant({
     setMessages((m) => [...m, { role: "user", text: q, id: idRef.current++ }]);
     setThinking(true);
     try {
-      // Real end-to-end fetch: client → /api/research route handler (or FastAPI
-      // when NEXT_PUBLIC_API_URL is set) → JSON → render.
+      // real round trip: client -> /api/research route (or FastAPI when
+      // NEXT_PUBLIC_API_URL is set) -> JSON -> render
       const data = await api.research(q);
       setMessages((m) => [...m, { role: "assistant", data, id: idRef.current++ }]);
     } catch {
-      // Fallback keeps the demo resilient if the API is unreachable.
+      // if the API can't be reached, fall back so the demo still works
       setMessages((m) => [
         ...m,
         { role: "assistant", data: getRagResponse(q), id: idRef.current++ },

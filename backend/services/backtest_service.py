@@ -1,18 +1,17 @@
 """
 Backtest read/run service.
 
-Bridges the backtest engine and the API. Two jobs:
+Sits between the backtest engine and the API. Two jobs:
 
-  - **serve** the cached backtest artifact (`data/backtests/latest.json`) to the
-    GET endpoints (`/api/metrics`, `/api/equity`, `/api/trades`), so the whole
-    dashboard reflects one consistent, real, net-of-cost backtest;
-  - **run** a fresh backtest on demand (`POST /api/backtests`) with caller-chosen
-    cost / rebalance settings, persisting the result so the rest of the app stays
-    in sync.
+  - serve the cached artifact (data/backtests/latest.json) to the GET endpoints
+    (/api/metrics, /api/equity, /api/trades), so the whole dashboard reflects one
+    consistent, real, net-of-cost backtest.
+  - run a fresh backtest on demand (POST /api/backtests) with caller-chosen cost
+    / rebalance settings, and persist it so the rest of the app stays in sync.
 
-Everything degrades gracefully: if no artifact exists yet (pipeline not run) or
-the ML deps for a cold first-run are unavailable, the getters fall back to the
-seeded mock so the API never breaks.
+Everything falls back softly. If there's no artifact yet (pipeline hasn't run) or
+the ML deps for a cold first run aren't installed, the getters drop to the seeded
+mock instead of throwing. The API never goes down over this.
 """
 from __future__ import annotations
 
@@ -36,15 +35,15 @@ def _load() -> Optional[dict]:
 
 
 def get_result() -> tuple[Optional[dict], str]:
-    """The latest backtest artifact, or (None, 'mock') if none has been produced."""
+    """Latest backtest artifact, or (None, 'mock') if nothing's been produced."""
     data = _load()
     return (data, "live") if data else (None, "mock")
 
 
 def run(config: Optional[dict] = None) -> dict:
-    """Run a backtest with the given config and persist it; fall back on failure.
+    """Run a backtest with the given config, persist it, fall back on failure.
 
-    Fast in the normal case: the slow walk-forward OOS predictions are cached, so
+    Fast in the usual case: the slow walk-forward OOS predictions are cached, so
     a re-run only re-simulates the portfolio under the new cost/rebalance settings.
     """
     cfg_kwargs = {}
@@ -59,16 +58,14 @@ def run(config: Optional[dict] = None) -> dict:
         except OSError:
             pass
         return result
-    except Exception as e:  # noqa: BLE001 — never let a backtest break the API
+    except Exception as e:  # noqa: BLE001 - a failed backtest must not 500 the API
         cached, _ = get_result()
         if cached:
             return {**cached, "note": f"Returned cached result ({type(e).__name__})."}
         return _mock_result(str(e))
 
 
-# --------------------------------------------------------------------------- #
-# Dashboard projections — real backtest stats + live signal/risk aggregates     #
-# --------------------------------------------------------------------------- #
+# --- dashboard projections: real backtest stats + live signal/risk aggregates ---
 def equity_series() -> list[dict]:
     data, _ = get_result()
     if data and data.get("equity"):
@@ -84,7 +81,7 @@ def trades() -> list[dict]:
 
 
 def dashboard_metrics() -> list[dict]:
-    """The eight KPI cards: six from the backtest, two from the live book."""
+    """The eight KPI cards - six off the backtest, two off the live book."""
     data, source = get_result()
     if not data:
         return mock.METRICS
@@ -92,7 +89,7 @@ def dashboard_metrics() -> list[dict]:
     m = data["metrics"]
     terminal = round(1_000_000 * (1 + m["totalReturn"]))
 
-    # Live book aggregates (real, label-accurate) for the two non-performance cards.
+    # the two non-performance cards come off the live book
     signals, _ = store.get_signals()
     buys = [s["confidence"] for s in signals if s.get("signal") == "BUY"]
     mean_buy_conf = round(sum(buys) / len(buys), 0) if buys else 0
@@ -122,7 +119,7 @@ def dashboard_metrics() -> list[dict]:
 
 
 def _mock_result(note: str) -> dict:
-    """A backtest-shaped object built from seeded mock data (last-resort fallback)."""
+    """A backtest-shaped object built from seeded mock data - last resort."""
     eq = mock.equity_series()
     return {
         "source": "mock",

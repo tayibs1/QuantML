@@ -1,7 +1,7 @@
 """
-Read layer: serve real ML artifacts from data/ when present, else fall back to
-the seeded mock so the API (and frontend) always work — even before the pipeline
-has been run.
+Read layer. Serve the real ML artifacts out of data/ when they're there, and
+fall back to the seeded mock when they aren't, so the API (and the frontend)
+work even before the pipeline has ever run.
 
 Each getter returns (data, source) where source is "live" or "mock".
 """
@@ -38,19 +38,18 @@ def get_signals(signal_type: Optional[str] = None) -> tuple[list[dict], str]:
 def _normalise_model(m: dict) -> dict:
     """Coerce model_card fields to match the frontend ModelRecord contract."""
     m = dict(m)
-    # accuracy stored as raw % (e.g. 37.3) → 0-1 fraction (e.g. 0.373)
+    # accuracy is stored as a raw percent (37.3); the frontend wants a fraction (0.373)
     if m.get("accuracy", 0) > 1:
         m["accuracy"] = round(m["accuracy"] / 100, 4)
-    # cagr stored as raw % (e.g. 26.7) — keep as-is, frontend renders as `{cagr.toFixed(1)}%`
+    # cagr stays as a raw percent (26.7) - the frontend already renders it with %
     return m
 
 
 def _normalise_fi(fi: list[dict]) -> list[dict]:
     """Normalise feature importance scores to 0-1 fractions.
 
-    The training pipeline stores raw gain values (summing to ~100). The
-    FeatureImportanceChart expects 0-1 fractions and formats them as
-    `(v * 100).toFixed(1)%`.
+    Training writes raw gain values (they sum to ~100). FeatureImportanceChart
+    wants fractions and formats them itself as (v * 100).toFixed(1)%.
     """
     if not fi:
         return fi
@@ -66,7 +65,7 @@ def get_models() -> tuple[dict, str]:
     if card and card.get("models"):
         real = [_normalise_model(m) for m in card["models"]]
         real_names = {m.get("name") for m in real}
-        # Keep the mock baselines for a fuller registry view; real champion leads.
+        # keep the mock baselines so the registry looks fuller; real champion goes first
         baselines = [m for m in mock.MODELS if m.get("name") not in real_names]
         fi = _normalise_fi(card.get("featureImportance") or mock.FEATURE_IMPORTANCE)
         return {"models": real + baselines, "featureImportance": fi}, "live"
@@ -81,6 +80,6 @@ def signals_meta() -> dict:
 
 
 def latest_prices() -> dict[str, float]:
-    """ticker → price, from the live signals (used by the execution preview)."""
+    """ticker -> price, pulled from the live signals (execution preview uses it)."""
     data, _ = get_signals()
     return {s["ticker"]: s["price"] for s in data if s.get("price")}

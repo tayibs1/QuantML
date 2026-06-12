@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { equitySeries } from "@/lib/mock-data";
 
-// GET /api/equity?range=60 — equity / benchmark / drawdown time series
+// GET /api/equity?range=60 - equity / benchmark / drawdown time series
 export function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const range = Number(searchParams.get("range") ?? 0);

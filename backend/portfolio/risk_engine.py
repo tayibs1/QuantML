@@ -1,15 +1,15 @@
 """
-Risk engine: signals → proposed orders.
+Risk engine: signals -> proposed orders.
 
-A signal is NOT a position. This layer decides *whether* and *how much* to hold,
-under hard limits:
+A signal isn't a position. This layer decides whether to hold a name at all and
+how much, under hard limits:
 
-  - long-only book of BUY names (shorting AVOID is a later extension)
-  - volatility-scaled, confidence-weighted sizing
+  - long-only book of BUY names (shorting AVOID can come later)
+  - sizing scaled by volatility and weighted by confidence
   - per-name cap (default 20%), per-sector cap (default 40%), gross cap (100%)
 
-Output feeds the execution adapter (backtest / paper / live). Pure function —
-deterministic, side-effect free, easy to unit-test and reason about.
+Output feeds the execution adapter (backtest / paper / live). Pure function:
+deterministic, no side effects, easy to test.
 """
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 
 from execution.base import OrderSide, ProposedOrder
 
-# Lower-risk names get a larger share of their raw weight.
+# lower-risk names keep more of their raw weight
 RISK_FACTOR = {"Low": 1.0, "Moderate": 0.8, "High": 0.6, "Elevated": 0.45}
 
 
@@ -35,7 +35,7 @@ def propose_orders(signals: list[dict], params: RiskParams | None = None) -> dic
     """Return {orders: ProposedOrder[], summary: {...}} from a list of signals."""
     p = params or RiskParams()
 
-    # 1. Candidates: BUY signals above the confidence floor.
+    # 1. candidates: BUY signals that clear the confidence floor
     cands = [
         s for s in signals
         if s.get("signal") == "BUY" and s.get("confidence", 0) >= p.min_confidence
@@ -45,7 +45,7 @@ def propose_orders(signals: list[dict], params: RiskParams | None = None) -> dic
     if not cands:
         return {"orders": [], "summary": _summary([], {})}
 
-    # 2. Raw weights = confidence × risk factor, normalized to the gross target.
+    # 2. raw weight = confidence * risk factor, then normalise to the gross target
     raw = {
         s["ticker"]: s.get("confidence", 0) * RISK_FACTOR.get(s.get("risk", "Moderate"), 0.7)
         for s in cands
@@ -53,11 +53,11 @@ def propose_orders(signals: list[dict], params: RiskParams | None = None) -> dic
     total = sum(raw.values()) or 1.0
     w = {t: v / total * p.gross_target for t, v in raw.items()}
 
-    # 3. Per-name cap.
+    # 3. per-name cap
     w = {t: min(v, p.max_name_weight) for t, v in w.items()}
 
-    # 4. Per-sector cap — scale down over-exposed sectors.
-    sector_of = {s["ticker"]: s.get("sector", "—") for s in cands}
+    # 4. per-sector cap: scale down any sector that's over the limit
+    sector_of = {s["ticker"]: s.get("sector", "Unknown") for s in cands}
     sector_tot: dict[str, float] = defaultdict(float)
     for t, v in w.items():
         sector_tot[sector_of[t]] += v
@@ -68,7 +68,7 @@ def propose_orders(signals: list[dict], params: RiskParams | None = None) -> dic
                 if sector_of[t] == sec:
                     w[t] *= scale
 
-    # 5. Gross cap — never lever above the target.
+    # 5. gross cap: don't lever past the target
     gross = sum(w.values())
     if gross > p.gross_target and gross > 0:
         w = {t: v * p.gross_target / gross for t, v in w.items()}
@@ -93,7 +93,7 @@ def _summary(orders: list[ProposedOrder], sector_of: dict[str, str]) -> dict:
     gross = round(sum(o.target_weight for o in orders), 4)
     by_sector: dict[str, float] = defaultdict(float)
     for o in orders:
-        by_sector[sector_of.get(o.ticker, "—")] += o.target_weight
+        by_sector[sector_of.get(o.ticker, "Unknown")] += o.target_weight
     return {
         "grossExposure": gross,
         "netExposure": gross,  # long-only

@@ -1,18 +1,18 @@
 """
-Stage 3 — Training & walk-forward validation.
+Stage 3: training + walk-forward validation.
 
 - Labels: cross-sectional terciles of the 5-day forward return per date
-  (BUY = top third, AVOID = bottom third, HOLD = middle) → balanced classes that
-  teach the model to *rank* names.
+  (BUY = top third, AVOID = bottom third, HOLD = middle). Balanced classes, and
+  the model ends up learning to rank names rather than chase absolute returns.
 - Model: XGBoost multi-class (softprob).
-- Validation: expanding-window **walk-forward** (each fold tested strictly on the
-  future), aggregated out-of-sample — never a random split.
-- Artifacts: final model (trained on all data) + meta + a model card with real
-  OOS metrics and gain-based feature importance.
+- Validation: expanding-window walk-forward, each fold tested strictly on the
+  future and aggregated out-of-sample. No random splits, those would leak.
+- Artifacts: final model (fit on everything) + meta + a model card carrying the
+  real OOS metrics and gain-based feature importance.
 
     python -m ml.training.walk_forward
 
-Output:
+Writes:
     data/models/xgb_signal.joblib   trained classifier (for inference)
     data/models/xgb_signal.meta.json
     data/models/model_card.json     ModelRecord[] + featureImportance[]
@@ -31,7 +31,7 @@ from xgboost import XGBClassifier
 from ml import paths
 from ml.features.build import FEATURE_COLS, FEATURE_LABELS
 
-# Label semantics live in one place (ml.labels) — the explicit Y of the problem.
+# labels are defined once, over in ml.labels - that's the Y of the problem
 from ml.labels.outperformance import AVOID, BUY, CLASS_TO_SIGNAL, HOLD, make_labels
 
 N_FOLDS = 6
@@ -95,7 +95,7 @@ def walk_forward(d: pd.DataFrame) -> pd.DataFrame:
 
 
 def strategy_metrics(oos: pd.DataFrame) -> dict:
-    """Real OOS strategy stats from the BUY basket (non-overlapping 5-day returns)."""
+    """OOS strategy stats off the BUY basket, on non-overlapping 5-day returns."""
     buy = oos[oos["pred"] == BUY]
     if buy.empty:
         return dict(sharpe=0.0, cagr=0.0, maxDrawdown=0.0)
@@ -143,7 +143,7 @@ def main() -> None:
           f"buy_hit={clf_m['buy_hit_rate']:.3f}  "
           f"sharpe={strat_m['sharpe']}  cagr={strat_m['cagr']:.3f}  maxDD={strat_m['maxDrawdown']:.3f}")
 
-    # Final model on ALL labelled data (for live inference)
+    # now refit on every labelled row - this is the one we ship for inference
     print("Fitting final model on all data …")
     final = _new_model()
     final.fit(d[FEATURE_COLS], d["label"])
@@ -167,7 +167,7 @@ def main() -> None:
     }
     (paths.MODEL_META_PATH).write_text(json.dumps(meta, indent=2))
 
-    # Feature importance (gain), normalized
+    # gain-based feature importance, normalised to percentages
     imp = pd.Series(final.feature_importances_, index=FEATURE_COLS).sort_values(ascending=False)
     imp = (imp / imp.sum() * 100).round(2)
     feature_importance = [

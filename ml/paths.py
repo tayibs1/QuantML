@@ -1,9 +1,9 @@
 """
-Filesystem layout shared across the ML pipeline.
+Shared filesystem layout for the ML pipeline.
 
-These resolve to the SAME `data/` folder the backend reads from (anchored at the
-repo root), so the ML side writes artifacts and the API side reads them with no
-import coupling between the two.
+All anchored at the repo root, pointing at the same data/ folder the backend
+reads from. That's the whole trick: ML writes artifacts, the API reads them,
+and neither side has to import the other.
 """
 from __future__ import annotations
 

@@ -6,9 +6,9 @@ import {
   trades,
 } from "@/lib/mock-data";
 
-// POST /api/backtests — mock fallback when the FastAPI backend is not running.
+// POST /api/backtests - mock fallback for when the FastAPI backend isn't running.
 // The real engine (walk-forward, cost-aware) lives in backend/backtesting and
-// returns the identical shape; this keeps the page working offline.
+// returns the same shape; this just keeps the page working offline.
 export async function POST(req: Request) {
   const cfg = await req.json().catch(() => ({}));
   const last = equitySeries[equitySeries.length - 1];

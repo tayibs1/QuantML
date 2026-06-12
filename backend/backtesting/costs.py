@@ -1,21 +1,21 @@
 """
-Transaction-cost model for the backtest engine.
+Transaction-cost model for the backtest.
 
-Every rebalance moves the book; that movement is not free. We charge two things
-against each rebalance, both proportional to **turnover** (the one-way fraction
-of the book that changes):
+Every rebalance moves the book, and moving the book isn't free. Two charges,
+both proportional to turnover (the fraction of the book that changes each
+rebalance):
 
-    commission  — broker/exchange fees, in basis points of traded notional
-    slippage    — the gap between the decision price and the achieved fill,
-                  in basis points (market impact + spread)
+    commission   broker/exchange fees, in bps of traded notional
+    slippage     gap between the decision price and the actual fill, in bps
+                 (market impact + spread)
 
-Turnover is measured as 0.5 * Σ|w_t - w_{t-1}| (one-way), so a full liquidation
-and re-entry into entirely new names is 100% turnover and is charged once on the
-way out and once on the way in — i.e. on the full Σ|Δw|. We therefore charge on
-Σ|Δw| directly (round-trip aware) rather than halving it.
+Turnover here is Sum|w_t - w_{t-1}|. Dumping the whole book and buying entirely
+new names gets charged on the way out and again on the way in, i.e. on the full
+Sum|dw| - so we charge on Sum|dw| directly instead of halving it.
 
-Costs are deducted from the period return, so the equity curve, drawdown, Sharpe
-and every downstream metric are reported **net of costs** — the honest number.
+Costs come straight out of the period return, so the equity curve, drawdown,
+Sharpe, all of it land net of costs. That's the number that actually means
+something.
 """
 from __future__ import annotations
 
@@ -36,21 +36,21 @@ class CostModel:
         return self.commission_bps + self.slippage_bps
 
     def cost_of_trading(self, traded_notional_fraction: float) -> float:
-        """Cost (as a fraction of equity) of trading `Σ|Δw|` of the book.
+        """Cost, as a fraction of equity, of trading Sum|dw| of the book.
 
-        `traded_notional_fraction` is the sum of absolute weight changes across
-        all names at a rebalance (entries + exits). Returns the fraction of
-        portfolio equity consumed by commission + slippage on that trade.
+        traded_notional_fraction is the sum of absolute weight changes over all
+        names at one rebalance (entries plus exits). Returns the slice of equity
+        eaten by commission + slippage on that trade.
         """
         return max(0.0, traded_notional_fraction) * self.round_trip_bps * _BPS
 
 
 def turnover(prev: dict[str, float], cur: dict[str, float]) -> float:
-    """One-rebalance traded notional: Σ over the union of names of |w_cur - w_prev|.
+    """Traded notional for one rebalance: sum of |w_cur - w_prev| over all names.
 
-    A name appearing only in `prev` is a full exit; only in `cur` a full entry;
-    in both, the absolute change. This is the quantity the cost model charges on
-    and the raw material for the annualised-turnover metric.
+    A name only in prev is a full exit, only in cur a full entry, in both the
+    absolute change. This is what the cost model charges on, and what the
+    annualised-turnover metric is built from.
     """
     names = set(prev) | set(cur)
     return float(sum(abs(cur.get(t, 0.0) - prev.get(t, 0.0)) for t in names))

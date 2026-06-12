@@ -8,7 +8,7 @@ import {
   volatilityRegime,
 } from "@/lib/mock-data";
 
-// GET /api/risk — full risk snapshot (exposure, budget, regime, flags, rules)
+// GET /api/risk - full risk snapshot (exposure, budget, regime, flags, rules)
 export function GET() {
   return NextResponse.json({
     flags: riskFlags,

@@ -1,12 +1,12 @@
 import { seeded } from "./utils";
 
 /**
- * Mock data layer for QuantML.
+ * Mock data layer.
  *
- * Everything here is deterministic (seeded) so server and client render the
- * same values — no hydration mismatches. Each export mirrors a shape that a
- * future FastAPI backend can return, so swapping `import` for `fetch` later is
- * mechanical. See lib/api.ts for the intended client surface.
+ * Everything here is seeded and deterministic so the server and client render
+ * identical values and there are no hydration mismatches. Each export matches a
+ * shape a future FastAPI backend can return, so swapping import for fetch later
+ * is mechanical. lib/api.ts is the client surface this is standing in for.
  */
 
 export type SignalType = "BUY" | "HOLD" | "AVOID";

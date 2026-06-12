@@ -1,18 +1,16 @@
 """
-Performance & risk statistics for a backtest.
+Performance and risk stats for a backtest.
 
-Pure functions over plain Python lists/numpy — no I/O, no global state — so they
-are trivial to unit-test and reason about. Everything is computed from the
-**net-of-cost** period-return series and the closed-trade ledger the engine
-produces.
+Plain functions over lists/numpy, no I/O and no global state, so they're easy to
+test and easy to follow. Everything is computed off the net-of-cost period-return
+series and the closed-trade ledger the engine hands back.
 
-Conventions
------------
-- `returns`        : per-period simple returns of the strategy (net of costs).
-- `bench_returns`  : per-period simple returns of the benchmark, same length.
-- `periods_per_year`: 252 / rebalance_days (e.g. weekly ≈ 50.4).
-- Risk-free rate is taken as 0 (excess-return Sharpe over cash ≈ flat in this
-  regime); documented here rather than silently assumed.
+A few conventions:
+- returns          per-period simple returns of the strategy, net of costs
+- bench_returns    per-period simple returns of the benchmark, same length
+- periods_per_year 252 / rebalance_days (weekly works out to ~50.4)
+- risk-free rate is 0. Over this period cash is basically flat so excess-return
+  Sharpe over cash is a wash, but I'd rather write that down than assume it.
 """
 from __future__ import annotations
 

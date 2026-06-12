@@ -1,12 +1,13 @@
 """
-Stage 1 — Ingestion.
+Stage 1: ingestion.
 
-Download real daily OHLCV for the universe (+ benchmark) and store it
-point-in-time as long-format parquet under data/raw/.
+Pull daily OHLCV for the universe (plus the benchmark) and dump it as
+long-format parquet under data/raw/.
 
-Uses Yahoo's public chart API directly via `requests` (more reliable across
-networks than yfinance's cookie/crumb handshake). Prices are dividend/split
-adjusted via the adjclose ratio.
+Hits Yahoo's public chart API directly with requests instead of going through
+yfinance - the cookie/crumb handshake yfinance does is flaky on some networks,
+and this is one fewer moving part. Prices come out split/dividend adjusted via
+the adjclose ratio.
 
     python -m ml.ingestion.download --start 2018-01-01
 
@@ -56,7 +57,7 @@ def fetch_history(ticker: str, start: str, end: str | None, retries: int = 3) ->
                 "close": q["close"], "adjclose": adj, "volume": q["volume"],
             }).dropna(subset=["close", "adjclose"])
 
-            # Adjust OHLC by the adjclose/close ratio (handles splits & dividends).
+            # scale OHL by adjclose/close so splits and dividends are baked in
             ratio = df["adjclose"] / df["close"]
             for c in ("open", "high", "low"):
                 df[c] = df[c] * ratio

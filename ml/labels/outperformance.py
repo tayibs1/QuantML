@@ -1,32 +1,29 @@
 """
-Cross-sectional outperformance label (the production scheme).
+Production label: cross-sectional outperformance.
 
-Definition
-----------
-For each (date t0, ticker) we open a *bet* evaluated over an h-day horizon ending
-at t1 = t0 + h trading days. The realised outcome is the h-day forward return.
-Within each date we rank names cross-sectionally and assign:
+For each (date t0, ticker) we open a bet over an h-day horizon ending at
+t1 = t0 + h trading days, scored by the h-day forward return. Within each date
+we rank the names against each other:
 
-    BUY   (2)  — forward return in the top tercile of the universe that day
-    AVOID (0)  — forward return in the bottom tercile
-    HOLD  (1)  — the middle tercile
+    BUY   (2)  forward return in the top tercile of the universe that day
+    AVOID (0)  bottom tercile
+    HOLD  (1)  middle tercile
 
-So the model learns to *rank* names relative to their peers, which is far more
-stable than predicting an absolute return. This is the single source of truth for
-the label — `ml.training` imports `make_labels` from here.
+Ranking names against their peers is a lot steadier than trying to predict an
+absolute return. Labels are defined in exactly one place - ml.training pulls
+make_labels from here so the two can't drift apart.
 
-Artifacts (X / Y / T / W), written by `build_label_artifacts`:
+build_label_artifacts writes two files:
 
     labels.parquet   date, ticker, label, fwd_ret, t1, weight
     events.parquet   date, ticker, t1, horizon, fwd_ret, rank_pct,
                      outperf_universe, outperf_benchmark
 
-`weight` is an **average-uniqueness** sample weight (López de Prado, AFML §4):
-overlapping h-day windows on the same name are not independent, so each label is
-down-weighted by how much its life overlaps with concurrent labels. Weights are
-normalised to mean 1 so they can be passed straight to a learner's sample_weight.
+weight is an average-uniqueness sample weight (AFML ch.4). Overlapping h-day
+windows on the same name aren't independent, so each label gets discounted by
+how much its life overlaps its neighbours. Normalised to mean 1 so it drops
+straight into a learner's sample_weight.
 
-Run:
     python -m ml.labels.outperformance
 """
 from __future__ import annotations
@@ -36,23 +33,23 @@ import pandas as pd
 
 from ml import paths
 
-# Class indices (shared across the pipeline).
+# class indices, shared across the pipeline
 AVOID, HOLD, BUY = 0, 1, 2
 CLASS_TO_SIGNAL = {AVOID: "AVOID", HOLD: "HOLD", BUY: "BUY"}
 
-# Forward horizon in trading days (matches the feature target fwd_ret_5).
+# forward horizon in trading days; has to line up with the fwd_ret_5 feature
 LABEL_HORIZON = 5
 
-# Tercile cut points for the cross-sectional rank.
+# tercile cut points
 _LOWER, _UPPER = 1 / 3, 2 / 3
 _FWD_COL = "fwd_ret_5"
 
 
 def make_labels(df: pd.DataFrame) -> pd.DataFrame:
-    """Attach the cross-sectional tercile `label` to a feature frame.
+    """Attach the cross-sectional tercile label to a feature frame.
 
-    Pure and deterministic. Drops rows without a realised forward return (the
-    most recent `LABEL_HORIZON` bars per name), exactly as training expects.
+    Deterministic. Drops rows that don't have a realised forward return yet
+    (the last LABEL_HORIZON bars per name), which is what training wants anyway.
     """
     d = df.dropna(subset=[_FWD_COL]).copy()
     pct = d.groupby("date")[_FWD_COL].rank(pct=True)
@@ -61,24 +58,25 @@ def make_labels(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _event_end(d: pd.DataFrame) -> pd.Series:
-    """t1 = the date `LABEL_HORIZON` trading bars ahead, per ticker."""
+    """t1 = the date LABEL_HORIZON trading bars ahead, per ticker."""
     return d.sort_values(["ticker", "date"]).groupby("ticker")["date"].shift(-LABEL_HORIZON)
 
 
 def _benchmark_forward_return(benchmark: pd.DataFrame) -> pd.Series:
-    """date -> QQQ h-day forward return, for relative-to-market outperformance."""
+    """date -> QQQ h-day forward return, for outperformance-vs-market."""
     b = benchmark.sort_values("date").set_index("date")["close"]
     fwd = b.shift(-LABEL_HORIZON) / b - 1.0
     return fwd
 
 
 def average_uniqueness(events: pd.DataFrame) -> pd.Series:
-    """Concurrency-based sample weights (mean-normalised), indexed like `events`.
+    """Concurrency-based sample weights (mean-normalised), indexed like events.
 
-    For each name, label i lives over bars [i, i+h]. Concurrency at a bar is the
-    number of labels alive there; a label's uniqueness is the mean of 1/concurrency
-    over its life. Heavily-overlapping labels (the norm for a fixed horizon) get
-    weighted down, so the effective sample size reflects genuine independent bets.
+    Label i lives over bars [i, i+h]. Concurrency at a bar = how many labels are
+    alive there; a label's uniqueness is the mean of 1/concurrency over its life.
+    With a fixed horizon almost everything overlaps, so this pulls the
+    heavily-overlapping labels down and the effective sample size starts to
+    reflect bets that are actually independent.
     """
     weights = pd.Series(1.0, index=events.index)
     h = LABEL_HORIZON
@@ -101,7 +99,7 @@ def build_label_artifacts(
     features: pd.DataFrame,
     benchmark: pd.DataFrame | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Return (labels_df, events_df) — the explicit Y / T / W of the problem."""
+    """Build (labels_df, events_df): the explicit Y / T / W for the problem."""
     d = make_labels(features)
     d = d.assign(t1=_event_end(d))
 
@@ -130,8 +128,8 @@ def build_label_artifacts(
     weight = average_uniqueness(events)
     events["weight"] = weight.round(4).values
 
-    # Align the label to each event's (date, ticker) — robust to the row-drops
-    # and re-indexing above.
+    # map the label back onto each event by (date, ticker); survives the row
+    # drops and reindexing above
     label_map = d.set_index(["date", "ticker"])["label"]
     labels = events[["date", "ticker", "t1", "fwd_ret", "weight"]].copy()
     labels["label"] = [

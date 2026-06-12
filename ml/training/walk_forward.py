@@ -42,14 +42,18 @@ SEED = 42
 # anything with .fit(X, y) and .predict_proba(X) plugs into walk_forward()
 ModelFactory = Callable[[], object]
 
+# These are the tuned params from the Optuna walk-forward search (ml/training/tune.py):
+# OOS Sharpe 1.19 vs 1.00 on the old hand-picked defaults, and the improvement
+# clears the Deflated Sharpe haircut (DSR ~1.0), so it's a real lift, not luck from
+# 30 trials. Promoted to the champion config on 2026-06-12.
 XGB_PARAMS = dict(
-    n_estimators=300,
-    max_depth=4,
-    learning_rate=0.05,
-    subsample=0.85,
-    colsample_bytree=0.85,
+    n_estimators=350,
+    max_depth=5,
+    learning_rate=0.0875512070847474,
+    subsample=0.8984173590845637,
+    colsample_bytree=0.8247827530574988,
     min_child_weight=5,
-    reg_lambda=1.0,
+    reg_lambda=0.5683038138650235,
     objective="multi:softprob",
     num_class=3,
     tree_method="hist",

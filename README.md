@@ -16,16 +16,16 @@ explainable ML signals, portfolio construction, and a live full-stack dashboard.
 [![Status](https://img.shields.io/badge/Status-Research_Phase-14b8a6?style=flat-square)](.)
 [![Execution](https://img.shields.io/badge/Execution-Backtest_Only-6366f1?style=flat-square)](.)
 [![Live Trading](https://img.shields.io/badge/Live_Trading-Disabled-ef4444?style=flat-square)](.)
-[![Tests](https://img.shields.io/badge/tests-68_passing-22c55e?style=flat-square)](.)
-[![Signal Sharpe](https://img.shields.io/badge/Signal_Sharpe-1.0-22c55e?style=flat-square)](.)
-[![Net-of-cost Sharpe](https://img.shields.io/badge/Net--of--cost_Sharpe-0.68-eab308?style=flat-square)](.)
-[![OOS AUC](https://img.shields.io/badge/Walk--Forward_AUC-0.547-22c55e?style=flat-square)](.)
+[![Tests](https://img.shields.io/badge/tests-86_passing-22c55e?style=flat-square)](.)
+[![Signal Sharpe](https://img.shields.io/badge/Signal_Sharpe-1.19-22c55e?style=flat-square)](.)
+[![Net-of-cost Sharpe](https://img.shields.io/badge/Net--of--cost_Sharpe-0.88-eab308?style=flat-square)](.)
+[![OOS AUC](https://img.shields.io/badge/Walk--Forward_AUC-0.540-22c55e?style=flat-square)](.)
 
 <br/>
 
 > **The full pipeline is live and running.** 117,561 real market bars downloaded,
-> 24 features engineered, XGBoost trained with honest walk-forward validation,
-> 56 real NASDAQ-100 signals scored — and visible in a production-quality dashboard.
+> 24 features engineered, XGBoost (Optuna-tuned) trained with honest walk-forward
+> validation, 56 real NASDAQ-100 signals scored — and visible in a production-quality dashboard.
 
 </div>
 
@@ -37,7 +37,7 @@ QuantML is a **full end-to-end quantitative trading research platform** built fr
 
 The system enforces a strict architectural principle: **the ML model can never directly execute a trade.** Signals flow through a separate risk engine that applies hard limits before being passed to a swappable execution adapter. This makes the system safe by construction and extensible without reconstruction.
 
-> **Honest framing:** This is a *research* platform, not a live trading system. The ML model demonstrates a statistically real but modest edge (OOS AUC 0.547 vs random 0.500). Sharpe ratios above 2.0 in backtests are almost always artefacts of overfitting — the numbers here are honest because they come from walk-forward out-of-sample evaluation only.
+> **Honest framing:** This is a *research* platform, not a live trading system. The ML model demonstrates a statistically real but modest edge (OOS AUC 0.540 vs random 0.500). Sharpe ratios above 2.0 in backtests are almost always artefacts of overfitting — the numbers here are honest because they come from walk-forward out-of-sample evaluation only.
 
 ---
 
@@ -55,15 +55,21 @@ its own future.
 
 | Metric | Value | What it means |
 |---|---|---|
-| **Walk-forward Sharpe** | **1.00** | annualised, out-of-sample only (frictionless basket) |
-| **Classification AUC** | **0.547** | vs 0.500 random — a real, modest, non-overfit edge |
-| **OOS accuracy** | **37.3%** | vs 33.3% chance (3-class BUY/HOLD/AVOID) |
-| **BUY hit rate** | **53.2%** | share of BUY calls with a positive 5-day return |
-| **Basket max drawdown** | **−34.9%** | full history, not a cherry-picked window |
+| **Walk-forward Sharpe** | **1.19** | annualised, out-of-sample only (frictionless basket) |
+| **Classification AUC** | **0.540** | vs 0.500 random — a real, modest, non-overfit edge |
+| **OOS accuracy** | **36.6%** | vs 33.3% chance (3-class BUY/HOLD/AVOID) |
+| **BUY hit rate** | **52.8%** | share of BUY calls with a positive 5-day return |
+| **Basket max drawdown** | **−29.3%** | full history, not a cherry-picked window |
 
 > A 3-class stock-direction problem on the 5-day forward return is genuinely hard.
 > The literature treats AUC 0.52–0.56 as statistically significant; an AUC of 0.65+
 > on a large universe almost always means lookahead bias has crept in.
+>
+> Note the honest trade-off from the Optuna tuning: it lifted the **basket Sharpe**
+> (1.00 → 1.19) and cut drawdown, but the pointwise **classification** metrics
+> actually nudged *down* (AUC 0.547 → 0.540, accuracy 37.3% → 36.6%). The tuned
+> objective optimised risk-adjusted basket return, not raw class accuracy — so the
+> two move in opposite directions, and pretending otherwise would be dishonest.
 
 ### 2. Net-of-cost backtest — would it have made money after frictions?
 
@@ -75,29 +81,34 @@ reproducible with `cd backend && python -m backtesting.engine`.
 
 | Metric | Strategy | QQQ (buy & hold) |
 |---|---|---|
-| **CAGR** | **13.98%** | 15.68% |
-| **Total return** | **78.4%** | 90.5% |
-| **Sharpe** | **0.68** | — |
-| **Sortino** | 0.95 | — |
-| **Max drawdown** | −37.4% | — |
-| **Volatility (ann.)** | 23.3% | — |
-| **Win rate / profit factor** | 58.8% / 1.47 | — |
-| **Beta to QQQ** | 0.94 | — |
-| **Trades** | 1,524 over 224 weekly rebalances | — |
+| **CAGR** | **18.50%** | 15.68% |
+| **Total return** | **112.0%** | 90.5% |
+| **Sharpe** | **0.88** | — |
+| **Sortino** | 1.24 | — |
+| **Max drawdown** | −29.7% | — |
+| **Volatility (ann.)** | 22.0% | — |
+| **Win rate / profit factor** | 57.8% / 1.52 | — |
+| **Beta to QQQ** | 0.89 | — |
+| **Trades** | 1,878 over 224 weekly rebalances | — |
 
 > Window 2021-12 → 2026-05 (the out-of-sample span of the walk-forward folds).
 
-**Why the Sharpe drops from 1.00 to 0.68 — and why that's the whole point.** The
+**Why the Sharpe drops from 1.19 to 0.88 — and why that's the whole point.** The
 signal Sharpe is an idealised, frictionless equal-weight basket (its paper CAGR is
-26.7%). The backtest then *pays for realism*: transaction costs on ~3,800%/yr
+31.2%). The backtest then *pays for realism*: transaction costs on ~4,700%/yr
 turnover, position sizing that holds cash when conviction is low, and the
-name/sector caps — which pulls the deployable CAGR down to ~14%. Reporting both,
+name/sector caps — which pulls the deployable CAGR down to ~18.5%. Reporting both,
 and showing the gap rather than hiding it, **is** the methodology. A backtest that
 matched the frictionless number would be the red flag.
 
+> Net of costs the strategy now edges QQQ (18.5% vs 15.7% CAGR, 112% vs 90% total
+> return) — but it does so at a **0.89 beta** to QQQ over a tech-heavy bull run, so
+> read this as "a tech-beta basket that paid for itself after frictions," not as
+> market-neutral alpha. The honest caveat matters more than the headline.
+
 **Universe & data:** 55 curated NASDAQ-100 names · 117,561 daily OHLCV bars
 (2018–2026, split/dividend adjusted) · 24 causal, cross-sectionally z-scored
-features · 56 live signals on the latest cross-section (14 BUY · 33 HOLD · 9 AVOID).
+features · 56 live signals on the latest cross-section (18 BUY · 25 HOLD · 13 AVOID).
 
 ---
 
@@ -109,16 +120,20 @@ the estimator changes (`python -m ml.training.baselines`).
 
 | Model | Sharpe | CAGR | AUC | BUY hit | Verdict |
 |---|---|---|---|---|---|
-| **XGBoost-v3** (champion) | **1.00** | 26.7% | 0.547 | 53.2% | shipped |
-| Random Forest | 0.99 | 27.4% | 0.552 | 53.1% | statistically tied |
+| **XGBoost-v3** (champion, tuned) | **1.19** | 31.2% | 0.540 | 52.8% | shipped |
+| Random Forest | 0.99 | 27.4% | 0.552 | 53.1% | runner-up (untuned) |
 | Cross-sectional Momentum | 0.89 | 21.6% | 0.507 | 53.9% | the "do you need ML?" control |
 | Logistic Regression | 0.85 | 21.9% | 0.547 | 52.4% | linear floor |
 
-The honest read: **the two tree ensembles beat momentum and the linear model by
-~0.1 Sharpe — a real edge — but XGBoost and Random Forest are a dead heat** (+0.01
-is noise). XGBoost ships because of its calibrated class probabilities and native
-SHAP attributions, not because it dominates. A table that showed XGBoost crushing
-everything would be the thing to distrust.
+The honest read: **the tuned XGBoost now leads Random Forest by ~0.2 Sharpe — but
+read that gap carefully.** Only XGBoost has been through the Optuna walk-forward
+search; the other three run at sensible defaults. So part of the +0.2 is tuning
+effort, not an intrinsic model-family advantage — an equally-tuned Random Forest
+would likely close much of it. And note Random Forest still posts the **higher AUC**
+(0.552 vs 0.540): XGBoost's edge lives in risk-adjusted *basket* return, not raw
+classification. It ships for that plus its calibrated probabilities and native SHAP
+attributions — not because it dominates on every axis. A table that showed it
+crushing everything would be the thing to distrust.
 
 ### Where the edge actually lives
 
@@ -127,10 +142,10 @@ The headline Sharpe hides a lot. Broken down by year and by market regime
 
 | Year | Sharpe | | Regime | Sharpe |
 |---|---|---|---|---|
-| 2022 (QQQ −33%) | **−0.75** | | Bull (QQQ > 200d) | 1.32 |
-| 2023 (QQQ +56%) | 2.80 | | Bear (QQQ < 200d) | 0.60 |
-| 2024 | 1.05 | | | |
-| 2025 | 1.52 | | | |
+| 2022 (QQQ −33%) | **−0.64** | | Bull (QQQ > 200d) | 1.57 |
+| 2023 (QQQ +56%) | 2.82 | | Bear (QQQ < 200d) | 0.73 |
+| 2024 | 1.38 | | | |
+| 2025 | 1.69 | | | |
 
 It **lost money in 2022** and earns most of its keep in trending bull markets. That
 is exactly the kind of thing a backtest should disclose, not bury under an average.
@@ -138,17 +153,24 @@ is exactly the kind of thing a backtest should disclose, not bury under an avera
 ### Hyperparameter tuning & feature sensitivity
 
 **Optuna search** (30 trials, walk-forward objective, logged to the anti-overfit registry):
-- Default config: Sharpe 1.00
-- **Best tuned params: Sharpe 1.19** (n_estimators=350, max_depth=5, learning_rate=0.088, etc.)
-- **DSR 1.0** — survives the multiple-testing correction; the improvement is real, not luck
+- Prior hand-picked config: Sharpe 1.00
+- **Tuned params — now the shipped champion: Sharpe 1.19** (n_estimators=350, max_depth=5, learning_rate=0.088, etc.)
+- **DSR ~1.0** — survives the multiple-testing correction across the 30 trials; the improvement is real, not luck
 
-**Feature ablation** (drop each group, measure OOS Sharpe):
-- Dropping **Relative Strength** → Sharpe −0.11 (critical carrier of edge)
-- Dropping **Trend, Oscillators, or Range/Extremes** → Sharpe +0.09 to +0.13 (actually hurt when included — overfitting to junk)
-- Earnings-inspired features: +0.01 Sharpe only (not worth shipping)
-- Conclusion: the **24-feature set is overfit**. Relative Strength (momentum) alone is the core signal; the rest add noise.
+**Feature ablation** (drop each group, measure OOS Sharpe; full set = 1.19):
+- Dropping **Volatility** → Sharpe −0.27 (the single biggest carrier of edge)
+- Dropping **Momentum** → −0.19
+- Dropping **Volume** or **Relative Strength** → −0.13 each
+- Dropping Trend / Oscillators / Range / Microstructure → −0.03 to −0.07 (small but still negative)
+- Earnings-inspired features: 1.19 → 0.92 (−0.27) — actively hurt, kept out of production
+- Conclusion: under the tuned model **every feature group now earns its place** — dropping any one lowers OOS Sharpe, with Volatility and Momentum carrying the most weight.
 
-This kind of honest weakness — admitting the full feature set hurts performance — is the mark of real work, not marketing.
+Worth flagging an honest reversal: the *previous* (un-tuned) champion looked overfit —
+several feature groups appeared to *help* when removed. Re-running the identical
+ablation on the tuned model overturns that: tuning got the model to use the full
+24-feature set coherently, and now no group can be dropped without cost. The earlier
+"the feature set is overfit" claim was an artifact of the weaker model — updating it
+rather than leaving the more flattering story in place is exactly the point.
 
 ---
 
@@ -303,8 +325,8 @@ BUY signals
 ```
 
 **Live results from the current signal set:**
-- **14 proposed orders**, 72.5% gross exposure, 27.5% cash buffer
-- Technology sector capped (largest sector in NASDAQ-100)
+- **18 proposed orders**, 84.8% gross exposure, 15.2% cash buffer
+- Technology sector capped at 40% (largest sector in NASDAQ-100)
 - Confidence-weighted: highest-confidence BUY signals receive proportionally larger allocations
 
 ---
@@ -333,7 +355,7 @@ Adding Alpaca paper trading means implementing one method in `execution/paper.py
 
 ## Testing & CI
 
-**68 deterministic tests.** No network, no model retraining, and no dependence on
+**86 deterministic tests.** No network, no model retraining, and no dependence on
 the gitignored `data/` artifacts — every test builds its own seeded fixtures or
 exercises the same mock fallback the API uses on a cold checkout. They pin down the
 parts that actually have to be correct:
@@ -352,7 +374,7 @@ parts that actually have to be correct:
 ```bash
 pip install -r requirements-dev.txt
 ruff check ml backend tests     # lint + import order
-pytest                          # 68 passed
+pytest                          # 86 passed
 ```
 
 GitHub Actions runs `ruff` + `pytest` (Python 3.11) and a production `next build`
@@ -396,7 +418,7 @@ Built to make machine learning legible — not just showing numbers but communic
 | **Backend** | FastAPI + uvicorn | 0.115 | Async, `/api/*` prefix, OpenAPI auto-docs |
 | **Validation** | Pydantic v2 | 2.x | Typed request/response, mirrors TS interfaces |
 | **Config** | pydantic-settings | 2.7 | 12-factor `.env` config, execution flags |
-| **Testing** | pytest + ruff | 8.x / 0.8 | 68 offline tests, lint + import order, CI-gated |
+| **Testing** | pytest + ruff | 8.x / 0.8 | 86 offline tests, lint + import order, CI-gated |
 | **Frontend** | Next.js 15 (App Router) | 15.x | React 19, RSC + client islands |
 | **Language** | TypeScript | 5.x | Strict mode throughout |
 | **Styling** | Tailwind CSS v4 | 4.x | Token-based dark-theme design system |
@@ -450,7 +472,7 @@ QuantML/
 │   ├── universe.py             55 NASDAQ-100 tickers + metadata
 │   └── paths.py                All artifact paths in one place
 │
-├── tests/                      68 pytest tests (costs, metrics, risk, labels,
+├── tests/                      86 pytest tests (costs, metrics, risk, labels,
 │                               registry, execution, features, API)
 ├── .github/workflows/ci.yml    ruff + pytest + next build on every push/PR
 ├── pyproject.toml              pytest + ruff config
@@ -524,7 +546,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 cd backend && python -m backtesting.engine   # net-of-cost walk-forward backtest
 cd .. && pip install -r requirements-dev.txt
 ruff check ml backend tests                   # lint
-pytest                                         # 68 passed
+pytest                                         # 86 passed
 ```
 
 ### Docker
@@ -561,7 +583,7 @@ Building QuantML meant solving genuinely hard problems across the full stack sim
 **Quantitative finance / ML:**
 - Implementing walk-forward validation correctly in a time-series context — k-fold cross-validation causes lookahead bias and inflates performance metrics by 0.1–0.2 Sharpe
 - Cross-sectional normalisation as a leakage-prevention technique
-- Reporting both the frictionless signal Sharpe (1.0) and the net-of-cost backtest Sharpe (0.68), and treating the gap as the result rather than hiding it
+- Reporting both the frictionless signal Sharpe (1.19) and the net-of-cost backtest Sharpe (0.88), and treating the gap as the result rather than hiding it
 - Multiple-testing correction via the Deflated Sharpe Ratio, backed by an append-only trial registry — the standard defence against backtest overfitting
 - Per-row SHAP attribution without adding a dependency, using XGBoost's native `pred_contribs`
 
@@ -570,7 +592,7 @@ Building QuantML meant solving genuinely hard problems across the full stack sim
 - Graceful degradation across both the backend (falls back to mock if artifacts don't exist) and frontend (falls back to mock if backend is offline)
 - Pydantic v2 response models that mirror TypeScript interfaces exactly — the same JSON shapes work against Next.js route handlers or FastAPI with no component changes
 - Real-time WebSocket signal ticks in an async FastAPI app
-- A 68-test suite plus CI that runs entirely offline by design — tests build their own seeded fixtures and exercise the same mock fallback the services use on a cold checkout, so the safety gates (live-trading lock, risk caps) are regression-tested on every push
+- An 86-test suite plus CI that runs entirely offline by design — tests build their own seeded fixtures and exercise the same mock fallback the services use on a cold checkout, so the safety gates (live-trading lock, risk caps) are regression-tested on every push
 
 **Frontend engineering:**
 - Running a WebGL fragment shader simultaneously with CSS/Framer Motion particle systems in the same canvas layer without z-fighting

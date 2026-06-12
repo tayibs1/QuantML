@@ -55,14 +55,23 @@ export interface RiskSummary {
 }
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
+const API_TIMEOUT_MS = 2000;  // 2 second timeout - if backend is slow, fall back to mock
 
 async function get<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    ...init,
-    headers: { "Content-Type": "application/json", ...init?.headers },
-  });
-  if (!res.ok) throw new Error(`QuantML API ${path} -> ${res.status}`);
-  return (await res.json()) as T;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+
+  try {
+    const res = await fetch(`${BASE}${path}`, {
+      ...init,
+      headers: { "Content-Type": "application/json", ...init?.headers },
+      signal: controller.signal,
+    });
+    if (!res.ok) throw new Error(`QuantML API ${path} -> ${res.status}`);
+    return (await res.json()) as T;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
 export const api = {
@@ -72,7 +81,11 @@ export const api = {
     get<MetricPoint[]>(`/api/equity${range ? `?range=${range}` : ""}`),
   signals: (type?: string) =>
     get<Signal[]>(`/api/signals${type ? `?type=${type}` : ""}`),
-  models: () => get<{ models: ModelRecord[]; featureImportance: unknown[] }>("/api/models"),
+  models: () => get<{
+    models: ModelRecord[];
+    featureImportance: unknown[];
+    experiments?: Array<{ id: string; model: string; metric: string; status: string; time: string }>;
+  }>("/api/models"),
   trades: () => get<Trade[]>("/api/trades"),
   backtests: (config?: BacktestConfig) =>
     get<BacktestResult>("/api/backtests", {

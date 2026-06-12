@@ -20,18 +20,27 @@ import { cn } from "@/lib/utils";
 
 type FeatureImportance = { feature: string; importance: number };
 
-const EXPERIMENTS = [
-  { id: "exp-2055", model: "LSTM experimental", metric: "Sharpe 0.88", status: "running", time: "2h ago" },
-  { id: "exp-2041", model: "XGBoost-v3", metric: "Sharpe 1.02", status: "finished", time: "6d ago" },
-  { id: "exp-2033", model: "LightGBM-v2", metric: "Sharpe 0.96", status: "finished", time: "10d ago" },
-  { id: "exp-1987", model: "Random Forest", metric: "Sharpe 0.74", status: "finished", time: "26d ago" },
-  { id: "exp-1985", model: "Logistic Regression", metric: "Sharpe 0.61", status: "finished", time: "26d ago" },
+type Experiment = {
+  id: string;
+  model: string;
+  metric: string;
+  status: string;
+  time: string;
+  tags?: string[];
+};
+
+// fallback only; the live feed comes from the trial registry via /api/models
+const DEFAULT_EXPERIMENTS: Experiment[] = [
+  { id: "exp-2041", model: "backtest", metric: "Sharpe 0.68", status: "finished", time: "2026-06-09" },
+  { id: "exp-2033", model: "tuning", metric: "Sharpe 1.09", status: "finished", time: "2026-06-09", tags: ["optuna"] },
+  { id: "exp-1987", model: "backtest", metric: "Sharpe 0.61", status: "finished", time: "2026-06-08" },
 ];
 
 export default function ModelsPage() {
   const [models, setModels] = useState<ModelRecord[]>(mockModels);
   const [featureImportance, setFeatureImportance] =
     useState<FeatureImportance[]>(mockFeatureImportance);
+  const [experiments, setExperiments] = useState<Experiment[]>(DEFAULT_EXPERIMENTS);
   const [live, setLive] = useState(false);
 
   useEffect(() => {
@@ -46,6 +55,9 @@ export default function ModelsPage() {
         }
         if (Array.isArray(d.featureImportance) && d.featureImportance.length) {
           setFeatureImportance(d.featureImportance as FeatureImportance[]);
+        }
+        if (Array.isArray(d.experiments) && d.experiments.length) {
+          setExperiments(d.experiments as Experiment[]);
         }
       })
       .catch(() => {
@@ -202,7 +214,7 @@ export default function ModelsPage() {
           </span>
         </div>
         <div className="divide-y divide-white/5">
-          {EXPERIMENTS.map((e, i) => (
+          {experiments.map((e, i) => (
             <motion.div
               key={e.id}
               initial={{ opacity: 0, x: 8 }}

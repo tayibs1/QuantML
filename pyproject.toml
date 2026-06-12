@@ -1,0 +1,28 @@
+# Tooling config for the repo. Intentionally just tool tables - there's no
+# [build-system]/[project] here because QuantML isn't packaged as a wheel; the
+# backend and ml/ are run in place. pytest and ruff read their own sections.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+filterwarnings = [
+    # yfinance/pandas drag in a few deprecation warnings we don't control
+    "ignore::DeprecationWarning",
+    "ignore::FutureWarning",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [".venv", "frontend", "data", "mlruns", "reports"]
+
+[tool.ruff.lint]
+# E/W pycodestyle, F pyflakes, I import-sort, B bugbear, UP pyupgrade
+select = ["E", "F", "I", "W", "B", "UP"]
+# E501 (line length) is enforced loosely; a handful of data-table lines run long
+# on purpose and wrapping them hurts readability more than it helps.
+ignore = ["E501", "B008"]
+
+[tool.ruff.lint.per-file-ignores]
+# star-ish imports and re-exports in package inits
+"**/__init__.py" = ["F401"]

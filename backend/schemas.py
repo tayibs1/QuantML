@@ -7,7 +7,7 @@ setting NEXT_PUBLIC_API_URL — no frontend changes required.
 """
 from __future__ import annotations
 
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -85,7 +85,7 @@ class RiskFlag(BaseModel):
     level: Literal["info", "warning", "critical"]
     title: str
     detail: str
-    metric: Optional[str] = None
+    metric: str | None = None
 
 
 class RagSource(BaseModel):

@@ -24,9 +24,8 @@ import hashlib
 import json
 import math
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Optional
 
 # resolve the path ourselves (repo_root/data/research/trials.jsonl) so importing
 # this module pulls in nothing else from the package
@@ -47,7 +46,7 @@ def log_trial(
     kind: str,
     config: dict,
     metrics: dict,
-    tags: Optional[list[str]] = None,
+    tags: list[str] | None = None,
     notes: str = "",
     path: Path = TRIALS_PATH,
 ) -> dict:
@@ -59,7 +58,7 @@ def log_trial(
     """
     record = {
         "trial_id": uuid.uuid4().hex[:12],
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "kind": kind,
         "config_hash": _config_hash(config),
         "config": config,

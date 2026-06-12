@@ -19,6 +19,7 @@ from pathlib import Path
 
 from config import settings
 from portfolio import RiskParams, propose_orders
+
 from services import store
 
 # Realized-volatility regime windows (trading days) and history length.
@@ -162,10 +163,10 @@ def _regime_cached(mtime: float) -> tuple:
     tail = df.index[-_VOL_POINTS:]
     rows = []
     for t, idx in enumerate(tail):
-        s, l = short.loc[idx], long.loc[idx]
-        if pd.isna(s) or pd.isna(l):
+        short_v, long_v = short.loc[idx], long.loc[idx]
+        if pd.isna(short_v) or pd.isna(long_v):
             continue
-        rows.append((t, round(float(l), 2), round(float(s), 2)))
+        rows.append((t, round(float(long_v), 2), round(float(short_v), 2)))
     return tuple(rows)
 
 
@@ -191,8 +192,6 @@ def _volatility_regime() -> list[dict]:
 def build_risk_summary() -> dict:
     """Aggregate the live proposed book into the risk summary the UI consumes."""
     signals, source = store.get_signals()
-    sector_of = {s["ticker"]: s.get("sector", "Unknown") for s in signals}
-
     result = propose_orders(signals)
     orders = result["orders"]
     summary = result["summary"]

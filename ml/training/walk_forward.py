@@ -32,7 +32,7 @@ from ml import paths
 from ml.features.build import FEATURE_COLS, FEATURE_LABELS
 
 # labels are defined once, over in ml.labels - that's the Y of the problem
-from ml.labels.outperformance import AVOID, BUY, CLASS_TO_SIGNAL, HOLD, make_labels
+from ml.labels.outperformance import BUY, CLASS_TO_SIGNAL, make_labels
 
 N_FOLDS = 6
 INITIAL_TRAIN_FRAC = 0.40

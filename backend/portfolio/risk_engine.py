@@ -14,7 +14,7 @@ deterministic, no side effects, easy to test.
 from __future__ import annotations
 
 from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from execution.base import OrderSide, ProposedOrder
 

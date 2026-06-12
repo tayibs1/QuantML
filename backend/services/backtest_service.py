@@ -16,16 +16,15 @@ mock instead of throwing. The API never goes down over this.
 from __future__ import annotations
 
 import json
-from typing import Optional
 
 import mock_data as mock
+from backtesting.engine import RESULT_CACHE, BacktestConfig, run_backtest
 from portfolio import propose_orders
+
 from services import store
 
-from backtesting.engine import BacktestConfig, RESULT_CACHE, run_backtest
 
-
-def _load() -> Optional[dict]:
+def _load() -> dict | None:
     try:
         if RESULT_CACHE.exists():
             return json.loads(RESULT_CACHE.read_text())
@@ -34,13 +33,13 @@ def _load() -> Optional[dict]:
     return None
 
 
-def get_result() -> tuple[Optional[dict], str]:
+def get_result() -> tuple[dict | None, str]:
     """Latest backtest artifact, or (None, 'mock') if nothing's been produced."""
     data = _load()
     return (data, "live") if data else (None, "mock")
 
 
-def run(config: Optional[dict] = None) -> dict:
+def run(config: dict | None = None) -> dict:
     """Run a backtest with the given config, persist it, fall back on failure.
 
     Fast in the usual case: the slow walk-forward OOS predictions are cached, so

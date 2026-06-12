@@ -24,12 +24,11 @@ from __future__ import annotations
 import asyncio
 import random
 
-from fastapi import APIRouter, FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.middleware.cors import CORSMiddleware
-
 import mock_data as mock
 from config import settings
 from execution import get_execution_adapter
+from fastapi import APIRouter, FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 from portfolio import propose_orders
 from schemas import (
     BacktestRequest,

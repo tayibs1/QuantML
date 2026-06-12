@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import json
 import math
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import joblib
 import numpy as np
@@ -142,7 +142,7 @@ def main() -> None:
     paths.ensure_dirs()
     signals = score()
     payload = {
-        "generatedAt": datetime.now(timezone.utc).isoformat(),
+        "generatedAt": datetime.now(UTC).isoformat(),
         "count": len(signals),
         "signals": signals,
     }

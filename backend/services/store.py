@@ -9,13 +9,12 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Optional
 
 import mock_data as mock
 from config import settings
 
 
-def _load_json(path: Path) -> Optional[dict]:
+def _load_json(path: Path) -> dict | None:
     try:
         if path.exists():
             return json.loads(path.read_text())
@@ -24,7 +23,7 @@ def _load_json(path: Path) -> Optional[dict]:
     return None
 
 
-def get_signals(signal_type: Optional[str] = None) -> tuple[list[dict], str]:
+def get_signals(signal_type: str | None = None) -> tuple[list[dict], str]:
     payload = _load_json(settings.signals_dir / "latest.json")
     if payload and payload.get("signals"):
         data, source = payload["signals"], "live"

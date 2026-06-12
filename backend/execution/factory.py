@@ -1,7 +1,8 @@
 """Select the execution adapter for the configured mode."""
 from __future__ import annotations
 
-from config import Settings, settings as default_settings
+from config import Settings
+from config import settings as default_settings
 
 from .backtest import BacktestExecutionAdapter
 from .base import ExecutionAdapter

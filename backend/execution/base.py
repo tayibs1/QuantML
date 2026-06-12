@@ -9,9 +9,9 @@ touch the signal engine, the risk layer, or the frontend.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -28,7 +28,7 @@ class ProposedOrder(BaseModel):
     ticker: str
     side: OrderSide
     target_weight: float = Field(..., description="Target portfolio weight (0-1).")
-    quantity: Optional[float] = Field(None, description="Shares, if sized.")
+    quantity: float | None = Field(None, description="Shares, if sized.")
     signal: Literal["BUY", "HOLD", "AVOID"]
     confidence: float
     reason: str = ""
@@ -40,7 +40,7 @@ class Fill(BaseModel):
     quantity: float
     price: float
     cost: float = 0.0  # commissions + slippage, in currency
-    timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())
     mode: Mode = "backtest"
 
 

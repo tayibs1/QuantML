@@ -32,12 +32,10 @@ from __future__ import annotations
 import json
 import sys
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
-from pathlib import Path
+from datetime import UTC, datetime
 
 import numpy as np
 import pandas as pd
-
 from config import REPO_ROOT, settings
 from portfolio import RiskParams, propose_orders
 
@@ -298,7 +296,7 @@ def _load_prices() -> tuple[dict, dict]:
     pivot = ohlcv.pivot(index="date", columns="ticker", values="close")
     close = {d: {t: v for t, v in row.items() if pd.notna(v)} for d, row in pivot.to_dict("index").items()}
     bdf = pd.read_parquet(settings.raw_dir / "benchmark.parquet")
-    bench = {d: float(c) for d, c in zip(bdf["date"], bdf["close"])}
+    bench = {d: float(c) for d, c in zip(bdf["date"], bdf["close"], strict=False)}
     return close, bench
 
 
@@ -335,7 +333,7 @@ def run_backtest(
     oos = generate_oos_predictions(force=force_oos)
     close, bench = _load_prices()
     result = simulate(oos, close, bench, cfg)
-    result["generatedAt"] = datetime.now(timezone.utc).isoformat()
+    result["generatedAt"] = datetime.now(UTC).isoformat()
     if log_trial:
         _record_trial(cfg, result)
     return result

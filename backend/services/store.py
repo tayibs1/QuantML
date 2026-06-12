@@ -63,12 +63,52 @@ def get_models() -> tuple[dict, str]:
     card = _load_json(settings.models_dir / "model_card.json")
     if card and card.get("models"):
         real = [_normalise_model(m) for m in card["models"]]
-        real_names = {m.get("name") for m in real}
-        # keep the mock baselines so the registry looks fuller; real champion goes first
-        baselines = [m for m in mock.MODELS if m.get("name") not in real_names]
         fi = _normalise_fi(card.get("featureImportance") or mock.FEATURE_IMPORTANCE)
-        return {"models": real + baselines, "featureImportance": fi}, "live"
-    return {"models": mock.MODELS, "featureImportance": mock.FEATURE_IMPORTANCE}, "mock"
+        # once the baseline comparison has run there are several real models, so
+        # show only those. before that (champion only) pad with mock baselines so
+        # the registry doesn't look bare - but never fake it once real ones exist.
+        if len(real) < 3:
+            names = {m.get("name") for m in real}
+            real = real + [m for m in mock.MODELS if m.get("name") not in names]
+        return {"models": real, "featureImportance": fi, "experiments": recent_trials()}, "live"
+    return {
+        "models": mock.MODELS,
+        "featureImportance": mock.FEATURE_IMPORTANCE,
+        "experiments": recent_trials(),
+    }, "mock"
+
+
+def recent_trials(limit: int = 8) -> list[dict]:
+    """Format the most recent entries from the trial registry as experiment rows.
+
+    The registry (data/research/trials.jsonl) is the real append-only log every
+    backtest and tuning run writes to. Reading it straight off disk keeps the
+    backend from importing the ML side - it's just an artifact like any other.
+    Empty/absent file falls back to the seeded experiments so the panel isn't bare.
+    """
+    path = settings.data_dir / "research" / "trials.jsonl"
+    try:
+        lines = [ln for ln in path.read_text(encoding="utf-8").splitlines() if ln.strip()]
+    except OSError:
+        return list(mock.EXPERIMENTS)
+    rows = []
+    for ln in lines[-limit:]:
+        try:
+            t = json.loads(ln)
+        except json.JSONDecodeError:
+            continue
+        metrics = t.get("metrics", {})
+        sharpe = metrics.get("sharpe")
+        rows.append({
+            "id": t.get("trial_id", "")[:8] or "trial",
+            "model": t.get("kind", "trial"),
+            "metric": f"Sharpe {sharpe:.2f}" if isinstance(sharpe, int | float) else "-",
+            "status": "finished",
+            "time": (t.get("timestamp") or "")[:10],
+            "tags": t.get("tags", []),
+        })
+    rows.reverse()  # newest first
+    return rows or list(mock.EXPERIMENTS)
 
 
 def signals_meta() -> dict:

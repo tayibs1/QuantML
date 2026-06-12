@@ -89,6 +89,13 @@ FEATURE_IMPORTANCE = [
     {"feature": "Liquidity score", "importance": 0.041},
 ]
 
+# fallback experiment feed for when the trial registry is empty (fresh checkout)
+EXPERIMENTS = [
+    {"id": "exp-2041", "model": "backtest", "metric": "Sharpe 0.68", "status": "finished", "time": "2026-06-09", "tags": []},
+    {"id": "exp-2033", "model": "tuning", "metric": "Sharpe 1.09", "status": "finished", "time": "2026-06-09", "tags": ["optuna"]},
+    {"id": "exp-1987", "model": "backtest", "metric": "Sharpe 0.61", "status": "finished", "time": "2026-06-08", "tags": []},
+]
+
 
 # --- trades ---
 def trades() -> list[dict]:

@@ -62,14 +62,14 @@ def root():
 # --- health / status ---
 @api.get("/health")
 def health():
-    _, source = store.get_signals()
+    # fast check: no disk I/O. signals source becomes "unknown" until a real signals call
+    # hits /api/signals and populates the cache. this keeps health fast (<1ms).
     return {
         "status": "operational",
         "model": settings.default_model,
         "universe": settings.universe,
         "paperMode": settings.trading_mode == "paper",
         "version": "0.2.0",
-        "signalsSource": source,             # "live" once the pipeline has run
         "executionMode": settings.execution_mode,
         "liveTradingEnabled": settings.live_trading_enabled,
     }

@@ -7,7 +7,7 @@ explainable ML signals, portfolio construction, and a live full-stack dashboard.
 
 <br/>
 
-[![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
 [![Next.js](https://img.shields.io/badge/Next.js-15-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
@@ -16,7 +16,9 @@ explainable ML signals, portfolio construction, and a live full-stack dashboard.
 [![Status](https://img.shields.io/badge/Status-Research_Phase-14b8a6?style=flat-square)](.)
 [![Execution](https://img.shields.io/badge/Execution-Backtest_Only-6366f1?style=flat-square)](.)
 [![Live Trading](https://img.shields.io/badge/Live_Trading-Disabled-ef4444?style=flat-square)](.)
-[![OOS Sharpe](https://img.shields.io/badge/Walk--Forward_Sharpe-1.0-22c55e?style=flat-square)](.)
+[![Tests](https://img.shields.io/badge/tests-68_passing-22c55e?style=flat-square)](.)
+[![Signal Sharpe](https://img.shields.io/badge/Signal_Sharpe-1.0-22c55e?style=flat-square)](.)
+[![Net-of-cost Sharpe](https://img.shields.io/badge/Net--of--cost_Sharpe-0.68-eab308?style=flat-square)](.)
 [![OOS AUC](https://img.shields.io/badge/Walk--Forward_AUC-0.547-22c55e?style=flat-square)](.)
 
 <br/>
@@ -39,24 +41,63 @@ The system enforces a strict architectural principle: **the ML model can never d
 
 ---
 
-## Real Model Performance
+## Performance — Two Honest Lenses
 
-All metrics are from **6-fold expanding walk-forward cross-validation**. The model never saw future data during training or evaluation.
+Two numbers get reported here, because they answer two different questions.
+Conflating them is exactly how backtests lie.
 
-| Metric | Value | What It Means |
+### 1. Signal quality — does the model rank names better than chance?
+
+Measured on the raw BUY basket: equal-weighted, non-overlapping 5-day forward
+returns, **no costs, no position sizing**. This isolates the model's predictive
+edge. All from 6-fold expanding walk-forward cross-validation — no fold ever sees
+its own future.
+
+| Metric | Value | What it means |
 |---|---|---|
-| **Walk-Forward Sharpe** | **1.00** | Annualised, out-of-sample only |
-| **Walk-Forward CAGR** | **26.7%** | Strategy return, OOS; QQQ ~18% same period |
-| **BUY Signal Hit Rate** | **53.2%** | 53% of BUY calls outperform over the next 5 days |
+| **Walk-forward Sharpe** | **1.00** | annualised, out-of-sample only (frictionless basket) |
 | **Classification AUC** | **0.547** | vs 0.500 random — a real, modest, non-overfit edge |
-| **OOS Accuracy** | **37.3%** | vs 33.3% chance (3-class BUY/HOLD/AVOID) |
-| **Max Drawdown** | **−34.9%** | Full drawdown shown, not cherry-picked windows |
-| **Training Universe** | **55 names** | Curated NASDAQ-100 liquid subset |
-| **Data** | **117,561 bars** | Daily OHLCV, 2018–2026, adjusted for splits/dividends |
-| **Features** | **24 causal** | Cross-sectionally z-scored to prevent data leakage |
-| **Live Signals** | **56 names** | 14 BUY · 33 HOLD · 9 AVOID as of last run |
+| **OOS accuracy** | **37.3%** | vs 33.3% chance (3-class BUY/HOLD/AVOID) |
+| **BUY hit rate** | **53.2%** | share of BUY calls with a positive 5-day return |
+| **Basket max drawdown** | **−34.9%** | full history, not a cherry-picked window |
 
-> **Why AUC 0.547 is actually impressive in context:** A 3-class stock prediction problem on the 5-day forward return is extraordinarily hard. Academic literature typically cites 0.52–0.56 as statistically significant. An AUC of 0.65+ on a large universe almost always indicates lookahead bias.
+> A 3-class stock-direction problem on the 5-day forward return is genuinely hard.
+> The literature treats AUC 0.52–0.56 as statistically significant; an AUC of 0.65+
+> on a large universe almost always means lookahead bias has crept in.
+
+### 2. Net-of-cost backtest — would it have made money after frictions?
+
+The same out-of-sample signals, run through the **live risk engine** (confidence/
+volatility sizing, 20% name cap, 40% sector cap, 100% gross cap) and a
+**transaction-cost model** (5 bps commission + 8 bps slippage = 13 bps round-trip,
+charged on turnover). This is the honest, deployable number — the default config,
+reproducible with `cd backend && python -m backtesting.engine`.
+
+| Metric | Strategy | QQQ (buy & hold) |
+|---|---|---|
+| **CAGR** | **13.98%** | 15.68% |
+| **Total return** | **78.4%** | 90.5% |
+| **Sharpe** | **0.68** | — |
+| **Sortino** | 0.95 | — |
+| **Max drawdown** | −37.4% | — |
+| **Volatility (ann.)** | 23.3% | — |
+| **Win rate / profit factor** | 58.8% / 1.47 | — |
+| **Beta to QQQ** | 0.94 | — |
+| **Trades** | 1,524 over 224 weekly rebalances | — |
+
+> Window 2021-12 → 2026-05 (the out-of-sample span of the walk-forward folds).
+
+**Why the Sharpe drops from 1.00 to 0.68 — and why that's the whole point.** The
+signal Sharpe is an idealised, frictionless equal-weight basket (its paper CAGR is
+26.7%). The backtest then *pays for realism*: transaction costs on ~3,800%/yr
+turnover, position sizing that holds cash when conviction is low, and the
+name/sector caps — which pulls the deployable CAGR down to ~14%. Reporting both,
+and showing the gap rather than hiding it, **is** the methodology. A backtest that
+matched the frictionless number would be the red flag.
+
+**Universe & data:** 55 curated NASDAQ-100 names · 117,561 daily OHLCV bars
+(2018–2026, split/dividend adjusted) · 24 causal, cross-sectionally z-scored
+features · 56 live signals on the latest cross-section (14 BUY · 33 HOLD · 9 AVOID).
 
 ---
 
@@ -92,7 +133,8 @@ The platform is built in three strict, independently deployable layers:
 ║             ──►  /api/portfolio        ← signals → proposed orders   ║
 ║             ──►  /api/execution        ← backtest fills preview      ║
 ║             ──►  /api/ws/signals       ← WebSocket real-time ticks   ║
-║             ──►  /api/metrics|equity   ← (backtest engine: roadmap)  ║
+║             ──►  /api/backtests        ← REAL walk-forward engine    ║
+║             ──►  /api/metrics|equity   ← REAL net-of-cost backtest   ║
 ║                                                                      ║
 ║   Signal Engine  →  Portfolio/Risk Engine  →  Execution Adapter      ║
 ║   (ml/inference)    (risk_engine.py)          backtest ✓             ║
@@ -238,6 +280,36 @@ Adding Alpaca paper trading means implementing one method in `execution/paper.py
 
 ---
 
+## Testing & CI
+
+**68 deterministic tests.** No network, no model retraining, and no dependence on
+the gitignored `data/` artifacts — every test builds its own seeded fixtures or
+exercises the same mock fallback the API uses on a cold checkout. They pin down the
+parts that actually have to be correct:
+
+| Area | What's asserted |
+|---|---|
+| **Cost model** | commission + slippage charged on turnover; turnover accounting |
+| **Performance metrics** | Sharpe / drawdown / CAGR against hand-checked closed forms |
+| **Risk engine** | 20% name cap, 40% sector cap, 100% gross cap, BUY-only sizing |
+| **Labels** | cross-sectional terciles, concurrency-based sample weights, triple-barrier |
+| **Trial registry** | append-only log; PSR rises with track record; DSR is stricter than PSR |
+| **Execution** | backtest fills include slippage; **live mode blocked unless explicitly enabled** |
+| **Features** | the forward target is genuinely forward; cross-sectional z-score is standardised |
+| **API** | every endpoint's shape + the live-trading-disabled safety contract |
+
+```bash
+pip install -r requirements-dev.txt
+ruff check ml backend tests     # lint + import order
+pytest                          # 68 passed
+```
+
+GitHub Actions runs `ruff` + `pytest` (Python 3.11) and a production `next build`
+(which also runs the TypeScript and ESLint checks) on every push and PR —
+see [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+
+---
+
 ## Frontend
 
 Built to make machine learning legible — not just showing numbers but communicating confidence, uncertainty, and the *reasoning* behind each call.
@@ -248,7 +320,7 @@ Built to make machine learning legible — not just showing numbers but communic
 | **`/dashboard`** | Portfolio KPIs, equity curve vs QQQ benchmark, top signals table, risk alerts |
 | **`/models`** | Model registry with walk-forward metrics, feature importance chart (real SHAP values), experiment log |
 | **`/risk`** | Exposure by asset and sector (donut charts), volatility regime, risk budget gauges, position sizing rules |
-| **`/backtests`** | Monthly returns heatmap, drawdown chart, trade ledger |
+| **`/backtests`** | Live walk-forward engine — equity curve, drawdown, monthly heatmap, trade ledger; rerun with custom costs/rebalance |
 | **`/research`** | RAG research assistant — LLM-ready interface, stubbed for future integration |
 
 ### UI Technical Highlights
@@ -273,6 +345,7 @@ Built to make machine learning legible — not just showing numbers but communic
 | **Backend** | FastAPI + uvicorn | 0.115 | Async, `/api/*` prefix, OpenAPI auto-docs |
 | **Validation** | Pydantic v2 | 2.x | Typed request/response, mirrors TS interfaces |
 | **Config** | pydantic-settings | 2.7 | 12-factor `.env` config, execution flags |
+| **Testing** | pytest + ruff | 8.x / 0.8 | 68 offline tests, lint + import order, CI-gated |
 | **Frontend** | Next.js 15 (App Router) | 15.x | React 19, RSC + client islands |
 | **Language** | TypeScript | 5.x | Strict mode throughout |
 | **Styling** | Tailwind CSS v4 | 4.x | Token-based dark-theme design system |
@@ -316,18 +389,27 @@ QuantML/
 │   ├── schemas.py              Pydantic models (mirrors TS interfaces)
 │   └── main.py                 All routes under /api/*
 │
-├── ml/                         Four-stage pipeline
+├── ml/                         ML pipeline + research bookkeeping
 │   ├── ingestion/download.py   Yahoo chart API → ohlcv.parquet
 │   ├── features/build.py       24 features + cross-sectional z-score
+│   ├── labels/                 explicit labels: outperformance + triple-barrier
 │   ├── training/walk_forward.py 6-fold expanding window XGBoost
 │   ├── inference/score.py      Latest cross-section → signals JSON
+│   ├── research/               trial registry + deflated Sharpe (anti-overfit)
 │   ├── universe.py             55 NASDAQ-100 tickers + metadata
 │   └── paths.py                All artifact paths in one place
 │
+├── tests/                      68 pytest tests (costs, metrics, risk, labels,
+│                               registry, execution, features, API)
+├── .github/workflows/ci.yml    ruff + pytest + next build on every push/PR
+├── pyproject.toml              pytest + ruff config
+├── requirements-dev.txt        pytest, httpx, ruff
+│
 ├── data/                       Pipeline artifacts (gitignored)
 │   ├── raw/ohlcv.parquet        117,561 rows
-│   ├── processed/features.parquet  103,494 rows, 24 features
+│   ├── processed/features.parquet  24 features, cross-sectionally z-scored
 │   ├── models/xgb_signal.joblib + model_card.json
+│   ├── backtests/latest.json    net-of-cost walk-forward result
 │   └── signals/latest.json      56 live signals (BUY/HOLD/AVOID + SHAP)
 │
 ├── docker-compose.yml
@@ -340,7 +422,7 @@ QuantML/
 ## Quickstart
 
 ### Prerequisites
-Python 3.12+, Node.js 20+
+Python 3.11+, Node.js 20+
 
 ### 1 — Python environment
 
@@ -385,6 +467,15 @@ To connect the frontend to real data:
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
+### 5 — Run the backtest and the tests
+
+```bash
+cd backend && python -m backtesting.engine   # net-of-cost walk-forward backtest
+cd .. && pip install -r requirements-dev.txt
+ruff check ml backend tests                   # lint
+pytest                                         # 68 passed
+```
+
 ### Docker
 
 ```bash
@@ -419,7 +510,8 @@ Building QuantML meant solving genuinely hard problems across the full stack sim
 **Quantitative finance / ML:**
 - Implementing walk-forward validation correctly in a time-series context — k-fold cross-validation causes lookahead bias and inflates performance metrics by 0.1–0.2 Sharpe
 - Cross-sectional normalisation as a leakage-prevention technique
-- Getting honest performance numbers — the willingness to report AUC 0.547 rather than 0.71 is itself a signal of methodology discipline
+- Reporting both the frictionless signal Sharpe (1.0) and the net-of-cost backtest Sharpe (0.68), and treating the gap as the result rather than hiding it
+- Multiple-testing correction via the Deflated Sharpe Ratio, backed by an append-only trial registry — the standard defence against backtest overfitting
 - Per-row SHAP attribution without adding a dependency, using XGBoost's native `pred_contribs`
 
 **Backend architecture:**
@@ -427,6 +519,7 @@ Building QuantML meant solving genuinely hard problems across the full stack sim
 - Graceful degradation across both the backend (falls back to mock if artifacts don't exist) and frontend (falls back to mock if backend is offline)
 - Pydantic v2 response models that mirror TypeScript interfaces exactly — the same JSON shapes work against Next.js route handlers or FastAPI with no component changes
 - Real-time WebSocket signal ticks in an async FastAPI app
+- A 68-test suite plus CI that runs entirely offline by design — tests build their own seeded fixtures and exercise the same mock fallback the services use on a cold checkout, so the safety gates (live-trading lock, risk caps) are regression-tested on every push
 
 **Frontend engineering:**
 - Running a WebGL fragment shader simultaneously with CSS/Framer Motion particle systems in the same canvas layer without z-fighting

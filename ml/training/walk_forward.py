@@ -20,6 +20,7 @@ Writes:
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from datetime import date
 
 import joblib
@@ -37,6 +38,9 @@ from ml.labels.outperformance import BUY, CLASS_TO_SIGNAL, make_labels
 N_FOLDS = 6
 INITIAL_TRAIN_FRAC = 0.40
 SEED = 42
+
+# anything with .fit(X, y) and .predict_proba(X) plugs into walk_forward()
+ModelFactory = Callable[[], object]
 
 XGB_PARAMS = dict(
     n_estimators=300,
@@ -60,8 +64,20 @@ def _new_model() -> XGBClassifier:
     return XGBClassifier(**XGB_PARAMS)
 
 
-def walk_forward(d: pd.DataFrame) -> pd.DataFrame:
-    """Expanding-window OOS predictions across the timeline."""
+def walk_forward(
+    d: pd.DataFrame,
+    model_factory: ModelFactory = _new_model,
+    feature_cols: list[str] | None = None,
+    verbose: bool = True,
+) -> pd.DataFrame:
+    """Expanding-window OOS predictions across the timeline.
+
+    model_factory lets the same fold logic drive any classifier (the baselines
+    reuse it for an apples-to-apples comparison). feature_cols defaults to the
+    full set but can be narrowed for the ablation study. The point is that every
+    model is judged on identical train/test splits - nothing else moves.
+    """
+    cols = feature_cols or FEATURE_COLS
     dates = np.array(sorted(d["date"].unique()))
     n = len(dates)
     start = int(n * INITIAL_TRAIN_FRAC)
@@ -81,15 +97,16 @@ def walk_forward(d: pd.DataFrame) -> pd.DataFrame:
         if tr.empty or te.empty:
             continue
 
-        model = _new_model()
-        model.fit(tr[FEATURE_COLS], tr["label"])
-        proba = model.predict_proba(te[FEATURE_COLS])
+        model = model_factory()
+        model.fit(tr[cols], tr["label"])
+        proba = model.predict_proba(te[cols])
         out = te[["date", "ticker", "fwd_ret_5", "label"]].copy()
         out["pred"] = proba.argmax(1)
         out["p_avoid"], out["p_hold"], out["p_buy"] = proba[:, 0], proba[:, 1], proba[:, 2]
         rows.append(out)
-        print(f"  fold {k + 1}/{N_FOLDS}: train {len(tr):,} → test {len(te):,} "
-              f"({min(te_dates).date()}…{max(te_dates).date()})")
+        if verbose:
+            print(f"  fold {k + 1}/{N_FOLDS}: train {len(tr):,} → test {len(te):,} "
+                  f"({min(te_dates).date()}…{max(te_dates).date()})")
 
     return pd.concat(rows, ignore_index=True)
 
@@ -189,7 +206,8 @@ def main() -> None:
                 "maxDrawdown": round(strat_m["maxDrawdown"] * 100, 1),
                 "drift": "Low",
                 "auc": clf_m["auc"],
-                "accuracy": round(clf_m["accuracy"] * 100, 1),
+                # fraction, not percent - the frontend multiplies by 100 to display
+                "accuracy": round(clf_m["accuracy"], 4),
                 "features": len(FEATURE_COLS),
                 "lastTrained": today,
                 "experimentId": f"exp-{today}-xgb",

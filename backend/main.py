@@ -127,7 +127,8 @@ def execution_preview():
     try:
         result = adapter.submit(proposed, store.latest_prices())
         return {"source": source, "result": result.model_dump()}
-    except NotImplementedError as e:
+    except (NotImplementedError, RuntimeError) as e:
+        # paper without creds / live without sign-off: report, don't 500
         return {"source": source, "result": None, "note": str(e), "adapter": adapter.health()}
 
 

@@ -4,7 +4,7 @@ Execution layer.
 The only place an order can actually be acted on. Picked by EXECUTION_MODE:
 
     backtest -> BacktestExecutionAdapter  (simulated fills, implemented)
-    paper    -> PaperExecutionAdapter     (Alpaca paper, stub interface)
+    paper    -> PaperExecutionAdapter     (Alpaca paper, implemented)
     live     -> LiveExecutionAdapter      (real orders, off by design)
 
 Neither the signal engine nor the frontend ever import or call an adapter

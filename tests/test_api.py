@@ -32,6 +32,16 @@ def test_health_reports_execution_safety(client):
     assert body["executionMode"] in {"backtest", "paper", "live"}
 
 
+def test_monitoring_endpoint_degrades_cleanly(client):
+    # Before the pipeline runs (no artifacts in CI), monitoring must 200 with
+    # null payloads and an "unknown" status rather than erroring.
+    r = client.get("/api/monitoring")
+    assert r.status_code == 200
+    body = r.json()
+    assert set(body) >= {"dataHealth", "drift", "status"}
+    assert set(body["status"]) >= {"data", "drift"}
+
+
 def test_signals_shape(client):
     r = client.get("/api/signals")
     assert r.status_code == 200

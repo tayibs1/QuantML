@@ -22,7 +22,9 @@ Point the frontend at it via frontend/.env.local:
 from __future__ import annotations
 
 import asyncio
+import json
 import random
+from pathlib import Path
 
 import mock_data as mock
 from config import settings
@@ -54,6 +56,14 @@ app.add_middleware(
 api = APIRouter(prefix="/api")
 
 
+def _read_json(path: Path) -> dict | None:
+    """Best-effort read of a pipeline artifact; None if missing or unreadable."""
+    try:
+        return json.loads(path.read_text())
+    except (FileNotFoundError, ValueError, OSError):
+        return None
+
+
 @app.get("/")
 def root():
     return {"name": "QuantML API", "version": "0.2.0", "docs": "/docs", "api": "/api"}
@@ -72,6 +82,27 @@ def health():
         "version": "0.2.0",
         "executionMode": settings.execution_mode,
         "liveTradingEnabled": settings.live_trading_enabled,
+    }
+
+
+# --- monitoring: data-quality gate + feature drift, for the ops/dashboard view ---
+@api.get("/monitoring")
+def monitoring():
+    """Pipeline health: latest data-quality report + feature-drift (PSI) status.
+
+    Reads the artifacts the pipeline's validate/drift stages write. Returns nulls
+    (not an error) before the pipeline has run, so the dashboard degrades cleanly.
+    """
+    research = settings.data_dir / "research"
+    data_health = _read_json(research / "data_health.json")
+    drift = _read_json(research / "drift.json")
+    return {
+        "dataHealth": data_health,
+        "drift": drift,
+        "status": {
+            "data": "ok" if (data_health or {}).get("ok") else "unknown",
+            "drift": (drift or {}).get("overall", "unknown"),
+        },
     }
 
 

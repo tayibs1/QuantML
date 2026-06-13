@@ -43,9 +43,11 @@ Research            Production          Paper trading       Live trading
 | Execution: **live** adapter | 🔒 | Refuses to construct unless explicitly enabled |
 | FastAPI backend + Next.js dashboard | ✅ | Graceful mock fallback both sides |
 | CI (ruff + pytest + next build) | ✅ | Runs fully offline |
-| Scheduled retrain / daily scoring | ⏭️ | Phase 1 |
-| Live model monitoring + drift alerts | ⏭️ | Phase 1 |
-| Paper P&L reconciliation + track record | ⏭️ | Phase 2 |
+| Data-quality gates (schema/rows/freshness) | ✅ | Blocks promotion on critical failure |
+| Feature-drift monitoring (PSI) | ✅ | OK/WARN/ALERT, served at `/api/monitoring` |
+| Pipeline orchestrator + scheduled CI | ✅ | Staged graph with the gate inline |
+| Model registry / versioning | ⏭️ | Phase 1 |
+| Live-vs-backtest tracking + P&L reconciliation | ⏭️ | Phase 2 (needs paper feed) |
 | Live risk controls + kill switch | 🔒 | Phase 3 |
 
 ---
@@ -68,18 +70,25 @@ The credibility base. Everything downstream inherits its honesty from here.
 
 Turn the research repo into a system that runs itself reliably.
 
-- [ ] **Scheduled pipeline** — nightly ingest → feature build → score; weekly retrain.
-      (Airflow/Prefect or a thin cron + idempotent scripts.)
-- [ ] **Model registry + versioning** — promote/rollback champions through MLflow with
-      the trial registry as the gate (no promotion that fails DSR).
-- [ ] **Monitoring & drift** — feature-distribution drift (PSI), live-vs-backtest
-      tracking error, calibration decay; alert when the edge degrades.
-- [ ] **Observability** — structured logs, request tracing, a `/metrics` Prometheus
-      endpoint, and dashboards for pipeline health.
-- [ ] **Data quality gates** — schema/row-count/staleness checks before any artifact
-      is promoted; fail loud, never score on bad data.
-- [ ] **Containerised deploy** — the existing `docker-compose` extended to a one-command
-      cloud deploy (backend + frontend + scheduler).
+- [x] **Data quality gates** — `ml/validation.py` runs schema / row-count / finite-value /
+      staleness checks and `gate()` blocks promotion on any *critical* failure (never
+      train or score on bad data). The report is served at `/api/monitoring`.
+- [x] **Feature-drift monitoring** — `ml/research/drift.py` computes per-feature **PSI**
+      (latest cross-section vs the historical reference window), grading each OK / WARN /
+      ALERT, written to `drift.json` and surfaced at `/api/monitoring`.
+- [x] **Pipeline orchestrator + schedule** — `ml/pipeline.py` runs the staged graph
+      (`ingest → features → validate → train → score → drift`) with the data-quality gate
+      wired *between* feature-build and training, structured logging, and stage selection;
+      `.github/workflows/pipeline.yml` runs the daily score/drift cadence (a real run is
+      gated on the data feed + Alpaca secrets).
+- [ ] **Model registry + versioning** — promote/rollback champions (MLflow, or extend the
+      existing trial registry) with the Deflated Sharpe Ratio as the promotion gate.
+- [ ] **Full observability** — request tracing and a Prometheus `/metrics` endpoint
+      (structured pipeline logging is already in; this extends it).
+- [ ] **Live-vs-backtest tracking** — tracking error / calibration decay against the paper
+      account (lands with Phase 2, once there's a live feed to compare to).
+- [ ] **Containerised one-command deploy** — extend `docker-compose` to a cloud deploy
+      (backend + frontend + scheduler).
 
 ---
 

@@ -16,7 +16,7 @@ explainable ML signals, portfolio construction, and a live full-stack dashboard.
 [![Status](https://img.shields.io/badge/Status-Research_Phase-14b8a6?style=flat-square)](.)
 [![Execution](https://img.shields.io/badge/Execution-Backtest_Only-6366f1?style=flat-square)](.)
 [![Live Trading](https://img.shields.io/badge/Live_Trading-Disabled-ef4444?style=flat-square)](.)
-[![Tests](https://img.shields.io/badge/tests-90_passing-22c55e?style=flat-square)](.)
+[![Tests](https://img.shields.io/badge/tests-110_passing-22c55e?style=flat-square)](.)
 [![Signal Sharpe](https://img.shields.io/badge/Signal_Sharpe-1.19-22c55e?style=flat-square)](.)
 [![Net-of-cost Sharpe](https://img.shields.io/badge/Net--of--cost_Sharpe-0.88-eab308?style=flat-square)](.)
 [![OOS AUC](https://img.shields.io/badge/Walk--Forward_AUC-0.540-22c55e?style=flat-square)](.)
@@ -362,7 +362,7 @@ the [Roadmap](ROADMAP.md)).
 
 ## Testing & CI
 
-**90 deterministic tests.** No network, no model retraining, and no dependence on
+**110 deterministic tests.** No network, no model retraining, and no dependence on
 the gitignored `data/` artifacts — every test builds its own seeded fixtures or
 exercises the same mock fallback the API uses on a cold checkout. They pin down the
 parts that actually have to be correct:
@@ -381,12 +381,43 @@ parts that actually have to be correct:
 ```bash
 pip install -r requirements-dev.txt
 ruff check ml backend tests     # lint + import order
-pytest                          # 90 passed
+pytest                          # 110 passed
 ```
 
 GitHub Actions runs `ruff` + `pytest` (Python 3.11) and a production `next build`
 (which also runs the TypeScript and ESLint checks) on every push and PR —
 see [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+
+---
+
+## Production Hardening (MLOps)
+
+The research is only trustworthy if the system that produces it is. Phase 1 of the
+[Roadmap](ROADMAP.md) adds the operational layer most portfolio projects skip:
+
+- **Data-quality gates** (`ml/validation.py`) — every artifact is checked for schema,
+  row count, finite values and staleness *before* anything consumes it; a critical
+  failure raises and **blocks promotion**, so the pipeline never trains or scores on bad
+  data. Fail loud, not silently wrong.
+- **Feature-drift monitoring** (`ml/research/drift.py`) — per-feature **Population
+  Stability Index** of the latest cross-section vs the historical reference window, graded
+  OK / WARN / ALERT. This answers the question that decides whether a signal is even worth
+  trusting: *is the model still operating in-domain?*
+- **Pipeline orchestrator** (`ml/pipeline.py`) — one entry point runs the staged graph
+  `ingest → features → validate → train → score → drift`, with the data-quality gate wired
+  *between* feature-build and training, structured logging, and stage selection
+  (`--start`, `--only`, `--dry-run`) for a cheap daily path vs. a full weekly retrain.
+- **Scheduled cadence** ([`pipeline.yml`](.github/workflows/pipeline.yml)) — a cron
+  workflow runs the daily score/drift path after the US close; a real run is gated on the
+  data feed and Alpaca secrets.
+- **Monitoring endpoint** — `GET /api/monitoring` serves the latest data-health report and
+  drift status for the dashboard, degrading cleanly to nulls before the pipeline has run.
+
+```bash
+python -m ml.pipeline --dry-run        # print the stage plan
+python -m ml.pipeline --only validate  # run just the data-quality gate
+python -m ml.research.drift            # compute feature-drift PSI report
+```
 
 ---
 
@@ -425,7 +456,7 @@ Built to make machine learning legible — not just showing numbers but communic
 | **Backend** | FastAPI + uvicorn | 0.115 | Async, `/api/*` prefix, OpenAPI auto-docs |
 | **Validation** | Pydantic v2 | 2.x | Typed request/response, mirrors TS interfaces |
 | **Config** | pydantic-settings | 2.7 | 12-factor `.env` config, execution flags |
-| **Testing** | pytest + ruff | 8.x / 0.8 | 90 offline tests, lint + import order, CI-gated |
+| **Testing** | pytest + ruff | 8.x / 0.8 | 110 offline tests, lint + import order, CI-gated |
 | **Frontend** | Next.js 15 (App Router) | 15.x | React 19, RSC + client islands |
 | **Language** | TypeScript | 5.x | Strict mode throughout |
 | **Styling** | Tailwind CSS v4 | 4.x | Token-based dark-theme design system |
@@ -475,11 +506,13 @@ QuantML/
 │   ├── labels/                 explicit labels: outperformance + triple-barrier
 │   ├── training/walk_forward.py 6-fold expanding window XGBoost
 │   ├── inference/score.py      Latest cross-section → signals JSON
-│   ├── research/               trial registry + deflated Sharpe (anti-overfit)
+│   ├── research/               trial registry, regime, ablation, drift (PSI)
+│   ├── validation.py           Data-quality gates (block promotion on bad data)
+│   ├── pipeline.py             Staged orchestrator (ingest→…→drift) + data gate
 │   ├── universe.py             55 NASDAQ-100 tickers + metadata
 │   └── paths.py                All artifact paths in one place
 │
-├── tests/                      90 pytest tests (costs, metrics, risk, labels,
+├── tests/                      110 pytest tests (costs, metrics, risk, labels,
 │                               registry, execution, features, API)
 ├── .github/workflows/ci.yml    ruff + pytest + next build on every push/PR
 ├── pyproject.toml              pytest + ruff config
@@ -553,7 +586,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 cd backend && python -m backtesting.engine   # net-of-cost walk-forward backtest
 cd .. && pip install -r requirements-dev.txt
 ruff check ml backend tests                   # lint
-pytest                                         # 90 passed
+pytest                                         # 110 passed
 ```
 
 ### Docker
@@ -599,7 +632,7 @@ Building QuantML meant solving genuinely hard problems across the full stack sim
 - Graceful degradation across both the backend (falls back to mock if artifacts don't exist) and frontend (falls back to mock if backend is offline)
 - Pydantic v2 response models that mirror TypeScript interfaces exactly — the same JSON shapes work against Next.js route handlers or FastAPI with no component changes
 - Real-time WebSocket signal ticks in an async FastAPI app
-- A 90-test suite plus CI that runs entirely offline by design — tests build their own seeded fixtures and exercise the same mock fallback the services use on a cold checkout, so the safety gates (live-trading lock, risk caps) are regression-tested on every push
+- A 110-test suite plus CI that runs entirely offline by design — tests build their own seeded fixtures and exercise the same mock fallback the services use on a cold checkout, so the safety gates (live-trading lock, risk caps) are regression-tested on every push
 
 **Frontend engineering:**
 - Running a WebGL fragment shader simultaneously with CSS/Framer Motion particle systems in the same canvas layer without z-fighting

@@ -106,6 +106,21 @@ def monitoring():
     }
 
 
+# --- validation: robustness research (rolling-window, window sweep, …) ---
+@api.get("/validation")
+def validation():
+    """Realism/robustness studies served from data/research/*.json.
+
+    Aggregates the validation artifacts the ml.research scripts write. Each key is
+    null until its study has run, so the page degrades cleanly on a cold checkout.
+    """
+    research = settings.data_dir / "research"
+    return {
+        "rollingWindow": _read_json(research / "rolling_window.json"),
+        "windowComparison": _read_json(research / "window_comparison.json"),
+    }
+
+
 # --- signals: real, from model.predict_proba via the ml/inference artifacts ---
 @api.get("/signals", response_model=list[Signal])
 def signals(type: str | None = None):

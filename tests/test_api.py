@@ -42,6 +42,13 @@ def test_monitoring_endpoint_degrades_cleanly(client):
     assert set(body["status"]) >= {"data", "drift"}
 
 
+def test_validation_endpoint_degrades_cleanly(client):
+    r = client.get("/api/validation")
+    assert r.status_code == 200
+    body = r.json()
+    assert set(body) >= {"rollingWindow", "windowComparison"}
+
+
 def test_signals_shape(client):
     r = client.get("/api/signals")
     assert r.status_code == 200

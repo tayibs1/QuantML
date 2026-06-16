@@ -118,6 +118,8 @@ def validation():
     return {
         "rollingWindow": _read_json(research / "rolling_window.json"),
         "windowComparison": _read_json(research / "window_comparison.json"),
+        "regimeModels": _read_json(research / "regime_models.json"),
+        "ood": _read_json(research / "ood.json"),
     }
 
 

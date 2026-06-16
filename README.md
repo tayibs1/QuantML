@@ -16,7 +16,7 @@ explainable ML signals, portfolio construction, and a live full-stack dashboard.
 [![Status](https://img.shields.io/badge/Status-Research_Phase-14b8a6?style=flat-square)](.)
 [![Execution](https://img.shields.io/badge/Execution-Backtest_Only-6366f1?style=flat-square)](.)
 [![Live Trading](https://img.shields.io/badge/Live_Trading-Disabled-ef4444?style=flat-square)](.)
-[![Tests](https://img.shields.io/badge/tests-110_passing-22c55e?style=flat-square)](.)
+[![Tests](https://img.shields.io/badge/tests-125_passing-22c55e?style=flat-square)](.)
 [![Signal Sharpe](https://img.shields.io/badge/Signal_Sharpe-1.19-22c55e?style=flat-square)](.)
 [![Net-of-cost Sharpe](https://img.shields.io/badge/Net--of--cost_Sharpe-0.88-eab308?style=flat-square)](.)
 [![OOS AUC](https://img.shields.io/badge/Walk--Forward_AUC-0.540-22c55e?style=flat-square)](.)
@@ -174,6 +174,74 @@ ablation on the tuned model overturns that: tuning got the model to use the full
 24-feature set coherently, and now no group can be dropped without cost. The earlier
 "the feature set is overfit" claim was an artifact of the weaker model — updating it
 rather than leaving the more flattering story in place is exactly the point.
+
+---
+
+## Model Validation & Robustness
+
+A Sharpe from one walk-forward is a single data point. These four studies stress-test
+the model the way live trading will — not the way a backtest flatters it. Each is
+reproducible (`python -m ml.research.<name>`), offline-tested, and served at
+`/api/validation` (rendered on the **Validation** dashboard page).
+
+### 1. Live-cadence (anchored weekly) walk-forward
+
+Refits **every week** on only the data available at that moment — with an explicit
+5-day **label purge** so a forward return that hasn't closed can never leak into
+training — and scores the next cross-section once its return is realised. 323 weeks.
+
+| Metric | 6-fold baseline | Weekly rolling |
+|---|---|---|
+| **Sharpe** | 1.19 | **1.15** |
+| AUC | 0.540 | 0.533 |
+| Accuracy | 36.6% | 36.5% |
+| Weekly hit rate | — | 58.8% |
+
+The edge **largely survives** realistic weekly retraining — the 0.04 Sharpe gap is the
+honest cost of the live cadence, not a collapse. This is the closest thing to a live
+dry-run the backtest can offer.
+
+### 2. Training-window sensitivity
+
+The same anchored scheme at 2/3/4/5-year and expanding look-backs, all aligned to the
+**same 61 evaluation weeks** so the comparison is apples-to-apples, reporting annualised
+dispersion next to Sharpe (a peak Sharpe on a jumpy series isn't what you'd deploy).
+
+| Look-back | Sharpe | CAGR | Volatility | Hit rate |
+|---|---|---|---|---|
+| 2y | 1.46 | 39.6% | 25.1% | 61% |
+| 3y | 1.75 | 47.3% | **23.8%** | 67% |
+| **4y** | **1.90** | 53.7% | 24.3% | 62% |
+| 5y | 1.66 | 46.5% | 25.0% | 64% |
+| expanding | 1.77 | 49.0% | 24.3% | 67% |
+
+A **4-year** window is the risk-adjusted sweet spot, **3-year** the steadiest; 2 years
+is too short and 5y/expanding don't improve on 4y — so the current "expanding" default
+isn't optimal over this span. (Levels sit above the full-history headline because the
+aligned window only covers the recent, bullish 2023+ period — the **ranking** is the
+result, not the absolute Sharpe.)
+
+### 3. Regime-specialised models
+
+Separate bull/bear models routed by the 200-day-SMA regime, vs the general model, on the
+same folds. Honest test: ship the ensemble only if it actually wins.
+
+- General **1.19** vs regime ensemble **0.95** — the ensemble does **not** win overall,
+  so the general model stays champion (the bear specialist trains on too thin a sample to
+  be reliable).
+- But it **softened the 2022 bear**: −0.50 vs the general model's −0.77. Regime routing
+  helps exactly where the model is weakest, at a cost to the average. Reported, not buried.
+
+### 4. Out-of-distribution test
+
+Train on everything before 2023, **freeze**, and evaluate untouched on 2023+ (47,872
+rows) — a hard regime break (rate hikes, the AI boom), the way a live model runs between
+retrains.
+
+- **Sharpe 1.89, AUC 0.540** on the unseen era — **no degradation** vs in-sample AUC.
+- **Era drift OK** (max feature PSI 0.023): cross-sectional z-scoring kept the features
+  in-distribution across the regime shift, which is *why* it generalises. The high Sharpe
+  also reflects a favourable bull regime, so read this as "held its edge," not "found alpha."
 
 ---
 
@@ -362,7 +430,7 @@ the [Roadmap](ROADMAP.md)).
 
 ## Testing & CI
 
-**110 deterministic tests.** No network, no model retraining, and no dependence on
+**125 deterministic tests.** No network, no model retraining, and no dependence on
 the gitignored `data/` artifacts — every test builds its own seeded fixtures or
 exercises the same mock fallback the API uses on a cold checkout. They pin down the
 parts that actually have to be correct:
@@ -381,7 +449,7 @@ parts that actually have to be correct:
 ```bash
 pip install -r requirements-dev.txt
 ruff check ml backend tests     # lint + import order
-pytest                          # 110 passed
+pytest                          # 125 passed
 ```
 
 GitHub Actions runs `ruff` + `pytest` (Python 3.11) and a production `next build`
@@ -456,7 +524,7 @@ Built to make machine learning legible — not just showing numbers but communic
 | **Backend** | FastAPI + uvicorn | 0.115 | Async, `/api/*` prefix, OpenAPI auto-docs |
 | **Validation** | Pydantic v2 | 2.x | Typed request/response, mirrors TS interfaces |
 | **Config** | pydantic-settings | 2.7 | 12-factor `.env` config, execution flags |
-| **Testing** | pytest + ruff | 8.x / 0.8 | 110 offline tests, lint + import order, CI-gated |
+| **Testing** | pytest + ruff | 8.x / 0.8 | 125 offline tests, lint + import order, CI-gated |
 | **Frontend** | Next.js 15 (App Router) | 15.x | React 19, RSC + client islands |
 | **Language** | TypeScript | 5.x | Strict mode throughout |
 | **Styling** | Tailwind CSS v4 | 4.x | Token-based dark-theme design system |
@@ -512,7 +580,7 @@ QuantML/
 │   ├── universe.py             55 NASDAQ-100 tickers + metadata
 │   └── paths.py                All artifact paths in one place
 │
-├── tests/                      110 pytest tests (costs, metrics, risk, labels,
+├── tests/                      125 pytest tests (costs, metrics, risk, labels,
 │                               registry, execution, features, API)
 ├── .github/workflows/ci.yml    ruff + pytest + next build on every push/PR
 ├── pyproject.toml              pytest + ruff config
@@ -586,7 +654,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 cd backend && python -m backtesting.engine   # net-of-cost walk-forward backtest
 cd .. && pip install -r requirements-dev.txt
 ruff check ml backend tests                   # lint
-pytest                                         # 110 passed
+pytest                                         # 125 passed
 ```
 
 ### Docker
@@ -632,7 +700,7 @@ Building QuantML meant solving genuinely hard problems across the full stack sim
 - Graceful degradation across both the backend (falls back to mock if artifacts don't exist) and frontend (falls back to mock if backend is offline)
 - Pydantic v2 response models that mirror TypeScript interfaces exactly — the same JSON shapes work against Next.js route handlers or FastAPI with no component changes
 - Real-time WebSocket signal ticks in an async FastAPI app
-- A 110-test suite plus CI that runs entirely offline by design — tests build their own seeded fixtures and exercise the same mock fallback the services use on a cold checkout, so the safety gates (live-trading lock, risk caps) are regression-tested on every push
+- A 125-test suite plus CI that runs entirely offline by design — tests build their own seeded fixtures and exercise the same mock fallback the services use on a cold checkout, so the safety gates (live-trading lock, risk caps) are regression-tested on every push
 
 **Frontend engineering:**
 - Running a WebGL fragment shader simultaneously with CSS/Framer Motion particle systems in the same canvas layer without z-fighting

@@ -16,7 +16,7 @@ explainable ML signals, portfolio construction, and a live full-stack dashboard.
 [![Status](https://img.shields.io/badge/Status-Research_Phase-14b8a6?style=flat-square)](.)
 [![Execution](https://img.shields.io/badge/Execution-Backtest_Only-6366f1?style=flat-square)](.)
 [![Live Trading](https://img.shields.io/badge/Live_Trading-Disabled-ef4444?style=flat-square)](.)
-[![Tests](https://img.shields.io/badge/tests-125_passing-22c55e?style=flat-square)](.)
+[![Tests](https://img.shields.io/badge/tests-129_passing-22c55e?style=flat-square)](.)
 [![Signal Sharpe](https://img.shields.io/badge/Signal_Sharpe-1.19-22c55e?style=flat-square)](.)
 [![Net-of-cost Sharpe](https://img.shields.io/badge/Net--of--cost_Sharpe-0.88-eab308?style=flat-square)](.)
 [![OOS AUC](https://img.shields.io/badge/Walk--Forward_AUC-0.540-22c55e?style=flat-square)](.)
@@ -243,6 +243,37 @@ retrains.
   in-distribution across the regime shift, which is *why* it generalises. The high Sharpe
   also reflects a favourable bull regime, so read this as "held its edge," not "found alpha."
 
+### 5. Confidence-weighted sizing & probability calibration
+
+The model emits a probability per class, so two questions before trusting it with size:
+does sizing BUYs by conviction (`p_buy`) beat equal-weighting, and are the probabilities
+*calibrated*?
+
+- **Conviction-weighted Sharpe 1.21** vs equal-weight **1.19** — a small but real lift
+  from leaning into the high-conviction names.
+- **Brier 0.227, ECE 4.3%** — the BUY probabilities are well-calibrated: a 60%-confidence
+  call really does land in the top tercile ~60% of the time. You can't size by a number
+  you can't trust, and this one you can.
+
+### 6. Retrain cadence ("online learning")
+
+True incremental learning doesn't fit boosted trees cleanly, so the live-relevant question
+is cadence: you predict every week regardless, but how often must you *refit*? Holding the
+weekly (leakage-purged) prediction schedule fixed and varying only the refit frequency:
+
+| Cadence | Refits | Sharpe | Compute |
+|---|---|---|---|
+| weekly | 76 | 1.50 | 746s |
+| biweekly | 38 | **1.67** | 323s |
+| **monthly** | 19 | 1.63 | 153s |
+| quarterly | 7 | 1.44 | 59s |
+
+**More frequent isn't better.** Monthly refits keep the full edge at **~5× less compute**
+than weekly — which actually *mildly overfits* recent noise — and only quarterly starts to
+lag. The practical read for a live deployment: retrain monthly, not nightly. (Same caveat as
+the window sweep: this aligned window covers the recent bull period, so the levels run above
+the full-history headline; the cadence *ranking* is the result.)
+
 ---
 
 ## System Architecture
@@ -430,7 +461,7 @@ the [Roadmap](ROADMAP.md)).
 
 ## Testing & CI
 
-**125 deterministic tests.** No network, no model retraining, and no dependence on
+**129 deterministic tests.** No network, no model retraining, and no dependence on
 the gitignored `data/` artifacts — every test builds its own seeded fixtures or
 exercises the same mock fallback the API uses on a cold checkout. They pin down the
 parts that actually have to be correct:
@@ -449,7 +480,7 @@ parts that actually have to be correct:
 ```bash
 pip install -r requirements-dev.txt
 ruff check ml backend tests     # lint + import order
-pytest                          # 125 passed
+pytest                          # 129 passed
 ```
 
 GitHub Actions runs `ruff` + `pytest` (Python 3.11) and a production `next build`
@@ -524,7 +555,7 @@ Built to make machine learning legible — not just showing numbers but communic
 | **Backend** | FastAPI + uvicorn | 0.115 | Async, `/api/*` prefix, OpenAPI auto-docs |
 | **Validation** | Pydantic v2 | 2.x | Typed request/response, mirrors TS interfaces |
 | **Config** | pydantic-settings | 2.7 | 12-factor `.env` config, execution flags |
-| **Testing** | pytest + ruff | 8.x / 0.8 | 125 offline tests, lint + import order, CI-gated |
+| **Testing** | pytest + ruff | 8.x / 0.8 | 129 offline tests, lint + import order, CI-gated |
 | **Frontend** | Next.js 15 (App Router) | 15.x | React 19, RSC + client islands |
 | **Language** | TypeScript | 5.x | Strict mode throughout |
 | **Styling** | Tailwind CSS v4 | 4.x | Token-based dark-theme design system |
@@ -580,7 +611,7 @@ QuantML/
 │   ├── universe.py             55 NASDAQ-100 tickers + metadata
 │   └── paths.py                All artifact paths in one place
 │
-├── tests/                      125 pytest tests (costs, metrics, risk, labels,
+├── tests/                      129 pytest tests (costs, metrics, risk, labels,
 │                               registry, execution, features, API)
 ├── .github/workflows/ci.yml    ruff + pytest + next build on every push/PR
 ├── pyproject.toml              pytest + ruff config
@@ -654,7 +685,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 cd backend && python -m backtesting.engine   # net-of-cost walk-forward backtest
 cd .. && pip install -r requirements-dev.txt
 ruff check ml backend tests                   # lint
-pytest                                         # 125 passed
+pytest                                         # 129 passed
 ```
 
 ### Docker
@@ -700,7 +731,7 @@ Building QuantML meant solving genuinely hard problems across the full stack sim
 - Graceful degradation across both the backend (falls back to mock if artifacts don't exist) and frontend (falls back to mock if backend is offline)
 - Pydantic v2 response models that mirror TypeScript interfaces exactly — the same JSON shapes work against Next.js route handlers or FastAPI with no component changes
 - Real-time WebSocket signal ticks in an async FastAPI app
-- A 125-test suite plus CI that runs entirely offline by design — tests build their own seeded fixtures and exercise the same mock fallback the services use on a cold checkout, so the safety gates (live-trading lock, risk caps) are regression-tested on every push
+- A 129-test suite plus CI that runs entirely offline by design — tests build their own seeded fixtures and exercise the same mock fallback the services use on a cold checkout, so the safety gates (live-trading lock, risk caps) are regression-tested on every push
 
 **Frontend engineering:**
 - Running a WebGL fragment shader simultaneously with CSS/Framer Motion particle systems in the same canvas layer without z-fighting

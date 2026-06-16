@@ -120,6 +120,8 @@ def validation():
         "windowComparison": _read_json(research / "window_comparison.json"),
         "regimeModels": _read_json(research / "regime_models.json"),
         "ood": _read_json(research / "ood.json"),
+        "confidence": _read_json(research / "confidence.json"),
+        "onlineLearning": _read_json(research / "online_learning.json"),
     }
 
 

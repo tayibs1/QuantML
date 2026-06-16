@@ -64,5 +64,22 @@ export function GET() {
         { feature: "vol_60", label: "60-day volatility", psi: 0.013, status: "OK" },
       ],
     },
+    confidence: {
+      sizing: {
+        equalWeight: { sharpe: 1.19, maxDrawdown: -0.293 },
+        confidenceWeighted: { sharpe: 1.21, maxDrawdown: -0.2969 },
+      },
+      confidenceImprovesSharpe: true,
+      calibration: { brier: 0.227, ece: 0.0432, bins: [] },
+    },
+    onlineLearning: {
+      cadences: {
+        weekly: { refitEvery: 1, refits: 76, seconds: 745.9, sharpe: 1.5, hitRate: 0.61, weeks: 76 },
+        biweekly: { refitEvery: 2, refits: 38, seconds: 323.4, sharpe: 1.67, hitRate: 0.63, weeks: 76 },
+        monthly: { refitEvery: 4, refits: 19, seconds: 152.7, sharpe: 1.63, hitRate: 0.62, weeks: 76 },
+        quarterly: { refitEvery: 12, refits: 7, seconds: 59.2, sharpe: 1.44, hitRate: 0.59, weeks: 76 },
+      },
+      fullRetrainSharpe: 1.5,
+    },
   });
 }

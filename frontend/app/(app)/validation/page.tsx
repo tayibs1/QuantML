@@ -55,6 +55,23 @@ const MOCK: ValidationStudies = {
     overallDrift: "OK",
     eraDrift: [],
   },
+  confidence: {
+    sizing: {
+      equalWeight: { sharpe: 1.19, maxDrawdown: -0.293 },
+      confidenceWeighted: { sharpe: 1.21, maxDrawdown: -0.2969 },
+    },
+    confidenceImprovesSharpe: true,
+    calibration: { brier: 0.227, ece: 0.0432, bins: [] },
+  },
+  onlineLearning: {
+    cadences: {
+      weekly: { refitEvery: 1, refits: 76, seconds: 745.9, sharpe: 1.5, hitRate: 0.61, weeks: 76 },
+      biweekly: { refitEvery: 2, refits: 38, seconds: 323.4, sharpe: 1.67, hitRate: 0.63, weeks: 76 },
+      monthly: { refitEvery: 4, refits: 19, seconds: 152.7, sharpe: 1.63, hitRate: 0.62, weeks: 76 },
+      quarterly: { refitEvery: 12, refits: 7, seconds: 59.2, sharpe: 1.44, hitRate: 0.59, weeks: 76 },
+    },
+    fullRetrainSharpe: 1.5,
+  },
 };
 
 const WINDOW_ORDER = ["2y", "3y", "4y", "5y", "expanding"];
@@ -80,6 +97,8 @@ export default function ValidationPage() {
             windowComparison: d.windowComparison ?? MOCK.windowComparison,
             regimeModels: d.regimeModels ?? MOCK.regimeModels,
             ood: d.ood ?? MOCK.ood,
+            confidence: d.confidence ?? MOCK.confidence,
+            onlineLearning: d.onlineLearning ?? MOCK.onlineLearning,
           });
           setLive(Boolean(d.rollingWindow));
         }
@@ -96,6 +115,12 @@ export default function ValidationPage() {
   const wc = data.windowComparison ?? MOCK.windowComparison!;
   const reg = data.regimeModels ?? MOCK.regimeModels!;
   const ood = data.ood ?? MOCK.ood!;
+  const conf = data.confidence ?? MOCK.confidence!;
+  const online = data.onlineLearning ?? MOCK.onlineLearning!;
+  const cadenceOrder = ["weekly", "biweekly", "monthly", "quarterly"];
+  const bestCadence = Object.entries(online.cadences).sort(
+    (a, b) => b[1].sharpe - a[1].sharpe
+  )[0]?.[0];
 
   // cumulative equity of the weekly BUY basket, for the sparkline
   let acc = 1;
@@ -310,6 +335,83 @@ export default function ValidationPage() {
               The frozen pre-2023 model holds its edge on the unseen 2023+ era (AUC matches
               in-sample) and the low feature drift (PSI) confirms cross-sectional normalisation
               kept it in-distribution. The high Sharpe also reflects a favourable bull regime.
+            </p>
+          </div>
+        </GlassPanel>
+      </div>
+
+      {/* Confidence sizing + retrain cadence */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <GlassPanel strong>
+          <div className="border-b border-white/6 px-5 py-3.5">
+            <h3 className="text-sm font-semibold text-white">Conviction sizing & calibration</h3>
+            <p className="text-[11px] text-slate-500">Size BUYs by p_buy, and check the probabilities are honest</p>
+          </div>
+          <div className="space-y-3 p-5">
+            <div className="grid grid-cols-2 gap-2 text-center">
+              <div className="rounded-lg border border-white/6 bg-white/[0.02] px-2 py-3">
+                <div className="text-[10px] uppercase tracking-wider text-slate-500">Equal-weight</div>
+                <div className="mt-1 font-mono text-sm text-slate-200">
+                  {(conf.sizing.equalWeight.sharpe ?? 0).toFixed(2)}
+                </div>
+              </div>
+              <div className="rounded-lg border border-white/6 bg-white/[0.02] px-2 py-3">
+                <div className="text-[10px] uppercase tracking-wider text-slate-500">Conviction-weighted</div>
+                <div className="mt-1 font-mono text-sm font-medium text-brand-200">
+                  {(conf.sizing.confidenceWeighted.sharpe ?? 0).toFixed(2)}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between rounded-lg border border-white/6 bg-white/[0.02] px-4 py-2.5 text-xs">
+              <span className="text-slate-400">Calibration</span>
+              <span className="font-mono text-slate-300">
+                Brier {conf.calibration.brier.toFixed(3)} · ECE {pct(conf.calibration.ece, 1)}
+              </span>
+            </div>
+            <p className="text-[11px] leading-relaxed text-slate-500">
+              Sizing by conviction edges equal-weighting, and the low ECE means a 60% call really
+              does land ~60% of the time — the probabilities are honest enough to size by.
+            </p>
+          </div>
+        </GlassPanel>
+
+        <GlassPanel strong>
+          <div className="flex items-center justify-between border-b border-white/6 px-5 py-3.5">
+            <h3 className="text-sm font-semibold text-white">Retrain cadence</h3>
+            <span className="font-mono text-[10px] text-slate-500">predict weekly · vary refit freq</span>
+          </div>
+          <div className="overflow-x-auto p-2 no-scrollbar sm:p-3">
+            <table className="w-full min-w-[420px] border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-white/8 text-left">
+                  {["Cadence", "Refits", "Sharpe", "Compute"].map((h) => (
+                    <th key={h} className="px-3 py-2.5 font-mono text-[10px] font-medium uppercase tracking-wider text-slate-500">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {cadenceOrder.filter((c) => online.cadences[c]).map((name) => {
+                  const m = online.cadences[name];
+                  const best = name === bestCadence;
+                  return (
+                    <tr key={name} className={cn("border-b border-white/5", best && "bg-brand-500/[0.05]")}>
+                      <td className="px-3 py-2.5 font-medium text-white">
+                        {name}
+                        {best && <Badge variant="bull" className="ml-2">best</Badge>}
+                      </td>
+                      <td className="px-3 py-2.5 font-mono text-xs text-slate-300 data">{m.refits}</td>
+                      <td className="px-3 py-2.5 font-mono text-xs font-medium text-brand-200 data">{m.sharpe.toFixed(2)}</td>
+                      <td className="px-3 py-2.5 font-mono text-xs text-slate-400 data">{m.seconds.toFixed(0)}s</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            <p className="px-3 py-2 text-[11px] leading-relaxed text-slate-500">
+              More frequent isn&apos;t better: monthly refits keep the edge at ~5× less compute than
+              weekly, which mildly overfits recent noise. Only quarterly starts to lag.
             </p>
           </div>
         </GlassPanel>

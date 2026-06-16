@@ -79,6 +79,15 @@ export interface ValidationStudies {
     overallDrift: string;
     eraDrift: { feature: string; label: string; psi: number; status: string }[];
   } | null;
+  confidence: {
+    sizing: { equalWeight: MetricBag; confidenceWeighted: MetricBag };
+    confidenceImprovesSharpe: boolean;
+    calibration: { brier: number; ece: number; bins: { pMean: number; observed: number; n: number }[] };
+  } | null;
+  onlineLearning: {
+    cadences: Record<string, { refitEvery: number; refits: number; seconds: number; sharpe: number; hitRate: number; weeks: number }>;
+    fullRetrainSharpe: number | null;
+  } | null;
 }
 
 /** Aggregated risk summary returned by GET /api/risk. */

@@ -44,6 +44,43 @@ export interface BacktestResult {
   note?: string;
 }
 
+/** A single study's per-metric numbers (sharpe, auc, accuracy, hitRate, …). */
+export type MetricBag = Record<string, number>;
+
+/** Robustness studies returned by GET /api/validation. */
+export interface ValidationStudies {
+  rollingWindow: {
+    note: string;
+    generatedAt: string;
+    baseline: MetricBag;
+    rolling: MetricBag;
+    weekly: { date: string; basketReturn: number; accuracy: number; nBuy: number; psi?: number }[];
+  } | null;
+  windowComparison: {
+    note: string;
+    generatedAt: string;
+    step: number;
+    windows: Record<string, MetricBag>;
+    bestBySharpe: string | null;
+    steadiestByVol: string | null;
+  } | null;
+  regimeModels: {
+    general: MetricBag;
+    ensemble: MetricBag;
+    year2022: { general: number; ensemble: number };
+    ensembleBeatsGeneral: boolean;
+    verdict: string;
+  } | null;
+  ood: {
+    trainEnd: string;
+    trainRows: number;
+    testRows: number;
+    metrics: MetricBag;
+    overallDrift: string;
+    eraDrift: { feature: string; label: string; psi: number; status: string }[];
+  } | null;
+}
+
 /** Aggregated risk summary returned by GET /api/risk. */
 export interface RiskSummary {
   flags: RiskFlag[];
@@ -93,6 +130,7 @@ export const api = {
       body: JSON.stringify(config ?? {}),
     }),
   risk: () => get<RiskSummary>("/api/risk"),
+  validation: () => get<ValidationStudies>("/api/validation"),
   research: (prompt: string) =>
     get<RagResponse>("/api/research", {
       method: "POST",

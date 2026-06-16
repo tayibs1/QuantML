@@ -4,6 +4,7 @@ import {
   LineChart,
   Bot,
   Boxes,
+  Microscope,
   ShieldAlert,
   FileText,
   type LucideIcon,
@@ -22,6 +23,7 @@ export const navItems: NavItem[] = [
   { label: "Backtests", href: "/backtests", icon: LineChart },
   { label: "Research AI", href: "/research", icon: Bot },
   { label: "Models", href: "/models", icon: Boxes },
+  { label: "Validation", href: "/validation", icon: Microscope },
   { label: "Risk", href: "/risk", icon: ShieldAlert, badge: "3" },
   { label: "Docs", href: "/docs", icon: FileText },
 ];

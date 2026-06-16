@@ -27,7 +27,7 @@ def test_schedule_steps_one_week_at_a_time():
     splits = prediction_schedule(400, step=5, start_idx=100)
     idxs = [sp.predict_idx for sp in splits]
     assert idxs[0] == 100
-    assert all(b - a == 5 for a, b in zip(idxs, idxs[1:], strict=True))
+    assert all(b - a == 5 for a, b in zip(idxs, idxs[1:], strict=False))
 
 
 def test_lookback_caps_training_history():

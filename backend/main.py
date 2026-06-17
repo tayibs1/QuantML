@@ -24,13 +24,17 @@ from __future__ import annotations
 import asyncio
 import json
 import random
+import time
+import uuid
 from pathlib import Path
 
 import mock_data as mock
+import observability
 from config import settings
 from execution import get_execution_adapter
-from fastapi import APIRouter, FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, FastAPI, Request, Response, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse
 from portfolio import propose_orders
 from schemas import (
     BacktestRequest,
@@ -54,6 +58,33 @@ app.add_middleware(
 
 # everything lives under /api so swapping in for the Next.js mock routes is clean
 api = APIRouter(prefix="/api")
+
+
+@app.middleware("http")
+async def observe_requests(request: Request, call_next):
+    """Time every request, record it for /metrics, and stamp a trace id."""
+    request_id = uuid.uuid4().hex[:12]
+    start = time.perf_counter()
+    response: Response = await call_next(request)
+    elapsed = time.perf_counter() - start
+
+    path = observability.route_path(request)
+    observability.collector.record(request.method, path, response.status_code, elapsed)
+    response.headers["X-Request-ID"] = request_id
+    observability.logger.info(
+        "%s %s -> %s %.1fms id=%s",
+        request.method, path, response.status_code, elapsed * 1000, request_id,
+    )
+    return response
+
+
+@app.get("/metrics", response_class=PlainTextResponse)
+def metrics_prometheus():
+    """Prometheus scrape endpoint (request counters + live model/drift gauges)."""
+    return PlainTextResponse(
+        observability.render(),
+        media_type="text/plain; version=0.0.4; charset=utf-8",
+    )
 
 
 def _read_json(path: Path) -> dict | None:

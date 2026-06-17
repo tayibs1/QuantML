@@ -131,6 +131,15 @@ export const api = {
     models: ModelRecord[];
     featureImportance: unknown[];
     experiments?: Array<{ id: string; model: string; metric: string; status: string; time: string }>;
+    registry?: {
+      championId: string | null;
+      versions: Array<{
+        id: string; version: string; name: string; status: string;
+        metrics: { sharpe?: number; auc?: number; cagr?: number; maxDrawdown?: number };
+        trainWindow: string; features?: number; dsr: number | null;
+        gatePassed: boolean; promotedAt: string | null;
+      }>;
+    };
   }>("/api/models"),
   trades: () => get<Trade[]>("/api/trades"),
   backtests: (config?: BacktestConfig) =>

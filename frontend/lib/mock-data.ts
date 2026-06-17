@@ -368,6 +368,46 @@ export const featureImportance = [
   { feature: "Liquidity score", importance: 0.041 },
 ];
 
+export interface ModelVersion {
+  id: string;
+  version: string;
+  name: string;
+  family: string;
+  status: "champion" | "archived" | "candidate";
+  metrics: { sharpe?: number; auc?: number; cagr?: number; maxDrawdown?: number };
+  trainWindow: string;
+  features?: number;
+  dsr: number | null;
+  gatePassed: boolean;
+  registeredAt: string;
+  promotedAt: string | null;
+}
+
+// Versioned-champion history. Promotions are gated on the Deflated Sharpe Ratio.
+export const modelRegistry: { versions: ModelVersion[]; championId: string } = {
+  championId: "xgb-v3",
+  versions: [
+    {
+      id: "xgb-v3", version: "v3", name: "XGBoost-v3", family: "Gradient Boosting",
+      status: "champion", metrics: { sharpe: 1.19, auc: 0.54, cagr: 31.2, maxDrawdown: -29.3 },
+      trainWindow: "2018 … 2026", features: 24, dsr: 1.0, gatePassed: true,
+      registeredAt: "2026-06-12", promotedAt: "2026-06-12",
+    },
+    {
+      id: "xgb-v2", version: "v2", name: "XGBoost-v2 (untuned)", family: "Gradient Boosting",
+      status: "archived", metrics: { sharpe: 1.0, auc: 0.547, cagr: 26.7, maxDrawdown: -31.4 },
+      trainWindow: "2018 … 2026", features: 24, dsr: 0.94, gatePassed: true,
+      registeredAt: "2026-06-09", promotedAt: "2026-06-09",
+    },
+    {
+      id: "xgb-v1", version: "v1", name: "XGBoost-v1", family: "Gradient Boosting",
+      status: "archived", metrics: { sharpe: 0.83, auc: 0.531, cagr: 19.4, maxDrawdown: -33.8 },
+      trainWindow: "2018 … 2025", features: 18, dsr: 0.78, gatePassed: false,
+      registeredAt: "2026-06-05", promotedAt: "2026-06-05",
+    },
+  ],
+};
+
 /* ------------------------------------------------------------------ */
 /* Backtests                                                           */
 /* ------------------------------------------------------------------ */

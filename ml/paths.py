@@ -24,6 +24,7 @@ EVENTS_PATH = PROCESSED_DIR / "events.parquet"
 MODEL_PATH = MODELS_DIR / "xgb_signal.json"
 MODEL_META_PATH = MODELS_DIR / "xgb_signal.meta.json"
 MODEL_CARD_PATH = MODELS_DIR / "model_card.json"
+REGISTRY_PATH = MODELS_DIR / "registry.json"
 SIGNALS_PATH = SIGNALS_DIR / "latest.json"
 
 RESEARCH_DIR = DATA_DIR / "research"

@@ -86,6 +86,8 @@ def test_models_registry(client):
     assert r.status_code == 200
     body = r.json()
     assert body["models"] and "featureImportance" in body
+    # versioned-champion registry travels with the models payload
+    assert "registry" in body and "versions" in body["registry"]
 
 
 def test_risk_summary_shape(client):

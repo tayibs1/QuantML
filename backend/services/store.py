@@ -70,12 +70,28 @@ def get_models() -> tuple[dict, str]:
         if len(real) < 3:
             names = {m.get("name") for m in real}
             real = real + [m for m in mock.MODELS if m.get("name") not in names]
-        return {"models": real, "featureImportance": fi, "experiments": recent_trials()}, "live"
+        return {
+            "models": real, "featureImportance": fi,
+            "experiments": recent_trials(), "registry": model_registry(),
+        }, "live"
     return {
         "models": mock.MODELS,
         "featureImportance": mock.FEATURE_IMPORTANCE,
         "experiments": recent_trials(),
+        "registry": model_registry(),
     }, "mock"
+
+
+def model_registry() -> dict:
+    """Versioned-champion history from data/models/registry.json (DSR-gated promotions).
+
+    Plain artifact read, like the trial log — keeps the backend off the ML imports.
+    Returns an empty registry (not an error) before any model has been registered.
+    """
+    reg = _load_json(settings.models_dir / "registry.json")
+    if not reg or not reg.get("versions"):
+        return {"versions": [], "championId": None}
+    return {"versions": reg["versions"], "championId": reg.get("championId")}
 
 
 def recent_trials(limit: int = 8) -> list[dict]:

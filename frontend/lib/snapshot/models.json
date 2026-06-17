@@ -1,0 +1,285 @@
+{
+  "models": [
+    {
+      "id": "xgboost-v3",
+      "name": "XGBoost-v3",
+      "family": "Gradient Boosting",
+      "status": "Champion",
+      "trainingWindow": "2019-01-02 \u2026 2026-06-01",
+      "validation": "6-fold walk-forward",
+      "sharpe": 1.19,
+      "cagr": 31.2,
+      "maxDrawdown": -29.3,
+      "drift": "Low",
+      "auc": 0.54,
+      "accuracy": 0.366,
+      "features": 24,
+      "lastTrained": "2026-06-12",
+      "experimentId": "exp-2026-06-12-xgboost-v3"
+    },
+    {
+      "id": "random-forest",
+      "name": "Random Forest",
+      "family": "Bagged Trees",
+      "status": "Baseline",
+      "trainingWindow": "2019-01-02 \u2026 2026-06-01",
+      "validation": "6-fold walk-forward",
+      "sharpe": 0.99,
+      "cagr": 27.4,
+      "maxDrawdown": -38.0,
+      "drift": "Low",
+      "auc": 0.5518,
+      "accuracy": 0.3784,
+      "features": 24,
+      "lastTrained": "2026-06-12",
+      "experimentId": "exp-2026-06-12-random-forest"
+    },
+    {
+      "id": "logistic-regression",
+      "name": "Logistic Regression",
+      "family": "Linear",
+      "status": "Baseline",
+      "trainingWindow": "2019-01-02 \u2026 2026-06-01",
+      "validation": "6-fold walk-forward",
+      "sharpe": 0.85,
+      "cagr": 21.9,
+      "maxDrawdown": -38.5,
+      "drift": "Low",
+      "auc": 0.5468,
+      "accuracy": 0.3727,
+      "features": 24,
+      "lastTrained": "2026-06-12",
+      "experimentId": "exp-2026-06-12-logistic-regression"
+    },
+    {
+      "id": "cross-sectional-momentum",
+      "name": "Cross-sectional Momentum",
+      "family": "Rule-based",
+      "status": "Baseline",
+      "trainingWindow": "2019-01-02 \u2026 2026-06-01",
+      "validation": "6-fold walk-forward",
+      "sharpe": 0.89,
+      "cagr": 21.6,
+      "maxDrawdown": -38.9,
+      "drift": "Low",
+      "auc": 0.5073,
+      "accuracy": 0.3447,
+      "features": 24,
+      "lastTrained": "2026-06-12",
+      "experimentId": "exp-2026-06-12-cross-sectional-momentum"
+    }
+  ],
+  "featureImportance": [
+    {
+      "feature": "ATR % of price",
+      "importance": 0.0777
+    },
+    {
+      "feature": "60-day volatility",
+      "importance": 0.0572
+    },
+    {
+      "feature": "Distance from 200d MA",
+      "importance": 0.044
+    },
+    {
+      "feature": "120-day momentum",
+      "importance": 0.0438
+    },
+    {
+      "feature": "Distance from 52w high",
+      "importance": 0.0435
+    },
+    {
+      "feature": "Volatility of volatility",
+      "importance": 0.0427
+    },
+    {
+      "feature": "Distance from 52w low",
+      "importance": 0.0425
+    },
+    {
+      "feature": "Return skew (20d)",
+      "importance": 0.0423
+    },
+    {
+      "feature": "60-day momentum",
+      "importance": 0.0423
+    },
+    {
+      "feature": "20-day volatility",
+      "importance": 0.0421
+    },
+    {
+      "feature": "Distance from 50d MA",
+      "importance": 0.0419
+    },
+    {
+      "feature": "Return kurtosis (20d)",
+      "importance": 0.0416
+    },
+    {
+      "feature": "Distance from 20d MA",
+      "importance": 0.0399
+    },
+    {
+      "feature": "MACD histogram",
+      "importance": 0.0395
+    },
+    {
+      "feature": "20-day momentum",
+      "importance": 0.0381
+    },
+    {
+      "feature": "On-balance-volume slope",
+      "importance": 0.0377
+    },
+    {
+      "feature": "Bollinger %b",
+      "importance": 0.0376
+    },
+    {
+      "feature": "RSI (14)",
+      "importance": 0.0373
+    },
+    {
+      "feature": "Relative strength (20d)",
+      "importance": 0.0371
+    },
+    {
+      "feature": "5-day momentum",
+      "importance": 0.037
+    },
+    {
+      "feature": "Volume z-score",
+      "importance": 0.0345
+    },
+    {
+      "feature": "Intraday range",
+      "importance": 0.034
+    },
+    {
+      "feature": "Overnight gap",
+      "importance": 0.033
+    },
+    {
+      "feature": "Dollar-volume z-score",
+      "importance": 0.0328
+    }
+  ],
+  "experiments": [
+    {
+      "id": "56772cf0",
+      "model": "backtest",
+      "metric": "Sharpe 0.88",
+      "status": "finished",
+      "time": "2026-06-17",
+      "tags": [
+        "walk-forward",
+        "net-of-cost"
+      ]
+    },
+    {
+      "id": "ed8abd93",
+      "model": "backtest",
+      "metric": "Sharpe 0.88",
+      "status": "finished",
+      "time": "2026-06-17",
+      "tags": [
+        "walk-forward",
+        "net-of-cost"
+      ]
+    },
+    {
+      "id": "fa3b7d83",
+      "model": "backtest",
+      "metric": "Sharpe 0.88",
+      "status": "finished",
+      "time": "2026-06-17",
+      "tags": [
+        "walk-forward",
+        "net-of-cost"
+      ]
+    },
+    {
+      "id": "65d8d8b3",
+      "model": "backtest",
+      "metric": "Sharpe 0.88",
+      "status": "finished",
+      "time": "2026-06-16",
+      "tags": [
+        "walk-forward",
+        "net-of-cost"
+      ]
+    },
+    {
+      "id": "2ec841e4",
+      "model": "backtest",
+      "metric": "Sharpe 0.88",
+      "status": "finished",
+      "time": "2026-06-16",
+      "tags": [
+        "walk-forward",
+        "net-of-cost"
+      ]
+    },
+    {
+      "id": "20dcadd4",
+      "model": "backtest",
+      "metric": "Sharpe 0.88",
+      "status": "finished",
+      "time": "2026-06-16",
+      "tags": [
+        "walk-forward",
+        "net-of-cost"
+      ]
+    },
+    {
+      "id": "c632d652",
+      "model": "backtest",
+      "metric": "Sharpe 0.88",
+      "status": "finished",
+      "time": "2026-06-16",
+      "tags": [
+        "walk-forward",
+        "net-of-cost"
+      ]
+    },
+    {
+      "id": "25ef0665",
+      "model": "backtest",
+      "metric": "Sharpe 0.88",
+      "status": "finished",
+      "time": "2026-06-16",
+      "tags": [
+        "walk-forward",
+        "net-of-cost"
+      ]
+    }
+  ],
+  "registry": {
+    "versions": [
+      {
+        "id": "9f835283be",
+        "version": "v1",
+        "name": "XGBoost-v3",
+        "family": "Gradient Boosting",
+        "status": "champion",
+        "metrics": {
+          "sharpe": 1.19,
+          "auc": 0.54,
+          "cagr": 31.2,
+          "maxDrawdown": -29.3,
+          "accuracy": 0.366
+        },
+        "trainWindow": "2019-01-02 \u2026 2026-06-01",
+        "features": 24,
+        "dsr": 1.0,
+        "gatePassed": true,
+        "registeredAt": "2026-06-17T14:02:50.615641+00:00",
+        "promotedAt": "2026-06-17T14:02:53.945535+00:00"
+      }
+    ],
+    "championId": "9f835283be"
+  }
+}

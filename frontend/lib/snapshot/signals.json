@@ -1,0 +1,954 @@
+[
+  {
+    "ticker": "INTC",
+    "company": "Intel",
+    "signal": "BUY",
+    "confidence": 53.2,
+    "expectedReturn5d": 1.52,
+    "risk": "Elevated",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "ATR % of price",
+      "Distance from 20d MA",
+      "Distance from 50d MA"
+    ],
+    "price": 110.27,
+    "change": 11.19,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "INTU",
+    "company": "Intuit",
+    "signal": "BUY",
+    "confidence": 48.8,
+    "expectedReturn5d": 1.27,
+    "risk": "Elevated",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Return skew (20d)",
+      "5-day momentum",
+      "Distance from 50d MA"
+    ],
+    "price": 305.51,
+    "change": 2.95,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "WDAY",
+    "company": "Workday",
+    "signal": "BUY",
+    "confidence": 47.7,
+    "expectedReturn5d": 1.07,
+    "risk": "Elevated",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "60-day volatility",
+      "Distance from 20d MA",
+      "Distance from 52w high"
+    ],
+    "price": 143.76,
+    "change": -0.36,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "QCOM",
+    "company": "Qualcomm",
+    "signal": "BUY",
+    "confidence": 46.1,
+    "expectedReturn5d": 1.19,
+    "risk": "Elevated",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "On-balance-volume slope",
+      "Volume z-score",
+      "ATR % of price"
+    ],
+    "price": 217.77,
+    "change": 0.85,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "LRCX",
+    "company": "Lam Research",
+    "signal": "BUY",
+    "confidence": 45.6,
+    "expectedReturn5d": 0.76,
+    "risk": "High",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Volume z-score",
+      "Overnight gap",
+      "Distance from 20d MA"
+    ],
+    "price": 324.45,
+    "change": 6.98,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "IDXX",
+    "company": "IDEXX Laboratories",
+    "signal": "BUY",
+    "confidence": 45.3,
+    "expectedReturn5d": 1.27,
+    "risk": "Low",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Dollar-volume z-score",
+      "Volatility of volatility",
+      "Return skew (20d)"
+    ],
+    "price": 561.17,
+    "change": -0.18,
+    "sector": "Health Care"
+  },
+  {
+    "ticker": "PANW",
+    "company": "Palo Alto Networks",
+    "signal": "BUY",
+    "confidence": 42.0,
+    "expectedReturn5d": 1.01,
+    "risk": "High",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Volume z-score",
+      "5-day momentum",
+      "60-day volatility"
+    ],
+    "price": 266.33,
+    "change": -2.1,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "CRWD",
+    "company": "CrowdStrike",
+    "signal": "BUY",
+    "confidence": 40.9,
+    "expectedReturn5d": 0.91,
+    "risk": "High",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "60-day volatility",
+      "MACD histogram",
+      "60-day momentum"
+    ],
+    "price": 658.79,
+    "change": -1.82,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "MELI",
+    "company": "MercadoLibre",
+    "signal": "BUY",
+    "confidence": 40.0,
+    "expectedReturn5d": 0.78,
+    "risk": "Moderate",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Distance from 50d MA",
+      "Distance from 200d MA",
+      "Distance from 52w high"
+    ],
+    "price": 1611.99,
+    "change": 0.26,
+    "sector": "Consumer Discretionary"
+  },
+  {
+    "ticker": "NXPI",
+    "company": "NXP Semiconductors",
+    "signal": "BUY",
+    "confidence": 39.1,
+    "expectedReturn5d": 0.64,
+    "risk": "High",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Volume z-score",
+      "60-day volatility",
+      "Volatility of volatility"
+    ],
+    "price": 301.14,
+    "change": 1.75,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "SNPS",
+    "company": "Synopsys",
+    "signal": "BUY",
+    "confidence": 38.8,
+    "expectedReturn5d": 0.87,
+    "risk": "Moderate",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Distance from 52w high",
+      "Distance from 20d MA",
+      "60-day volatility"
+    ],
+    "price": 473.48,
+    "change": 1.86,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "TXN",
+    "company": "Texas Instruments",
+    "signal": "BUY",
+    "confidence": 37.6,
+    "expectedReturn5d": 0.73,
+    "risk": "Moderate",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "60-day volatility",
+      "MACD histogram",
+      "Distance from 20d MA"
+    ],
+    "price": 290.9,
+    "change": 2.05,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "NVDA",
+    "company": "NVIDIA",
+    "signal": "BUY",
+    "confidence": 36.2,
+    "expectedReturn5d": 0.71,
+    "risk": "Moderate",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Volume z-score",
+      "Dollar-volume z-score",
+      "Volatility of volatility"
+    ],
+    "price": 208.64,
+    "change": 1.73,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "ODFL",
+    "company": "Old Dominion Freight Line",
+    "signal": "BUY",
+    "confidence": 36.1,
+    "expectedReturn5d": 0.66,
+    "risk": "Moderate",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Distance from 52w high",
+      "Distance from 20d MA",
+      "On-balance-volume slope"
+    ],
+    "price": 247.01,
+    "change": 1.83,
+    "sector": "Industrials"
+  },
+  {
+    "ticker": "ADP",
+    "company": "Automatic Data Processing",
+    "signal": "BUY",
+    "confidence": 36.0,
+    "expectedReturn5d": 0.72,
+    "risk": "Moderate",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Dollar-volume z-score",
+      "Intraday range",
+      "Volume z-score"
+    ],
+    "price": 229.07,
+    "change": -1.24,
+    "sector": "Industrials"
+  },
+  {
+    "ticker": "NFLX",
+    "company": "Netflix",
+    "signal": "BUY",
+    "confidence": 35.3,
+    "expectedReturn5d": 0.6,
+    "risk": "Low",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "MACD histogram",
+      "Distance from 200d MA",
+      "Distance from 50d MA"
+    ],
+    "price": 82.64,
+    "change": 0.56,
+    "sector": "Communication Services"
+  },
+  {
+    "ticker": "DXCM",
+    "company": "DexCom",
+    "signal": "BUY",
+    "confidence": 35.1,
+    "expectedReturn5d": 0.52,
+    "risk": "Moderate",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Return skew (20d)",
+      "Distance from 20d MA",
+      "On-balance-volume slope"
+    ],
+    "price": 76.62,
+    "change": 5.16,
+    "sector": "Health Care"
+  },
+  {
+    "ticker": "META",
+    "company": "Meta Platforms",
+    "signal": "BUY",
+    "confidence": 34.8,
+    "expectedReturn5d": 0.6,
+    "risk": "Moderate",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Distance from 20d MA",
+      "60-day volatility",
+      "Return skew (20d)"
+    ],
+    "price": 585.39,
+    "change": -1.28,
+    "sector": "Communication Services"
+  },
+  {
+    "ticker": "ROST",
+    "company": "Ross Stores",
+    "signal": "HOLD",
+    "confidence": 47.7,
+    "expectedReturn5d": 0.14,
+    "risk": "Moderate",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "ATR % of price",
+      "60-day volatility",
+      "Return kurtosis (20d)"
+    ],
+    "price": 227.42,
+    "change": -1.28,
+    "sector": "Consumer Discretionary"
+  },
+  {
+    "ticker": "SBUX",
+    "company": "Starbucks",
+    "signal": "HOLD",
+    "confidence": 46.6,
+    "expectedReturn5d": 0.17,
+    "risk": "Low",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "20-day volatility",
+      "ATR % of price",
+      "Return kurtosis (20d)"
+    ],
+    "price": 94.82,
+    "change": -0.49,
+    "sector": "Consumer Discretionary"
+  },
+  {
+    "ticker": "CSCO",
+    "company": "Cisco",
+    "signal": "HOLD",
+    "confidence": 45.3,
+    "expectedReturn5d": 0.79,
+    "risk": "High",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Return kurtosis (20d)",
+      "Distance from 52w low",
+      "Volume z-score"
+    ],
+    "price": 124.15,
+    "change": 2.06,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "VRTX",
+    "company": "Vertex Pharmaceuticals",
+    "signal": "HOLD",
+    "confidence": 42.3,
+    "expectedReturn5d": 0.43,
+    "risk": "Low",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "ATR % of price",
+      "Intraday range",
+      "Volume z-score"
+    ],
+    "price": 442.96,
+    "change": -0.87,
+    "sector": "Health Care"
+  },
+  {
+    "ticker": "AMZN",
+    "company": "Amazon",
+    "signal": "HOLD",
+    "confidence": 42.2,
+    "expectedReturn5d": 0.26,
+    "risk": "Low",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Bollinger %b",
+      "Volume z-score",
+      "ATR % of price"
+    ],
+    "price": 245.22,
+    "change": -0.33,
+    "sector": "Consumer Discretionary"
+  },
+  {
+    "ticker": "HON",
+    "company": "Honeywell",
+    "signal": "HOLD",
+    "confidence": 41.1,
+    "expectedReturn5d": 0.68,
+    "risk": "Low",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Volume z-score",
+      "Bollinger %b",
+      "Intraday range"
+    ],
+    "price": 211.8,
+    "change": -1.01,
+    "sector": "Industrials"
+  },
+  {
+    "ticker": "COST",
+    "company": "Costco",
+    "signal": "HOLD",
+    "confidence": 40.6,
+    "expectedReturn5d": 0.23,
+    "risk": "Low",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "ATR % of price",
+      "60-day volatility",
+      "RSI (14)"
+    ],
+    "price": 974.75,
+    "change": 0.3,
+    "sector": "Consumer Staples"
+  },
+  {
+    "ticker": "ORLY",
+    "company": "O'Reilly Automotive",
+    "signal": "HOLD",
+    "confidence": 39.7,
+    "expectedReturn5d": 0.41,
+    "risk": "Low",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "ATR % of price",
+      "Intraday range",
+      "60-day volatility"
+    ],
+    "price": 89.02,
+    "change": -1.45,
+    "sector": "Consumer Discretionary"
+  },
+  {
+    "ticker": "MAR",
+    "company": "Marriott International",
+    "signal": "HOLD",
+    "confidence": 39.0,
+    "expectedReturn5d": 0.25,
+    "risk": "Low",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "ATR % of price",
+      "Distance from 52w high",
+      "Bollinger %b"
+    ],
+    "price": 391.42,
+    "change": -0.28,
+    "sector": "Consumer Discretionary"
+  },
+  {
+    "ticker": "AMGN",
+    "company": "Amgen",
+    "signal": "HOLD",
+    "confidence": 38.9,
+    "expectedReturn5d": 0.63,
+    "risk": "Low",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "ATR % of price",
+      "Volume z-score",
+      "60-day volatility"
+    ],
+    "price": 345.73,
+    "change": -1.1,
+    "sector": "Health Care"
+  },
+  {
+    "ticker": "CSX",
+    "company": "CSX Corporation",
+    "signal": "HOLD",
+    "confidence": 38.9,
+    "expectedReturn5d": 0.63,
+    "risk": "Low",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "ATR % of price",
+      "Dollar-volume z-score",
+      "Volume z-score"
+    ],
+    "price": 47.11,
+    "change": 0.26,
+    "sector": "Industrials"
+  },
+  {
+    "ticker": "TMUS",
+    "company": "T-Mobile US",
+    "signal": "HOLD",
+    "confidence": 38.9,
+    "expectedReturn5d": 0.75,
+    "risk": "Low",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "ATR % of price",
+      "Bollinger %b",
+      "Volume z-score"
+    ],
+    "price": 178.43,
+    "change": 0.19,
+    "sector": "Communication Services"
+  },
+  {
+    "ticker": "FAST",
+    "company": "Fastenal",
+    "signal": "HOLD",
+    "confidence": 38.8,
+    "expectedReturn5d": 0.44,
+    "risk": "Low",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "ATR % of price",
+      "Volume z-score",
+      "60-day volatility"
+    ],
+    "price": 46.0,
+    "change": -1.69,
+    "sector": "Industrials"
+  },
+  {
+    "ticker": "REGN",
+    "company": "Regeneron",
+    "signal": "HOLD",
+    "confidence": 38.6,
+    "expectedReturn5d": 0.48,
+    "risk": "Moderate",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Return kurtosis (20d)",
+      "ATR % of price",
+      "60-day volatility"
+    ],
+    "price": 611.34,
+    "change": -3.79,
+    "sector": "Health Care"
+  },
+  {
+    "ticker": "GILD",
+    "company": "Gilead Sciences",
+    "signal": "HOLD",
+    "confidence": 38.5,
+    "expectedReturn5d": 0.05,
+    "risk": "Low",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "ATR % of price",
+      "Volume z-score",
+      "Distance from 52w high"
+    ],
+    "price": 128.1,
+    "change": -0.82,
+    "sector": "Health Care"
+  },
+  {
+    "ticker": "ISRG",
+    "company": "Intuitive Surgical",
+    "signal": "HOLD",
+    "confidence": 38.5,
+    "expectedReturn5d": 0.62,
+    "risk": "Moderate",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "ATR % of price",
+      "60-day volatility",
+      "5-day momentum"
+    ],
+    "price": 418.61,
+    "change": -0.82,
+    "sector": "Health Care"
+  },
+  {
+    "ticker": "AVGO",
+    "company": "Broadcom",
+    "signal": "HOLD",
+    "confidence": 38.3,
+    "expectedReturn5d": 0.8,
+    "risk": "High",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "ATR % of price",
+      "Return skew (20d)",
+      "Volume z-score"
+    ],
+    "price": 396.6,
+    "change": 2.82,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "CTAS",
+    "company": "Cintas",
+    "signal": "HOLD",
+    "confidence": 38.1,
+    "expectedReturn5d": 0.49,
+    "risk": "Low",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "ATR % of price",
+      "Volume z-score",
+      "60-day volatility"
+    ],
+    "price": 173.65,
+    "change": -3.45,
+    "sector": "Industrials"
+  },
+  {
+    "ticker": "MNST",
+    "company": "Monster Beverage",
+    "signal": "HOLD",
+    "confidence": 37.7,
+    "expectedReturn5d": 0.22,
+    "risk": "Low",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "ATR % of price",
+      "Distance from 52w high",
+      "Volume z-score"
+    ],
+    "price": 88.47,
+    "change": -1.21,
+    "sector": "Consumer Staples"
+  },
+  {
+    "ticker": "GOOGL",
+    "company": "Alphabet",
+    "signal": "HOLD",
+    "confidence": 37.4,
+    "expectedReturn5d": 0.55,
+    "risk": "Moderate",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "ATR % of price",
+      "RSI (14)",
+      "Distance from 52w low"
+    ],
+    "price": 363.31,
+    "change": -1.42,
+    "sector": "Communication Services"
+  },
+  {
+    "ticker": "MSFT",
+    "company": "Microsoft",
+    "signal": "HOLD",
+    "confidence": 37.2,
+    "expectedReturn5d": 0.66,
+    "risk": "Moderate",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Intraday range",
+      "60-day volatility",
+      "Overnight gap"
+    ],
+    "price": 411.74,
+    "change": -1.18,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "ABNB",
+    "company": "Airbnb",
+    "signal": "HOLD",
+    "confidence": 37.1,
+    "expectedReturn5d": 0.63,
+    "risk": "Low",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Volume z-score",
+      "60-day volatility",
+      "Distance from 20d MA"
+    ],
+    "price": 134.43,
+    "change": 0.67,
+    "sector": "Consumer Discretionary"
+  },
+  {
+    "ticker": "MDLZ",
+    "company": "Mondelez",
+    "signal": "HOLD",
+    "confidence": 37.1,
+    "expectedReturn5d": 0.48,
+    "risk": "Low",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "ATR % of price",
+      "20-day volatility",
+      "Distance from 20d MA"
+    ],
+    "price": 61.6,
+    "change": -0.71,
+    "sector": "Consumer Staples"
+  },
+  {
+    "ticker": "TSLA",
+    "company": "Tesla",
+    "signal": "HOLD",
+    "confidence": 36.0,
+    "expectedReturn5d": 0.51,
+    "risk": "Moderate",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Volume z-score",
+      "Bollinger %b",
+      "20-day momentum"
+    ],
+    "price": 408.95,
+    "change": 4.59,
+    "sector": "Consumer Discretionary"
+  },
+  {
+    "ticker": "AAPL",
+    "company": "Apple",
+    "signal": "HOLD",
+    "confidence": 34.2,
+    "expectedReturn5d": 0.38,
+    "risk": "Low",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Volume z-score",
+      "ATR % of price",
+      "60-day volatility"
+    ],
+    "price": 301.54,
+    "change": -1.89,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "KLAC",
+    "company": "KLA Corporation",
+    "signal": "AVOID",
+    "confidence": 50.4,
+    "expectedReturn5d": -0.34,
+    "risk": "High",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Distance from 52w high",
+      "60-day volatility",
+      "ATR % of price"
+    ],
+    "price": 2108.06,
+    "change": 9.27,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "MU",
+    "company": "Micron Technology",
+    "signal": "AVOID",
+    "confidence": 44.9,
+    "expectedReturn5d": 0.27,
+    "risk": "Elevated",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "60-day momentum",
+      "120-day momentum",
+      "ATR % of price"
+    ],
+    "price": 949.28,
+    "change": 9.87,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "ASML",
+    "company": "ASML Holding",
+    "signal": "AVOID",
+    "confidence": 44.2,
+    "expectedReturn5d": 0.08,
+    "risk": "High",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Distance from 52w high",
+      "Distance from 20d MA",
+      "Distance from 52w low"
+    ],
+    "price": 1749.04,
+    "change": 6.54,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "AMD",
+    "company": "Advanced Micro Devices",
+    "signal": "AVOID",
+    "confidence": 43.1,
+    "expectedReturn5d": 0.16,
+    "risk": "Elevated",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "60-day momentum",
+      "120-day momentum",
+      "Return skew (20d)"
+    ],
+    "price": 490.33,
+    "change": 5.14,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "AMAT",
+    "company": "Applied Materials",
+    "signal": "AVOID",
+    "confidence": 41.9,
+    "expectedReturn5d": 0.31,
+    "risk": "High",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Distance from 52w high",
+      "Distance from 20d MA",
+      "ATR % of price"
+    ],
+    "price": 492.17,
+    "change": 8.64,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "PEP",
+    "company": "PepsiCo",
+    "signal": "AVOID",
+    "confidence": 41.9,
+    "expectedReturn5d": -0.28,
+    "risk": "Low",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Return kurtosis (20d)",
+      "RSI (14)",
+      "Volatility of volatility"
+    ],
+    "price": 140.68,
+    "change": -0.87,
+    "sector": "Consumer Staples"
+  },
+  {
+    "ticker": "ADBE",
+    "company": "Adobe",
+    "signal": "AVOID",
+    "confidence": 38.4,
+    "expectedReturn5d": 0.45,
+    "risk": "High",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Return skew (20d)",
+      "Distance from 52w high",
+      "ATR % of price"
+    ],
+    "price": 244.99,
+    "change": -2.57,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "FTNT",
+    "company": "Fortinet",
+    "signal": "AVOID",
+    "confidence": 37.4,
+    "expectedReturn5d": 0.03,
+    "risk": "Moderate",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Distance from 20d MA",
+      "Return kurtosis (20d)",
+      "120-day momentum"
+    ],
+    "price": 143.04,
+    "change": -1.13,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "CDNS",
+    "company": "Cadence Design Systems",
+    "signal": "AVOID",
+    "confidence": 37.1,
+    "expectedReturn5d": 0.35,
+    "risk": "High",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "ATR % of price",
+      "Return kurtosis (20d)",
+      "Distance from 20d MA"
+    ],
+    "price": 394.24,
+    "change": 4.8,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "BKNG",
+    "company": "Booking Holdings",
+    "signal": "AVOID",
+    "confidence": 36.7,
+    "expectedReturn5d": 0.32,
+    "risk": "Moderate",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Overnight gap",
+      "120-day momentum",
+      "On-balance-volume slope"
+    ],
+    "price": 162.3,
+    "change": -2.13,
+    "sector": "Consumer Discretionary"
+  },
+  {
+    "ticker": "ADI",
+    "company": "Analog Devices",
+    "signal": "AVOID",
+    "confidence": 36.4,
+    "expectedReturn5d": 0.34,
+    "risk": "Moderate",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "ATR % of price",
+      "Overnight gap",
+      "Distance from 52w high"
+    ],
+    "price": 403.89,
+    "change": 0.62,
+    "sector": "Technology"
+  },
+  {
+    "ticker": "PYPL",
+    "company": "PayPal",
+    "signal": "AVOID",
+    "confidence": 35.4,
+    "expectedReturn5d": 0.39,
+    "risk": "Low",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Distance from 52w high",
+      "Return skew (20d)",
+      "Distance from 20d MA"
+    ],
+    "price": 41.26,
+    "change": -0.07,
+    "sector": "Financials"
+  },
+  {
+    "ticker": "PCAR",
+    "company": "PACCAR",
+    "signal": "AVOID",
+    "confidence": 35.1,
+    "expectedReturn5d": 0.27,
+    "risk": "Low",
+    "model": "XGBoost-v3",
+    "drivers": [
+      "Distance from 20d MA",
+      "20-day volatility",
+      "Volatility of volatility"
+    ],
+    "price": 118.44,
+    "change": 1.51,
+    "sector": "Industrials"
+  }
+]

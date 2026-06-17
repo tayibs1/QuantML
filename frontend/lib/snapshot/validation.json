@@ -1,0 +1,3299 @@
+{
+  "rollingWindow": {
+    "note": "Anchored weekly walk-forward (refit each week on prior data only, 5-day label purge). Compared against the 6-fold baseline.",
+    "generatedAt": "2026-06-16",
+    "baseline": {
+      "accuracy": 0.366,
+      "auc": 0.54,
+      "buy_hit_rate": 0.5282,
+      "sharpe": 1.19,
+      "cagr": 0.3117,
+      "maxDrawdown": -0.293
+    },
+    "rolling": {
+      "accuracy": 0.3648,
+      "auc": 0.5327,
+      "buy_hit_rate": 0.538,
+      "sharpe": 1.15,
+      "cagr": 0.298,
+      "maxDrawdown": -0.3496,
+      "hitRate": 0.5882,
+      "volatility": 0.257,
+      "weeks": 323
+    },
+    "weekly": [
+      {
+        "date": "2020-01-02",
+        "n": 54,
+        "nBuy": 19,
+        "accuracy": 0.3148,
+        "basketReturn": 0.01338,
+        "trainRows": 13389,
+        "psi": 0.4276
+      },
+      {
+        "date": "2020-01-09",
+        "n": 54,
+        "nBuy": 19,
+        "accuracy": 0.4259,
+        "basketReturn": 0.02013,
+        "trainRows": 13659,
+        "psi": 0.4249
+      },
+      {
+        "date": "2020-01-16",
+        "n": 54,
+        "nBuy": 16,
+        "accuracy": 0.4259,
+        "basketReturn": -0.00227,
+        "trainRows": 13929,
+        "psi": 0.3895
+      },
+      {
+        "date": "2020-01-24",
+        "n": 54,
+        "nBuy": 23,
+        "accuracy": 0.2407,
+        "basketReturn": -0.03634,
+        "trainRows": 14199,
+        "psi": 0.2806
+      },
+      {
+        "date": "2020-01-31",
+        "n": 54,
+        "nBuy": 23,
+        "accuracy": 0.3704,
+        "basketReturn": 0.04473,
+        "trainRows": 14469,
+        "psi": 0.423
+      },
+      {
+        "date": "2020-02-07",
+        "n": 54,
+        "nBuy": 22,
+        "accuracy": 0.4074,
+        "basketReturn": 0.05092,
+        "trainRows": 14739,
+        "psi": 0.3633
+      },
+      {
+        "date": "2020-02-14",
+        "n": 54,
+        "nBuy": 21,
+        "accuracy": 0.4259,
+        "basketReturn": -0.04136,
+        "trainRows": 15009,
+        "psi": 0.7496
+      },
+      {
+        "date": "2020-02-24",
+        "n": 54,
+        "nBuy": 22,
+        "accuracy": 0.3333,
+        "basketReturn": -0.02671,
+        "trainRows": 15279,
+        "psi": 0.4462
+      },
+      {
+        "date": "2020-03-02",
+        "n": 54,
+        "nBuy": 34,
+        "accuracy": 0.2963,
+        "basketReturn": -0.11134,
+        "trainRows": 15549,
+        "psi": 0.5998
+      },
+      {
+        "date": "2020-03-09",
+        "n": 54,
+        "nBuy": 26,
+        "accuracy": 0.3333,
+        "basketReturn": -0.13827,
+        "trainRows": 15819,
+        "psi": 0.4895
+      },
+      {
+        "date": "2020-03-16",
+        "n": 54,
+        "nBuy": 21,
+        "accuracy": 0.2963,
+        "basketReturn": -0.03367,
+        "trainRows": 16089,
+        "psi": 0.4448
+      },
+      {
+        "date": "2020-03-23",
+        "n": 54,
+        "nBuy": 24,
+        "accuracy": 0.463,
+        "basketReturn": 0.15852,
+        "trainRows": 16359,
+        "psi": 0.5197
+      },
+      {
+        "date": "2020-03-30",
+        "n": 54,
+        "nBuy": 15,
+        "accuracy": 0.2963,
+        "basketReturn": 0.02151,
+        "trainRows": 16629,
+        "psi": 0.219
+      },
+      {
+        "date": "2020-04-06",
+        "n": 54,
+        "nBuy": 17,
+        "accuracy": 0.4444,
+        "basketReturn": 0.0933,
+        "trainRows": 16899,
+        "psi": 0.2227
+      },
+      {
+        "date": "2020-04-14",
+        "n": 54,
+        "nBuy": 21,
+        "accuracy": 0.3704,
+        "basketReturn": -0.03739,
+        "trainRows": 17169,
+        "psi": 0.2897
+      },
+      {
+        "date": "2020-04-21",
+        "n": 54,
+        "nBuy": 19,
+        "accuracy": 0.5,
+        "basketReturn": 0.07567,
+        "trainRows": 17439,
+        "psi": 0.2402
+      },
+      {
+        "date": "2020-04-28",
+        "n": 54,
+        "nBuy": 24,
+        "accuracy": 0.3704,
+        "basketReturn": 0.01273,
+        "trainRows": 17709,
+        "psi": 0.3805
+      },
+      {
+        "date": "2020-05-05",
+        "n": 54,
+        "nBuy": 20,
+        "accuracy": 0.3519,
+        "basketReturn": 0.02338,
+        "trainRows": 17979,
+        "psi": 0.3274
+      },
+      {
+        "date": "2020-05-12",
+        "n": 54,
+        "nBuy": 24,
+        "accuracy": 0.4259,
+        "basketReturn": 0.02878,
+        "trainRows": 18249,
+        "psi": 0.2428
+      },
+      {
+        "date": "2020-05-19",
+        "n": 54,
+        "nBuy": 14,
+        "accuracy": 0.4074,
+        "basketReturn": 0.03889,
+        "trainRows": 18519,
+        "psi": 0.3042
+      },
+      {
+        "date": "2020-05-27",
+        "n": 54,
+        "nBuy": 23,
+        "accuracy": 0.2963,
+        "basketReturn": 0.0326,
+        "trainRows": 18789,
+        "psi": 0.3147
+      },
+      {
+        "date": "2020-06-03",
+        "n": 54,
+        "nBuy": 23,
+        "accuracy": 0.2963,
+        "basketReturn": 0.02614,
+        "trainRows": 19059,
+        "psi": 0.2441
+      },
+      {
+        "date": "2020-06-10",
+        "n": 55,
+        "nBuy": 23,
+        "accuracy": 0.2727,
+        "basketReturn": -0.0225,
+        "trainRows": 19329,
+        "psi": 0.2031
+      },
+      {
+        "date": "2020-06-17",
+        "n": 55,
+        "nBuy": 17,
+        "accuracy": 0.4,
+        "basketReturn": -0.02566,
+        "trainRows": 19600,
+        "psi": 0.3191
+      },
+      {
+        "date": "2020-06-24",
+        "n": 55,
+        "nBuy": 25,
+        "accuracy": 0.3636,
+        "basketReturn": 0.02477,
+        "trainRows": 19875,
+        "psi": 0.1674
+      },
+      {
+        "date": "2020-07-01",
+        "n": 55,
+        "nBuy": 23,
+        "accuracy": 0.3636,
+        "basketReturn": 0.02953,
+        "trainRows": 20150,
+        "psi": 0.2656
+      },
+      {
+        "date": "2020-07-09",
+        "n": 55,
+        "nBuy": 30,
+        "accuracy": 0.3818,
+        "basketReturn": -0.011,
+        "trainRows": 20425,
+        "psi": 0.3508
+      },
+      {
+        "date": "2020-07-16",
+        "n": 55,
+        "nBuy": 28,
+        "accuracy": 0.4,
+        "basketReturn": 0.02004,
+        "trainRows": 20700,
+        "psi": 0.3327
+      },
+      {
+        "date": "2020-07-23",
+        "n": 55,
+        "nBuy": 34,
+        "accuracy": 0.2727,
+        "basketReturn": 0.01024,
+        "trainRows": 20975,
+        "psi": 0.2671
+      },
+      {
+        "date": "2020-07-30",
+        "n": 55,
+        "nBuy": 26,
+        "accuracy": 0.4182,
+        "basketReturn": 0.02927,
+        "trainRows": 21250,
+        "psi": 0.367
+      },
+      {
+        "date": "2020-08-06",
+        "n": 55,
+        "nBuy": 17,
+        "accuracy": 0.2545,
+        "basketReturn": -0.0023,
+        "trainRows": 21525,
+        "psi": 0.2918
+      },
+      {
+        "date": "2020-08-13",
+        "n": 55,
+        "nBuy": 21,
+        "accuracy": 0.5273,
+        "basketReturn": 0.02254,
+        "trainRows": 21800,
+        "psi": 0.3468
+      },
+      {
+        "date": "2020-08-20",
+        "n": 55,
+        "nBuy": 22,
+        "accuracy": 0.3273,
+        "basketReturn": 0.02173,
+        "trainRows": 22075,
+        "psi": 0.3013
+      },
+      {
+        "date": "2020-08-27",
+        "n": 55,
+        "nBuy": 19,
+        "accuracy": 0.3636,
+        "basketReturn": -0.01471,
+        "trainRows": 22350,
+        "psi": 0.3756
+      },
+      {
+        "date": "2020-09-03",
+        "n": 55,
+        "nBuy": 22,
+        "accuracy": 0.3818,
+        "basketReturn": -0.04666,
+        "trainRows": 22625,
+        "psi": 0.2259
+      },
+      {
+        "date": "2020-09-11",
+        "n": 55,
+        "nBuy": 31,
+        "accuracy": 0.2909,
+        "basketReturn": 0.00142,
+        "trainRows": 22900,
+        "psi": 0.2708
+      },
+      {
+        "date": "2020-09-18",
+        "n": 55,
+        "nBuy": 28,
+        "accuracy": 0.3091,
+        "basketReturn": 0.01664,
+        "trainRows": 23175,
+        "psi": 0.336
+      },
+      {
+        "date": "2020-09-25",
+        "n": 55,
+        "nBuy": 18,
+        "accuracy": 0.3273,
+        "basketReturn": 0.01562,
+        "trainRows": 23450,
+        "psi": 0.2109
+      },
+      {
+        "date": "2020-10-02",
+        "n": 55,
+        "nBuy": 17,
+        "accuracy": 0.3636,
+        "basketReturn": 0.04347,
+        "trainRows": 23725,
+        "psi": 0.2554
+      },
+      {
+        "date": "2020-10-09",
+        "n": 55,
+        "nBuy": 19,
+        "accuracy": 0.4727,
+        "basketReturn": 0.01379,
+        "trainRows": 24000,
+        "psi": 0.1629
+      },
+      {
+        "date": "2020-10-16",
+        "n": 55,
+        "nBuy": 20,
+        "accuracy": 0.3273,
+        "basketReturn": -0.01174,
+        "trainRows": 24275,
+        "psi": 0.2747
+      },
+      {
+        "date": "2020-10-23",
+        "n": 55,
+        "nBuy": 17,
+        "accuracy": 0.3636,
+        "basketReturn": -0.05835,
+        "trainRows": 24550,
+        "psi": 0.3359
+      },
+      {
+        "date": "2020-10-30",
+        "n": 55,
+        "nBuy": 23,
+        "accuracy": 0.3636,
+        "basketReturn": 0.115,
+        "trainRows": 24825,
+        "psi": 0.3276
+      },
+      {
+        "date": "2020-11-06",
+        "n": 55,
+        "nBuy": 18,
+        "accuracy": 0.3455,
+        "basketReturn": -0.0021,
+        "trainRows": 25100,
+        "psi": 0.4769
+      },
+      {
+        "date": "2020-11-13",
+        "n": 55,
+        "nBuy": 26,
+        "accuracy": 0.3273,
+        "basketReturn": 0.0153,
+        "trainRows": 25375,
+        "psi": 0.18
+      },
+      {
+        "date": "2020-11-20",
+        "n": 55,
+        "nBuy": 16,
+        "accuracy": 0.3636,
+        "basketReturn": 0.03302,
+        "trainRows": 25650,
+        "psi": 0.2705
+      },
+      {
+        "date": "2020-11-30",
+        "n": 55,
+        "nBuy": 17,
+        "accuracy": 0.3818,
+        "basketReturn": 0.0387,
+        "trainRows": 25925,
+        "psi": 0.2731
+      },
+      {
+        "date": "2020-12-07",
+        "n": 55,
+        "nBuy": 18,
+        "accuracy": 0.2727,
+        "basketReturn": -0.00892,
+        "trainRows": 26200,
+        "psi": 0.3193
+      },
+      {
+        "date": "2020-12-14",
+        "n": 55,
+        "nBuy": 15,
+        "accuracy": 0.4182,
+        "basketReturn": 0.00598,
+        "trainRows": 26475,
+        "psi": 0.2304
+      },
+      {
+        "date": "2020-12-21",
+        "n": 55,
+        "nBuy": 21,
+        "accuracy": 0.3636,
+        "basketReturn": 0.00796,
+        "trainRows": 26750,
+        "psi": 0.2677
+      },
+      {
+        "date": "2020-12-29",
+        "n": 55,
+        "nBuy": 20,
+        "accuracy": 0.3455,
+        "basketReturn": -0.00282,
+        "trainRows": 27025,
+        "psi": 0.177
+      },
+      {
+        "date": "2021-01-06",
+        "n": 55,
+        "nBuy": 22,
+        "accuracy": 0.4,
+        "basketReturn": 0.03708,
+        "trainRows": 27300,
+        "psi": 0.182
+      },
+      {
+        "date": "2021-01-13",
+        "n": 55,
+        "nBuy": 23,
+        "accuracy": 0.3273,
+        "basketReturn": 0.03197,
+        "trainRows": 27575,
+        "psi": 0.3162
+      },
+      {
+        "date": "2021-01-21",
+        "n": 55,
+        "nBuy": 23,
+        "accuracy": 0.4,
+        "basketReturn": -0.0312,
+        "trainRows": 27850,
+        "psi": 0.3886
+      },
+      {
+        "date": "2021-01-28",
+        "n": 55,
+        "nBuy": 25,
+        "accuracy": 0.3636,
+        "basketReturn": 0.03261,
+        "trainRows": 28125,
+        "psi": 0.2282
+      },
+      {
+        "date": "2021-02-04",
+        "n": 55,
+        "nBuy": 23,
+        "accuracy": 0.2909,
+        "basketReturn": 0.02837,
+        "trainRows": 28400,
+        "psi": 0.3694
+      },
+      {
+        "date": "2021-02-11",
+        "n": 55,
+        "nBuy": 27,
+        "accuracy": 0.2727,
+        "basketReturn": 0.00152,
+        "trainRows": 28675,
+        "psi": 0.2933
+      },
+      {
+        "date": "2021-02-19",
+        "n": 55,
+        "nBuy": 19,
+        "accuracy": 0.3455,
+        "basketReturn": -0.05488,
+        "trainRows": 28950,
+        "psi": 0.2905
+      },
+      {
+        "date": "2021-02-26",
+        "n": 55,
+        "nBuy": 20,
+        "accuracy": 0.2364,
+        "basketReturn": -0.04097,
+        "trainRows": 29225,
+        "psi": 0.1701
+      },
+      {
+        "date": "2021-03-05",
+        "n": 55,
+        "nBuy": 27,
+        "accuracy": 0.3091,
+        "basketReturn": 0.02998,
+        "trainRows": 29500,
+        "psi": 0.2534
+      },
+      {
+        "date": "2021-03-12",
+        "n": 55,
+        "nBuy": 28,
+        "accuracy": 0.2545,
+        "basketReturn": -0.00904,
+        "trainRows": 29775,
+        "psi": 0.2418
+      },
+      {
+        "date": "2021-03-19",
+        "n": 55,
+        "nBuy": 19,
+        "accuracy": 0.3636,
+        "basketReturn": 0.03816,
+        "trainRows": 30050,
+        "psi": 0.2121
+      },
+      {
+        "date": "2021-03-26",
+        "n": 55,
+        "nBuy": 19,
+        "accuracy": 0.4364,
+        "basketReturn": 0.04795,
+        "trainRows": 30325,
+        "psi": 0.1588
+      },
+      {
+        "date": "2021-04-05",
+        "n": 55,
+        "nBuy": 21,
+        "accuracy": 0.2909,
+        "basketReturn": 0.00327,
+        "trainRows": 30600,
+        "psi": 0.3355
+      },
+      {
+        "date": "2021-04-12",
+        "n": 55,
+        "nBuy": 23,
+        "accuracy": 0.3091,
+        "basketReturn": -0.00617,
+        "trainRows": 30875,
+        "psi": 0.2945
+      },
+      {
+        "date": "2021-04-19",
+        "n": 55,
+        "nBuy": 23,
+        "accuracy": 0.3455,
+        "basketReturn": 0.01231,
+        "trainRows": 31150,
+        "psi": 0.2265
+      },
+      {
+        "date": "2021-04-26",
+        "n": 55,
+        "nBuy": 26,
+        "accuracy": 0.5273,
+        "basketReturn": -0.01247,
+        "trainRows": 31425,
+        "psi": 0.1751
+      },
+      {
+        "date": "2021-05-03",
+        "n": 55,
+        "nBuy": 26,
+        "accuracy": 0.2364,
+        "basketReturn": -0.02965,
+        "trainRows": 31700,
+        "psi": 0.19
+      },
+      {
+        "date": "2021-05-10",
+        "n": 55,
+        "nBuy": 19,
+        "accuracy": 0.2909,
+        "basketReturn": -0.01133,
+        "trainRows": 31975,
+        "psi": 0.3617
+      },
+      {
+        "date": "2021-05-17",
+        "n": 55,
+        "nBuy": 24,
+        "accuracy": 0.3818,
+        "basketReturn": 0.02625,
+        "trainRows": 32250,
+        "psi": 0.4024
+      },
+      {
+        "date": "2021-05-24",
+        "n": 55,
+        "nBuy": 19,
+        "accuracy": 0.3273,
+        "basketReturn": 0.0016,
+        "trainRows": 32525,
+        "psi": 0.254
+      },
+      {
+        "date": "2021-06-01",
+        "n": 55,
+        "nBuy": 25,
+        "accuracy": 0.2909,
+        "basketReturn": -0.00024,
+        "trainRows": 32800,
+        "psi": 0.1798
+      },
+      {
+        "date": "2021-06-08",
+        "n": 55,
+        "nBuy": 25,
+        "accuracy": 0.3273,
+        "basketReturn": 0.01597,
+        "trainRows": 33075,
+        "psi": 0.1529
+      },
+      {
+        "date": "2021-06-15",
+        "n": 55,
+        "nBuy": 18,
+        "accuracy": 0.3818,
+        "basketReturn": 0.01792,
+        "trainRows": 33350,
+        "psi": 0.1833
+      },
+      {
+        "date": "2021-06-22",
+        "n": 55,
+        "nBuy": 23,
+        "accuracy": 0.3636,
+        "basketReturn": 0.03331,
+        "trainRows": 33625,
+        "psi": 0.2113
+      },
+      {
+        "date": "2021-06-29",
+        "n": 55,
+        "nBuy": 17,
+        "accuracy": 0.4727,
+        "basketReturn": 0.01623,
+        "trainRows": 33900,
+        "psi": 0.2218
+      },
+      {
+        "date": "2021-07-07",
+        "n": 55,
+        "nBuy": 22,
+        "accuracy": 0.3818,
+        "basketReturn": 0.00464,
+        "trainRows": 34175,
+        "psi": 0.2599
+      },
+      {
+        "date": "2021-07-14",
+        "n": 55,
+        "nBuy": 28,
+        "accuracy": 0.3818,
+        "basketReturn": 0.00571,
+        "trainRows": 34450,
+        "psi": 0.2066
+      },
+      {
+        "date": "2021-07-21",
+        "n": 55,
+        "nBuy": 17,
+        "accuracy": 0.3636,
+        "basketReturn": 0.01144,
+        "trainRows": 34725,
+        "psi": 0.2502
+      },
+      {
+        "date": "2021-07-28",
+        "n": 55,
+        "nBuy": 18,
+        "accuracy": 0.4727,
+        "basketReturn": 0.02437,
+        "trainRows": 35000,
+        "psi": 0.3083
+      },
+      {
+        "date": "2021-08-04",
+        "n": 55,
+        "nBuy": 22,
+        "accuracy": 0.4909,
+        "basketReturn": 0.0083,
+        "trainRows": 35275,
+        "psi": 0.3315
+      },
+      {
+        "date": "2021-08-11",
+        "n": 55,
+        "nBuy": 24,
+        "accuracy": 0.3455,
+        "basketReturn": -0.02207,
+        "trainRows": 35550,
+        "psi": 0.2459
+      },
+      {
+        "date": "2021-08-18",
+        "n": 55,
+        "nBuy": 21,
+        "accuracy": 0.4727,
+        "basketReturn": 0.05099,
+        "trainRows": 35825,
+        "psi": 0.1791
+      },
+      {
+        "date": "2021-08-25",
+        "n": 55,
+        "nBuy": 30,
+        "accuracy": 0.2909,
+        "basketReturn": 0.01282,
+        "trainRows": 36100,
+        "psi": 0.2496
+      },
+      {
+        "date": "2021-09-01",
+        "n": 55,
+        "nBuy": 21,
+        "accuracy": 0.3091,
+        "basketReturn": -0.00731,
+        "trainRows": 36375,
+        "psi": 0.2921
+      },
+      {
+        "date": "2021-09-09",
+        "n": 55,
+        "nBuy": 19,
+        "accuracy": 0.2727,
+        "basketReturn": 0.00396,
+        "trainRows": 36650,
+        "psi": 0.3853
+      },
+      {
+        "date": "2021-09-16",
+        "n": 55,
+        "nBuy": 22,
+        "accuracy": 0.2,
+        "basketReturn": -0.00866,
+        "trainRows": 36925,
+        "psi": 0.3216
+      },
+      {
+        "date": "2021-09-23",
+        "n": 55,
+        "nBuy": 20,
+        "accuracy": 0.4545,
+        "basketReturn": -0.03963,
+        "trainRows": 37200,
+        "psi": 0.2119
+      },
+      {
+        "date": "2021-09-30",
+        "n": 55,
+        "nBuy": 21,
+        "accuracy": 0.2182,
+        "basketReturn": 0.00539,
+        "trainRows": 37475,
+        "psi": 0.2195
+      },
+      {
+        "date": "2021-10-07",
+        "n": 55,
+        "nBuy": 20,
+        "accuracy": 0.3273,
+        "basketReturn": 0.00927,
+        "trainRows": 37750,
+        "psi": 0.4277
+      },
+      {
+        "date": "2021-10-14",
+        "n": 55,
+        "nBuy": 20,
+        "accuracy": 0.3273,
+        "basketReturn": 0.02776,
+        "trainRows": 38025,
+        "psi": 0.1817
+      },
+      {
+        "date": "2021-10-21",
+        "n": 55,
+        "nBuy": 17,
+        "accuracy": 0.2727,
+        "basketReturn": 0.01211,
+        "trainRows": 38300,
+        "psi": 0.3019
+      },
+      {
+        "date": "2021-10-28",
+        "n": 55,
+        "nBuy": 26,
+        "accuracy": 0.3091,
+        "basketReturn": 0.03794,
+        "trainRows": 38575,
+        "psi": 0.3181
+      },
+      {
+        "date": "2021-11-04",
+        "n": 55,
+        "nBuy": 20,
+        "accuracy": 0.4182,
+        "basketReturn": -0.00875,
+        "trainRows": 38850,
+        "psi": 0.4861
+      },
+      {
+        "date": "2021-11-11",
+        "n": 55,
+        "nBuy": 24,
+        "accuracy": 0.2727,
+        "basketReturn": 0.00682,
+        "trainRows": 39125,
+        "psi": 0.2062
+      },
+      {
+        "date": "2021-11-18",
+        "n": 55,
+        "nBuy": 21,
+        "accuracy": 0.4364,
+        "basketReturn": -0.03431,
+        "trainRows": 39400,
+        "psi": 0.3487
+      },
+      {
+        "date": "2021-11-26",
+        "n": 55,
+        "nBuy": 21,
+        "accuracy": 0.3636,
+        "basketReturn": -0.03225,
+        "trainRows": 39675,
+        "psi": 0.1763
+      },
+      {
+        "date": "2021-12-03",
+        "n": 55,
+        "nBuy": 23,
+        "accuracy": 0.2909,
+        "basketReturn": 0.03847,
+        "trainRows": 39950,
+        "psi": 0.1711
+      },
+      {
+        "date": "2021-12-10",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.4107,
+        "basketReturn": -0.02747,
+        "trainRows": 40225,
+        "psi": 0.2679
+      },
+      {
+        "date": "2021-12-17",
+        "n": 56,
+        "nBuy": 18,
+        "accuracy": 0.375,
+        "basketReturn": 0.06644,
+        "trainRows": 40502,
+        "psi": 0.2865
+      },
+      {
+        "date": "2021-12-27",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.4643,
+        "basketReturn": -0.00638,
+        "trainRows": 40782,
+        "psi": 0.3289
+      },
+      {
+        "date": "2022-01-03",
+        "n": 56,
+        "nBuy": 15,
+        "accuracy": 0.2857,
+        "basketReturn": -0.05409,
+        "trainRows": 41062,
+        "psi": 0.2031
+      },
+      {
+        "date": "2022-01-10",
+        "n": 56,
+        "nBuy": 22,
+        "accuracy": 0.3393,
+        "basketReturn": -0.03106,
+        "trainRows": 41342,
+        "psi": 0.2425
+      },
+      {
+        "date": "2022-01-18",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.375,
+        "basketReturn": -0.07907,
+        "trainRows": 41622,
+        "psi": 0.2145
+      },
+      {
+        "date": "2022-01-25",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.5,
+        "basketReturn": 0.07459,
+        "trainRows": 41902,
+        "psi": 0.3487
+      },
+      {
+        "date": "2022-02-01",
+        "n": 56,
+        "nBuy": 23,
+        "accuracy": 0.3214,
+        "basketReturn": -0.00698,
+        "trainRows": 42182,
+        "psi": 0.2549
+      },
+      {
+        "date": "2022-02-08",
+        "n": 56,
+        "nBuy": 23,
+        "accuracy": 0.4464,
+        "basketReturn": 0.00064,
+        "trainRows": 42462,
+        "psi": 0.38
+      },
+      {
+        "date": "2022-02-15",
+        "n": 56,
+        "nBuy": 16,
+        "accuracy": 0.3571,
+        "basketReturn": -0.08068,
+        "trainRows": 42742,
+        "psi": 0.3053
+      },
+      {
+        "date": "2022-02-23",
+        "n": 56,
+        "nBuy": 13,
+        "accuracy": 0.3929,
+        "basketReturn": 0.09191,
+        "trainRows": 43022,
+        "psi": 0.3514
+      },
+      {
+        "date": "2022-03-02",
+        "n": 56,
+        "nBuy": 24,
+        "accuracy": 0.2679,
+        "basketReturn": -0.04529,
+        "trainRows": 43302,
+        "psi": 0.2505
+      },
+      {
+        "date": "2022-03-09",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.4107,
+        "basketReturn": 0.02924,
+        "trainRows": 43582,
+        "psi": 0.1622
+      },
+      {
+        "date": "2022-03-16",
+        "n": 56,
+        "nBuy": 20,
+        "accuracy": 0.4821,
+        "basketReturn": 0.03759,
+        "trainRows": 43862,
+        "psi": 0.2488
+      },
+      {
+        "date": "2022-03-23",
+        "n": 56,
+        "nBuy": 22,
+        "accuracy": 0.4107,
+        "basketReturn": 0.04678,
+        "trainRows": 44142,
+        "psi": 0.1912
+      },
+      {
+        "date": "2022-03-30",
+        "n": 56,
+        "nBuy": 26,
+        "accuracy": 0.25,
+        "basketReturn": -0.05326,
+        "trainRows": 44422,
+        "psi": 0.2485
+      },
+      {
+        "date": "2022-04-06",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.2679,
+        "basketReturn": -0.005,
+        "trainRows": 44702,
+        "psi": 0.1671
+      },
+      {
+        "date": "2022-04-13",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.375,
+        "basketReturn": -0.04199,
+        "trainRows": 44982,
+        "psi": 0.2133
+      },
+      {
+        "date": "2022-04-21",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.3571,
+        "basketReturn": -0.02065,
+        "trainRows": 45262,
+        "psi": 0.388
+      },
+      {
+        "date": "2022-04-28",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.4107,
+        "basketReturn": -0.05699,
+        "trainRows": 45542,
+        "psi": 0.3548
+      },
+      {
+        "date": "2022-05-05",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.2321,
+        "basketReturn": -0.09088,
+        "trainRows": 45822,
+        "psi": 0.4195
+      },
+      {
+        "date": "2022-05-12",
+        "n": 56,
+        "nBuy": 18,
+        "accuracy": 0.2143,
+        "basketReturn": -0.00851,
+        "trainRows": 46102,
+        "psi": 0.3881
+      },
+      {
+        "date": "2022-05-19",
+        "n": 56,
+        "nBuy": 25,
+        "accuracy": 0.3036,
+        "basketReturn": 0.03105,
+        "trainRows": 46382,
+        "psi": 0.3043
+      },
+      {
+        "date": "2022-05-26",
+        "n": 56,
+        "nBuy": 20,
+        "accuracy": 0.2857,
+        "basketReturn": 0.01225,
+        "trainRows": 46662,
+        "psi": 0.2474
+      },
+      {
+        "date": "2022-06-03",
+        "n": 56,
+        "nBuy": 14,
+        "accuracy": 0.4107,
+        "basketReturn": -0.05637,
+        "trainRows": 46942,
+        "psi": 0.3409
+      },
+      {
+        "date": "2022-06-10",
+        "n": 56,
+        "nBuy": 27,
+        "accuracy": 0.2321,
+        "basketReturn": -0.06517,
+        "trainRows": 47222,
+        "psi": 0.2854
+      },
+      {
+        "date": "2022-06-17",
+        "n": 56,
+        "nBuy": 20,
+        "accuracy": 0.2143,
+        "basketReturn": 0.05002,
+        "trainRows": 47502,
+        "psi": 0.2999
+      },
+      {
+        "date": "2022-06-27",
+        "n": 56,
+        "nBuy": 23,
+        "accuracy": 0.3571,
+        "basketReturn": -0.03373,
+        "trainRows": 47782,
+        "psi": 0.2051
+      },
+      {
+        "date": "2022-07-05",
+        "n": 56,
+        "nBuy": 15,
+        "accuracy": 0.3214,
+        "basketReturn": -0.00407,
+        "trainRows": 48062,
+        "psi": 0.2595
+      },
+      {
+        "date": "2022-07-12",
+        "n": 56,
+        "nBuy": 26,
+        "accuracy": 0.3393,
+        "basketReturn": 0.06157,
+        "trainRows": 48342,
+        "psi": 0.2637
+      },
+      {
+        "date": "2022-07-19",
+        "n": 56,
+        "nBuy": 28,
+        "accuracy": 0.2679,
+        "basketReturn": -0.01336,
+        "trainRows": 48622,
+        "psi": 0.3004
+      },
+      {
+        "date": "2022-07-26",
+        "n": 56,
+        "nBuy": 20,
+        "accuracy": 0.4464,
+        "basketReturn": 0.08235,
+        "trainRows": 48902,
+        "psi": 0.1901
+      },
+      {
+        "date": "2022-08-02",
+        "n": 56,
+        "nBuy": 24,
+        "accuracy": 0.3571,
+        "basketReturn": -0.00433,
+        "trainRows": 49182,
+        "psi": 0.4121
+      },
+      {
+        "date": "2022-08-09",
+        "n": 56,
+        "nBuy": 15,
+        "accuracy": 0.4107,
+        "basketReturn": 0.05997,
+        "trainRows": 49462,
+        "psi": 0.2443
+      },
+      {
+        "date": "2022-08-16",
+        "n": 56,
+        "nBuy": 18,
+        "accuracy": 0.3929,
+        "basketReturn": -0.0655,
+        "trainRows": 49742,
+        "psi": 0.1881
+      },
+      {
+        "date": "2022-08-23",
+        "n": 56,
+        "nBuy": 25,
+        "accuracy": 0.4107,
+        "basketReturn": -0.0289,
+        "trainRows": 50022,
+        "psi": 0.2224
+      },
+      {
+        "date": "2022-08-30",
+        "n": 56,
+        "nBuy": 22,
+        "accuracy": 0.3929,
+        "basketReturn": -0.00049,
+        "trainRows": 50302,
+        "psi": 0.2876
+      },
+      {
+        "date": "2022-09-07",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.2321,
+        "basketReturn": -0.01249,
+        "trainRows": 50582,
+        "psi": 0.2461
+      },
+      {
+        "date": "2022-09-14",
+        "n": 56,
+        "nBuy": 25,
+        "accuracy": 0.3571,
+        "basketReturn": -0.04223,
+        "trainRows": 50862,
+        "psi": 0.4887
+      },
+      {
+        "date": "2022-09-21",
+        "n": 56,
+        "nBuy": 23,
+        "accuracy": 0.4107,
+        "basketReturn": -0.00581,
+        "trainRows": 51142,
+        "psi": 0.3872
+      },
+      {
+        "date": "2022-09-28",
+        "n": 56,
+        "nBuy": 26,
+        "accuracy": 0.4286,
+        "basketReturn": 0.02597,
+        "trainRows": 51422,
+        "psi": 0.2401
+      },
+      {
+        "date": "2022-10-05",
+        "n": 56,
+        "nBuy": 27,
+        "accuracy": 0.4286,
+        "basketReturn": -0.07353,
+        "trainRows": 51702,
+        "psi": 0.1901
+      },
+      {
+        "date": "2022-10-12",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.2143,
+        "basketReturn": 0.0278,
+        "trainRows": 51982,
+        "psi": 0.3558
+      },
+      {
+        "date": "2022-10-19",
+        "n": 56,
+        "nBuy": 17,
+        "accuracy": 0.2857,
+        "basketReturn": 0.03885,
+        "trainRows": 52262,
+        "psi": 0.3701
+      },
+      {
+        "date": "2022-10-26",
+        "n": 56,
+        "nBuy": 16,
+        "accuracy": 0.4643,
+        "basketReturn": -0.03714,
+        "trainRows": 52542,
+        "psi": 0.2824
+      },
+      {
+        "date": "2022-11-02",
+        "n": 56,
+        "nBuy": 16,
+        "accuracy": 0.3393,
+        "basketReturn": 0.00175,
+        "trainRows": 52822,
+        "psi": 0.3284
+      },
+      {
+        "date": "2022-11-09",
+        "n": 56,
+        "nBuy": 14,
+        "accuracy": 0.4107,
+        "basketReturn": 0.0935,
+        "trainRows": 53102,
+        "psi": 0.3377
+      },
+      {
+        "date": "2022-11-16",
+        "n": 56,
+        "nBuy": 25,
+        "accuracy": 0.375,
+        "basketReturn": 0.01224,
+        "trainRows": 53382,
+        "psi": 0.2436
+      },
+      {
+        "date": "2022-11-23",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.3036,
+        "basketReturn": 0.02065,
+        "trainRows": 53662,
+        "psi": 0.2936
+      },
+      {
+        "date": "2022-12-01",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.4821,
+        "basketReturn": -0.02178,
+        "trainRows": 53942,
+        "psi": 0.2733
+      },
+      {
+        "date": "2022-12-08",
+        "n": 56,
+        "nBuy": 18,
+        "accuracy": 0.375,
+        "basketReturn": -0.02991,
+        "trainRows": 54222,
+        "psi": 0.3244
+      },
+      {
+        "date": "2022-12-15",
+        "n": 56,
+        "nBuy": 23,
+        "accuracy": 0.4286,
+        "basketReturn": -0.02943,
+        "trainRows": 54502,
+        "psi": 0.2836
+      },
+      {
+        "date": "2022-12-22",
+        "n": 56,
+        "nBuy": 20,
+        "accuracy": 0.3929,
+        "basketReturn": 0.0018,
+        "trainRows": 54782,
+        "psi": 0.221
+      },
+      {
+        "date": "2022-12-30",
+        "n": 56,
+        "nBuy": 25,
+        "accuracy": 0.375,
+        "basketReturn": 0.03368,
+        "trainRows": 55062,
+        "psi": 0.3071
+      },
+      {
+        "date": "2023-01-09",
+        "n": 56,
+        "nBuy": 22,
+        "accuracy": 0.3036,
+        "basketReturn": 0.0337,
+        "trainRows": 55342,
+        "psi": 0.1657
+      },
+      {
+        "date": "2023-01-17",
+        "n": 56,
+        "nBuy": 23,
+        "accuracy": 0.4643,
+        "basketReturn": 0.02998,
+        "trainRows": 55622,
+        "psi": 0.2155
+      },
+      {
+        "date": "2023-01-24",
+        "n": 56,
+        "nBuy": 24,
+        "accuracy": 0.3036,
+        "basketReturn": 0.00887,
+        "trainRows": 55902,
+        "psi": 0.2287
+      },
+      {
+        "date": "2023-01-31",
+        "n": 56,
+        "nBuy": 23,
+        "accuracy": 0.2679,
+        "basketReturn": 0.04464,
+        "trainRows": 56182,
+        "psi": 0.2295
+      },
+      {
+        "date": "2023-02-07",
+        "n": 56,
+        "nBuy": 25,
+        "accuracy": 0.3214,
+        "basketReturn": -0.00189,
+        "trainRows": 56462,
+        "psi": 0.2268
+      },
+      {
+        "date": "2023-02-14",
+        "n": 56,
+        "nBuy": 22,
+        "accuracy": 0.375,
+        "basketReturn": -0.03984,
+        "trainRows": 56742,
+        "psi": 0.2242
+      },
+      {
+        "date": "2023-02-22",
+        "n": 56,
+        "nBuy": 26,
+        "accuracy": 0.3571,
+        "basketReturn": -0.00449,
+        "trainRows": 57022,
+        "psi": 0.2839
+      },
+      {
+        "date": "2023-03-01",
+        "n": 56,
+        "nBuy": 16,
+        "accuracy": 0.4464,
+        "basketReturn": 0.01579,
+        "trainRows": 57302,
+        "psi": 0.1622
+      },
+      {
+        "date": "2023-03-08",
+        "n": 56,
+        "nBuy": 17,
+        "accuracy": 0.3929,
+        "basketReturn": -0.01515,
+        "trainRows": 57582,
+        "psi": 0.2091
+      },
+      {
+        "date": "2023-03-15",
+        "n": 56,
+        "nBuy": 23,
+        "accuracy": 0.4643,
+        "basketReturn": 0.02615,
+        "trainRows": 57862,
+        "psi": 0.1737
+      },
+      {
+        "date": "2023-03-22",
+        "n": 56,
+        "nBuy": 23,
+        "accuracy": 0.4821,
+        "basketReturn": 0.03223,
+        "trainRows": 58142,
+        "psi": 0.1586
+      },
+      {
+        "date": "2023-03-29",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.375,
+        "basketReturn": -0.00532,
+        "trainRows": 58422,
+        "psi": 0.2035
+      },
+      {
+        "date": "2023-04-05",
+        "n": 56,
+        "nBuy": 17,
+        "accuracy": 0.3929,
+        "basketReturn": 0.01387,
+        "trainRows": 58702,
+        "psi": 0.2453
+      },
+      {
+        "date": "2023-04-13",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.3036,
+        "basketReturn": -0.00865,
+        "trainRows": 58982,
+        "psi": 0.2635
+      },
+      {
+        "date": "2023-04-20",
+        "n": 56,
+        "nBuy": 15,
+        "accuracy": 0.3036,
+        "basketReturn": -0.01547,
+        "trainRows": 59262,
+        "psi": 0.1771
+      },
+      {
+        "date": "2023-04-27",
+        "n": 56,
+        "nBuy": 18,
+        "accuracy": 0.3393,
+        "basketReturn": -0.0173,
+        "trainRows": 59542,
+        "psi": 0.2253
+      },
+      {
+        "date": "2023-05-04",
+        "n": 56,
+        "nBuy": 20,
+        "accuracy": 0.3393,
+        "basketReturn": 0.02736,
+        "trainRows": 59822,
+        "psi": 0.2796
+      },
+      {
+        "date": "2023-05-11",
+        "n": 56,
+        "nBuy": 20,
+        "accuracy": 0.4821,
+        "basketReturn": 0.04999,
+        "trainRows": 60102,
+        "psi": 0.2505
+      },
+      {
+        "date": "2023-05-18",
+        "n": 56,
+        "nBuy": 16,
+        "accuracy": 0.2857,
+        "basketReturn": -0.01273,
+        "trainRows": 60382,
+        "psi": 0.3319
+      },
+      {
+        "date": "2023-05-25",
+        "n": 56,
+        "nBuy": 16,
+        "accuracy": 0.4464,
+        "basketReturn": 0.06736,
+        "trainRows": 60662,
+        "psi": 0.356
+      },
+      {
+        "date": "2023-06-02",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.3214,
+        "basketReturn": 0.00577,
+        "trainRows": 60942,
+        "psi": 0.4311
+      },
+      {
+        "date": "2023-06-09",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.3393,
+        "basketReturn": 0.04853,
+        "trainRows": 61222,
+        "psi": 0.1718
+      },
+      {
+        "date": "2023-06-16",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.3571,
+        "basketReturn": -0.03299,
+        "trainRows": 61502,
+        "psi": 0.2571
+      },
+      {
+        "date": "2023-06-26",
+        "n": 56,
+        "nBuy": 15,
+        "accuracy": 0.3571,
+        "basketReturn": 0.04407,
+        "trainRows": 61782,
+        "psi": 0.2332
+      },
+      {
+        "date": "2023-07-03",
+        "n": 56,
+        "nBuy": 18,
+        "accuracy": 0.4286,
+        "basketReturn": 0.00215,
+        "trainRows": 62062,
+        "psi": 0.2425
+      },
+      {
+        "date": "2023-07-11",
+        "n": 56,
+        "nBuy": 15,
+        "accuracy": 0.3571,
+        "basketReturn": 0.04365,
+        "trainRows": 62342,
+        "psi": 0.3027
+      },
+      {
+        "date": "2023-07-18",
+        "n": 56,
+        "nBuy": 23,
+        "accuracy": 0.3571,
+        "basketReturn": -0.00411,
+        "trainRows": 62622,
+        "psi": 0.3625
+      },
+      {
+        "date": "2023-07-25",
+        "n": 56,
+        "nBuy": 22,
+        "accuracy": 0.375,
+        "basketReturn": 0.0217,
+        "trainRows": 62902,
+        "psi": 0.2108
+      },
+      {
+        "date": "2023-08-01",
+        "n": 56,
+        "nBuy": 25,
+        "accuracy": 0.375,
+        "basketReturn": -0.01818,
+        "trainRows": 63182,
+        "psi": 0.202
+      },
+      {
+        "date": "2023-08-08",
+        "n": 56,
+        "nBuy": 20,
+        "accuracy": 0.3929,
+        "basketReturn": -0.01294,
+        "trainRows": 63462,
+        "psi": 0.3137
+      },
+      {
+        "date": "2023-08-15",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.3571,
+        "basketReturn": -0.0122,
+        "trainRows": 63742,
+        "psi": 0.3079
+      },
+      {
+        "date": "2023-08-22",
+        "n": 56,
+        "nBuy": 18,
+        "accuracy": 0.3929,
+        "basketReturn": 0.02786,
+        "trainRows": 64022,
+        "psi": 0.3132
+      },
+      {
+        "date": "2023-08-29",
+        "n": 56,
+        "nBuy": 22,
+        "accuracy": 0.4286,
+        "basketReturn": 0.02175,
+        "trainRows": 64302,
+        "psi": 0.2144
+      },
+      {
+        "date": "2023-09-06",
+        "n": 56,
+        "nBuy": 17,
+        "accuracy": 0.4821,
+        "basketReturn": 0.01032,
+        "trainRows": 64582,
+        "psi": 0.2221
+      },
+      {
+        "date": "2023-09-13",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.3214,
+        "basketReturn": -0.03177,
+        "trainRows": 64862,
+        "psi": 0.1953
+      },
+      {
+        "date": "2023-09-20",
+        "n": 56,
+        "nBuy": 18,
+        "accuracy": 0.3214,
+        "basketReturn": -0.02461,
+        "trainRows": 65142,
+        "psi": 0.2324
+      },
+      {
+        "date": "2023-09-27",
+        "n": 56,
+        "nBuy": 22,
+        "accuracy": 0.4107,
+        "basketReturn": 0.01236,
+        "trainRows": 65422,
+        "psi": 0.2238
+      },
+      {
+        "date": "2023-10-04",
+        "n": 56,
+        "nBuy": 17,
+        "accuracy": 0.375,
+        "basketReturn": 0.02957,
+        "trainRows": 65702,
+        "psi": 0.2157
+      },
+      {
+        "date": "2023-10-11",
+        "n": 56,
+        "nBuy": 13,
+        "accuracy": 0.4107,
+        "basketReturn": -0.01637,
+        "trainRows": 65982,
+        "psi": 0.2196
+      },
+      {
+        "date": "2023-10-18",
+        "n": 56,
+        "nBuy": 20,
+        "accuracy": 0.375,
+        "basketReturn": -0.0314,
+        "trainRows": 66262,
+        "psi": 0.2099
+      },
+      {
+        "date": "2023-10-25",
+        "n": 56,
+        "nBuy": 20,
+        "accuracy": 0.3571,
+        "basketReturn": 0.03174,
+        "trainRows": 66542,
+        "psi": 0.2662
+      },
+      {
+        "date": "2023-11-01",
+        "n": 56,
+        "nBuy": 24,
+        "accuracy": 0.4464,
+        "basketReturn": 0.04397,
+        "trainRows": 66822,
+        "psi": 0.2439
+      },
+      {
+        "date": "2023-11-08",
+        "n": 56,
+        "nBuy": 13,
+        "accuracy": 0.4107,
+        "basketReturn": 0.0433,
+        "trainRows": 67102,
+        "psi": 0.1571
+      },
+      {
+        "date": "2023-11-15",
+        "n": 56,
+        "nBuy": 17,
+        "accuracy": 0.3214,
+        "basketReturn": 0.01511,
+        "trainRows": 67382,
+        "psi": 0.2687
+      },
+      {
+        "date": "2023-11-22",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.4821,
+        "basketReturn": 0.01147,
+        "trainRows": 67662,
+        "psi": 0.243
+      },
+      {
+        "date": "2023-11-30",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.3929,
+        "basketReturn": 0.01697,
+        "trainRows": 67942,
+        "psi": 0.4082
+      },
+      {
+        "date": "2023-12-07",
+        "n": 56,
+        "nBuy": 23,
+        "accuracy": 0.3571,
+        "basketReturn": 0.0556,
+        "trainRows": 68222,
+        "psi": 0.1968
+      },
+      {
+        "date": "2023-12-14",
+        "n": 56,
+        "nBuy": 18,
+        "accuracy": 0.4286,
+        "basketReturn": 0.01934,
+        "trainRows": 68502,
+        "psi": 0.2763
+      },
+      {
+        "date": "2023-12-21",
+        "n": 56,
+        "nBuy": 23,
+        "accuracy": 0.3214,
+        "basketReturn": 0.00129,
+        "trainRows": 68782,
+        "psi": 0.3153
+      },
+      {
+        "date": "2023-12-29",
+        "n": 56,
+        "nBuy": 24,
+        "accuracy": 0.25,
+        "basketReturn": -0.00945,
+        "trainRows": 69062,
+        "psi": 0.334
+      },
+      {
+        "date": "2024-01-08",
+        "n": 56,
+        "nBuy": 23,
+        "accuracy": 0.3214,
+        "basketReturn": 0.00972,
+        "trainRows": 69342,
+        "psi": 0.1977
+      },
+      {
+        "date": "2024-01-16",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.3214,
+        "basketReturn": 0.04626,
+        "trainRows": 69622,
+        "psi": 0.2147
+      },
+      {
+        "date": "2024-01-23",
+        "n": 56,
+        "nBuy": 18,
+        "accuracy": 0.4464,
+        "basketReturn": 0.00844,
+        "trainRows": 69902,
+        "psi": 0.3751
+      },
+      {
+        "date": "2024-01-30",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.3393,
+        "basketReturn": 0.01491,
+        "trainRows": 70182,
+        "psi": 0.4066
+      },
+      {
+        "date": "2024-02-06",
+        "n": 56,
+        "nBuy": 22,
+        "accuracy": 0.4107,
+        "basketReturn": 0.0045,
+        "trainRows": 70462,
+        "psi": 0.1981
+      },
+      {
+        "date": "2024-02-13",
+        "n": 56,
+        "nBuy": 20,
+        "accuracy": 0.2857,
+        "basketReturn": -0.01807,
+        "trainRows": 70742,
+        "psi": 0.2955
+      },
+      {
+        "date": "2024-02-21",
+        "n": 56,
+        "nBuy": 16,
+        "accuracy": 0.4286,
+        "basketReturn": 0.03293,
+        "trainRows": 71022,
+        "psi": 0.5257
+      },
+      {
+        "date": "2024-02-28",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.3393,
+        "basketReturn": 0.00315,
+        "trainRows": 71302,
+        "psi": 0.3751
+      },
+      {
+        "date": "2024-03-06",
+        "n": 56,
+        "nBuy": 15,
+        "accuracy": 0.5179,
+        "basketReturn": 0.01094,
+        "trainRows": 71582,
+        "psi": 0.4648
+      },
+      {
+        "date": "2024-03-13",
+        "n": 56,
+        "nBuy": 24,
+        "accuracy": 0.4464,
+        "basketReturn": 0.01144,
+        "trainRows": 71862,
+        "psi": 0.2304
+      },
+      {
+        "date": "2024-03-20",
+        "n": 56,
+        "nBuy": 22,
+        "accuracy": 0.4464,
+        "basketReturn": 0.01838,
+        "trainRows": 72142,
+        "psi": 0.2607
+      },
+      {
+        "date": "2024-03-27",
+        "n": 56,
+        "nBuy": 16,
+        "accuracy": 0.3571,
+        "basketReturn": -0.01853,
+        "trainRows": 72422,
+        "psi": 0.3715
+      },
+      {
+        "date": "2024-04-04",
+        "n": 56,
+        "nBuy": 16,
+        "accuracy": 0.2679,
+        "basketReturn": 0.01733,
+        "trainRows": 72702,
+        "psi": 0.3735
+      },
+      {
+        "date": "2024-04-11",
+        "n": 56,
+        "nBuy": 16,
+        "accuracy": 0.2679,
+        "basketReturn": -0.06734,
+        "trainRows": 72982,
+        "psi": 0.277
+      },
+      {
+        "date": "2024-04-18",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.3929,
+        "basketReturn": 0.013,
+        "trainRows": 73262,
+        "psi": 0.2018
+      },
+      {
+        "date": "2024-04-25",
+        "n": 56,
+        "nBuy": 26,
+        "accuracy": 0.4107,
+        "basketReturn": 0.00774,
+        "trainRows": 73542,
+        "psi": 0.3007
+      },
+      {
+        "date": "2024-05-02",
+        "n": 56,
+        "nBuy": 18,
+        "accuracy": 0.3929,
+        "basketReturn": 0.01319,
+        "trainRows": 73822,
+        "psi": 0.2843
+      },
+      {
+        "date": "2024-05-09",
+        "n": 56,
+        "nBuy": 15,
+        "accuracy": 0.4286,
+        "basketReturn": 0.0339,
+        "trainRows": 74102,
+        "psi": 0.2675
+      },
+      {
+        "date": "2024-05-16",
+        "n": 56,
+        "nBuy": 16,
+        "accuracy": 0.375,
+        "basketReturn": 0.00468,
+        "trainRows": 74382,
+        "psi": 0.2228
+      },
+      {
+        "date": "2024-05-23",
+        "n": 56,
+        "nBuy": 14,
+        "accuracy": 0.4286,
+        "basketReturn": -0.03021,
+        "trainRows": 74662,
+        "psi": 0.2273
+      },
+      {
+        "date": "2024-05-31",
+        "n": 56,
+        "nBuy": 10,
+        "accuracy": 0.3571,
+        "basketReturn": 0.02946,
+        "trainRows": 74942,
+        "psi": 0.2102
+      },
+      {
+        "date": "2024-06-07",
+        "n": 56,
+        "nBuy": 13,
+        "accuracy": 0.3036,
+        "basketReturn": 0.00588,
+        "trainRows": 75222,
+        "psi": 0.2555
+      },
+      {
+        "date": "2024-06-14",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.3929,
+        "basketReturn": -0.00168,
+        "trainRows": 75502,
+        "psi": 0.3041
+      },
+      {
+        "date": "2024-06-24",
+        "n": 56,
+        "nBuy": 22,
+        "accuracy": 0.3393,
+        "basketReturn": 0.01123,
+        "trainRows": 75782,
+        "psi": 0.2316
+      },
+      {
+        "date": "2024-07-01",
+        "n": 56,
+        "nBuy": 20,
+        "accuracy": 0.375,
+        "basketReturn": 0.02204,
+        "trainRows": 76062,
+        "psi": 0.1583
+      },
+      {
+        "date": "2024-07-09",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.4643,
+        "basketReturn": 0.02249,
+        "trainRows": 76342,
+        "psi": 0.1664
+      },
+      {
+        "date": "2024-07-16",
+        "n": 56,
+        "nBuy": 22,
+        "accuracy": 0.2857,
+        "basketReturn": -0.04368,
+        "trainRows": 76622,
+        "psi": 0.2091
+      },
+      {
+        "date": "2024-07-23",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.2679,
+        "basketReturn": -0.06315,
+        "trainRows": 76902,
+        "psi": 0.2904
+      },
+      {
+        "date": "2024-07-30",
+        "n": 56,
+        "nBuy": 18,
+        "accuracy": 0.3036,
+        "basketReturn": -0.04462,
+        "trainRows": 77182,
+        "psi": 0.5266
+      },
+      {
+        "date": "2024-08-06",
+        "n": 56,
+        "nBuy": 15,
+        "accuracy": 0.4821,
+        "basketReturn": 0.07433,
+        "trainRows": 77462,
+        "psi": 0.3318
+      },
+      {
+        "date": "2024-08-13",
+        "n": 56,
+        "nBuy": 18,
+        "accuracy": 0.3393,
+        "basketReturn": 0.04637,
+        "trainRows": 77742,
+        "psi": 0.4608
+      },
+      {
+        "date": "2024-08-20",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.3929,
+        "basketReturn": 0.0002,
+        "trainRows": 78022,
+        "psi": 0.3897
+      },
+      {
+        "date": "2024-08-27",
+        "n": 56,
+        "nBuy": 20,
+        "accuracy": 0.375,
+        "basketReturn": -0.02874,
+        "trainRows": 78302,
+        "psi": 0.2811
+      },
+      {
+        "date": "2024-09-04",
+        "n": 56,
+        "nBuy": 18,
+        "accuracy": 0.4286,
+        "basketReturn": 0.0243,
+        "trainRows": 78582,
+        "psi": 0.2779
+      },
+      {
+        "date": "2024-09-11",
+        "n": 56,
+        "nBuy": 14,
+        "accuracy": 0.4464,
+        "basketReturn": 0.01684,
+        "trainRows": 78862,
+        "psi": 0.2061
+      },
+      {
+        "date": "2024-09-18",
+        "n": 56,
+        "nBuy": 15,
+        "accuracy": 0.4107,
+        "basketReturn": 0.0477,
+        "trainRows": 79142,
+        "psi": 0.3252
+      },
+      {
+        "date": "2024-09-25",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.4643,
+        "basketReturn": -0.00592,
+        "trainRows": 79422,
+        "psi": 0.3816
+      },
+      {
+        "date": "2024-10-02",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.2857,
+        "basketReturn": 0.02295,
+        "trainRows": 79702,
+        "psi": 0.3318
+      },
+      {
+        "date": "2024-10-09",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.4286,
+        "basketReturn": -0.01722,
+        "trainRows": 79982,
+        "psi": 0.2825
+      },
+      {
+        "date": "2024-10-16",
+        "n": 56,
+        "nBuy": 17,
+        "accuracy": 0.3571,
+        "basketReturn": -0.01686,
+        "trainRows": 80262,
+        "psi": 0.2132
+      },
+      {
+        "date": "2024-10-23",
+        "n": 56,
+        "nBuy": 18,
+        "accuracy": 0.3214,
+        "basketReturn": 0.02907,
+        "trainRows": 80542,
+        "psi": 0.2315
+      },
+      {
+        "date": "2024-10-30",
+        "n": 56,
+        "nBuy": 14,
+        "accuracy": 0.3393,
+        "basketReturn": 0.03235,
+        "trainRows": 80822,
+        "psi": 0.2815
+      },
+      {
+        "date": "2024-11-06",
+        "n": 56,
+        "nBuy": 17,
+        "accuracy": 0.4821,
+        "basketReturn": 0.01472,
+        "trainRows": 81102,
+        "psi": 0.2221
+      },
+      {
+        "date": "2024-11-13",
+        "n": 56,
+        "nBuy": 15,
+        "accuracy": 0.3393,
+        "basketReturn": -0.0288,
+        "trainRows": 81382,
+        "psi": 0.2514
+      },
+      {
+        "date": "2024-11-20",
+        "n": 56,
+        "nBuy": 20,
+        "accuracy": 0.2679,
+        "basketReturn": -0.00223,
+        "trainRows": 81662,
+        "psi": 0.2482
+      },
+      {
+        "date": "2024-11-27",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.4821,
+        "basketReturn": 0.02075,
+        "trainRows": 81942,
+        "psi": 0.5681
+      },
+      {
+        "date": "2024-12-05",
+        "n": 56,
+        "nBuy": 18,
+        "accuracy": 0.3393,
+        "basketReturn": -0.00515,
+        "trainRows": 82222,
+        "psi": 0.2308
+      },
+      {
+        "date": "2024-12-12",
+        "n": 56,
+        "nBuy": 16,
+        "accuracy": 0.2679,
+        "basketReturn": -0.05283,
+        "trainRows": 82502,
+        "psi": 0.243
+      },
+      {
+        "date": "2024-12-19",
+        "n": 56,
+        "nBuy": 18,
+        "accuracy": 0.4107,
+        "basketReturn": 0.02681,
+        "trainRows": 82782,
+        "psi": 0.2513
+      },
+      {
+        "date": "2024-12-27",
+        "n": 56,
+        "nBuy": 16,
+        "accuracy": 0.5,
+        "basketReturn": 0.02899,
+        "trainRows": 83062,
+        "psi": 0.3582
+      },
+      {
+        "date": "2025-01-06",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.3214,
+        "basketReturn": -0.02969,
+        "trainRows": 83342,
+        "psi": 0.3325
+      },
+      {
+        "date": "2025-01-14",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.4107,
+        "basketReturn": 0.06638,
+        "trainRows": 83622,
+        "psi": 0.2409
+      },
+      {
+        "date": "2025-01-22",
+        "n": 56,
+        "nBuy": 14,
+        "accuracy": 0.4107,
+        "basketReturn": -0.00853,
+        "trainRows": 83902,
+        "psi": 0.2279
+      },
+      {
+        "date": "2025-01-29",
+        "n": 56,
+        "nBuy": 17,
+        "accuracy": 0.375,
+        "basketReturn": 0.01904,
+        "trainRows": 84182,
+        "psi": 0.1763
+      },
+      {
+        "date": "2025-02-05",
+        "n": 56,
+        "nBuy": 17,
+        "accuracy": 0.375,
+        "basketReturn": -0.00773,
+        "trainRows": 84462,
+        "psi": 0.1741
+      },
+      {
+        "date": "2025-02-12",
+        "n": 55,
+        "nBuy": 15,
+        "accuracy": 0.4364,
+        "basketReturn": 0.05079,
+        "trainRows": 84742,
+        "psi": 0.1991
+      },
+      {
+        "date": "2025-02-20",
+        "n": 56,
+        "nBuy": 24,
+        "accuracy": 0.3036,
+        "basketReturn": -0.06866,
+        "trainRows": 85017,
+        "psi": 0.1656
+      },
+      {
+        "date": "2025-02-27",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.3036,
+        "basketReturn": -0.03461,
+        "trainRows": 85295,
+        "psi": 0.2636
+      },
+      {
+        "date": "2025-03-06",
+        "n": 56,
+        "nBuy": 22,
+        "accuracy": 0.375,
+        "basketReturn": -0.03649,
+        "trainRows": 85575,
+        "psi": 0.2806
+      },
+      {
+        "date": "2025-03-13",
+        "n": 56,
+        "nBuy": 26,
+        "accuracy": 0.3393,
+        "basketReturn": 0.03093,
+        "trainRows": 85855,
+        "psi": 0.2931
+      },
+      {
+        "date": "2025-03-20",
+        "n": 56,
+        "nBuy": 25,
+        "accuracy": 0.3571,
+        "basketReturn": 0.0016,
+        "trainRows": 86135,
+        "psi": 0.2966
+      },
+      {
+        "date": "2025-03-27",
+        "n": 56,
+        "nBuy": 23,
+        "accuracy": 0.1607,
+        "basketReturn": -0.08514,
+        "trainRows": 86415,
+        "psi": 0.2051
+      },
+      {
+        "date": "2025-04-03",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.4643,
+        "basketReturn": -0.00048,
+        "trainRows": 86695,
+        "psi": 0.4284
+      },
+      {
+        "date": "2025-04-10",
+        "n": 56,
+        "nBuy": 20,
+        "accuracy": 0.3571,
+        "basketReturn": -0.00418,
+        "trainRows": 86975,
+        "psi": 0.2686
+      },
+      {
+        "date": "2025-04-17",
+        "n": 56,
+        "nBuy": 17,
+        "accuracy": 0.5357,
+        "basketReturn": 0.07566,
+        "trainRows": 87255,
+        "psi": 0.3763
+      },
+      {
+        "date": "2025-04-25",
+        "n": 56,
+        "nBuy": 24,
+        "accuracy": 0.25,
+        "basketReturn": 0.0313,
+        "trainRows": 87535,
+        "psi": 0.4116
+      },
+      {
+        "date": "2025-05-02",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.4821,
+        "basketReturn": 0.02062,
+        "trainRows": 87815,
+        "psi": 0.3326
+      },
+      {
+        "date": "2025-05-09",
+        "n": 56,
+        "nBuy": 17,
+        "accuracy": 0.4464,
+        "basketReturn": 0.06649,
+        "trainRows": 88095,
+        "psi": 0.3571
+      },
+      {
+        "date": "2025-05-16",
+        "n": 56,
+        "nBuy": 20,
+        "accuracy": 0.3929,
+        "basketReturn": -0.03217,
+        "trainRows": 88375,
+        "psi": 0.1809
+      },
+      {
+        "date": "2025-05-23",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.1964,
+        "basketReturn": -0.00024,
+        "trainRows": 88655,
+        "psi": 0.2877
+      },
+      {
+        "date": "2025-06-02",
+        "n": 56,
+        "nBuy": 28,
+        "accuracy": 0.4286,
+        "basketReturn": 0.02743,
+        "trainRows": 88935,
+        "psi": 0.2428
+      },
+      {
+        "date": "2025-06-09",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.2857,
+        "basketReturn": 0.00767,
+        "trainRows": 89215,
+        "psi": 0.1675
+      },
+      {
+        "date": "2025-06-16",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.375,
+        "basketReturn": 0.01052,
+        "trainRows": 89495,
+        "psi": 0.3342
+      },
+      {
+        "date": "2025-06-24",
+        "n": 56,
+        "nBuy": 22,
+        "accuracy": 0.2857,
+        "basketReturn": 0.00539,
+        "trainRows": 89775,
+        "psi": 0.2701
+      },
+      {
+        "date": "2025-07-01",
+        "n": 56,
+        "nBuy": 19,
+        "accuracy": 0.4286,
+        "basketReturn": 0.01618,
+        "trainRows": 90055,
+        "psi": 0.1626
+      },
+      {
+        "date": "2025-07-09",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.3393,
+        "basketReturn": -0.00745,
+        "trainRows": 90335,
+        "psi": 0.226
+      },
+      {
+        "date": "2025-07-16",
+        "n": 56,
+        "nBuy": 15,
+        "accuracy": 0.3036,
+        "basketReturn": 0.00837,
+        "trainRows": 90615,
+        "psi": 0.3584
+      },
+      {
+        "date": "2025-07-23",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.3929,
+        "basketReturn": 0.00193,
+        "trainRows": 90895,
+        "psi": 0.2064
+      },
+      {
+        "date": "2025-07-30",
+        "n": 56,
+        "nBuy": 20,
+        "accuracy": 0.375,
+        "basketReturn": -0.03946,
+        "trainRows": 91175,
+        "psi": 0.256
+      },
+      {
+        "date": "2025-08-06",
+        "n": 56,
+        "nBuy": 13,
+        "accuracy": 0.375,
+        "basketReturn": 0.04801,
+        "trainRows": 91455,
+        "psi": 0.2491
+      },
+      {
+        "date": "2025-08-13",
+        "n": 56,
+        "nBuy": 16,
+        "accuracy": 0.3393,
+        "basketReturn": -0.02164,
+        "trainRows": 91735,
+        "psi": 0.3036
+      },
+      {
+        "date": "2025-08-20",
+        "n": 56,
+        "nBuy": 22,
+        "accuracy": 0.3393,
+        "basketReturn": 0.0168,
+        "trainRows": 92015,
+        "psi": 0.2286
+      },
+      {
+        "date": "2025-08-27",
+        "n": 56,
+        "nBuy": 13,
+        "accuracy": 0.3214,
+        "basketReturn": -0.01104,
+        "trainRows": 92295,
+        "psi": 0.2066
+      },
+      {
+        "date": "2025-09-04",
+        "n": 56,
+        "nBuy": 17,
+        "accuracy": 0.3571,
+        "basketReturn": -0.00118,
+        "trainRows": 92575,
+        "psi": 0.2433
+      },
+      {
+        "date": "2025-09-11",
+        "n": 56,
+        "nBuy": 18,
+        "accuracy": 0.3214,
+        "basketReturn": 0.03173,
+        "trainRows": 92855,
+        "psi": 0.3789
+      },
+      {
+        "date": "2025-09-18",
+        "n": 56,
+        "nBuy": 14,
+        "accuracy": 0.4286,
+        "basketReturn": -0.00671,
+        "trainRows": 93135,
+        "psi": 0.6487
+      },
+      {
+        "date": "2025-09-25",
+        "n": 56,
+        "nBuy": 25,
+        "accuracy": 0.3929,
+        "basketReturn": 0.0387,
+        "trainRows": 93415,
+        "psi": 0.4918
+      },
+      {
+        "date": "2025-10-02",
+        "n": 56,
+        "nBuy": 20,
+        "accuracy": 0.3393,
+        "basketReturn": 0.01714,
+        "trainRows": 93694,
+        "psi": 0.6285
+      },
+      {
+        "date": "2025-10-09",
+        "n": 56,
+        "nBuy": 17,
+        "accuracy": 0.4107,
+        "basketReturn": -0.00873,
+        "trainRows": 93974,
+        "psi": 0.4108
+      },
+      {
+        "date": "2025-10-16",
+        "n": 56,
+        "nBuy": 16,
+        "accuracy": 0.4107,
+        "basketReturn": 0.03408,
+        "trainRows": 94254,
+        "psi": 0.5608
+      },
+      {
+        "date": "2025-10-23",
+        "n": 56,
+        "nBuy": 13,
+        "accuracy": 0.3393,
+        "basketReturn": 0.00575,
+        "trainRows": 94534,
+        "psi": 0.5193
+      },
+      {
+        "date": "2025-10-30",
+        "n": 56,
+        "nBuy": 14,
+        "accuracy": 0.4643,
+        "basketReturn": -0.01133,
+        "trainRows": 94814,
+        "psi": 0.4915
+      },
+      {
+        "date": "2025-11-06",
+        "n": 56,
+        "nBuy": 15,
+        "accuracy": 0.2857,
+        "basketReturn": -0.01619,
+        "trainRows": 95094,
+        "psi": 0.5896
+      },
+      {
+        "date": "2025-11-13",
+        "n": 56,
+        "nBuy": 16,
+        "accuracy": 0.3929,
+        "basketReturn": -0.04246,
+        "trainRows": 95374,
+        "psi": 0.3551
+      },
+      {
+        "date": "2025-11-20",
+        "n": 56,
+        "nBuy": 23,
+        "accuracy": 0.3571,
+        "basketReturn": 0.07633,
+        "trainRows": 95654,
+        "psi": 0.3324
+      },
+      {
+        "date": "2025-11-28",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.3571,
+        "basketReturn": 0.02876,
+        "trainRows": 95934,
+        "psi": 0.5488
+      },
+      {
+        "date": "2025-12-05",
+        "n": 56,
+        "nBuy": 20,
+        "accuracy": 0.4286,
+        "basketReturn": -0.00441,
+        "trainRows": 96214,
+        "psi": 0.2597
+      },
+      {
+        "date": "2025-12-12",
+        "n": 56,
+        "nBuy": 20,
+        "accuracy": 0.2857,
+        "basketReturn": 0.00337,
+        "trainRows": 96494,
+        "psi": 0.2429
+      },
+      {
+        "date": "2025-12-19",
+        "n": 56,
+        "nBuy": 22,
+        "accuracy": 0.4107,
+        "basketReturn": 0.00788,
+        "trainRows": 96774,
+        "psi": 0.1763
+      },
+      {
+        "date": "2025-12-29",
+        "n": 56,
+        "nBuy": 20,
+        "accuracy": 0.3393,
+        "basketReturn": 0.01887,
+        "trainRows": 97054,
+        "psi": 0.263
+      },
+      {
+        "date": "2026-01-06",
+        "n": 56,
+        "nBuy": 15,
+        "accuracy": 0.3214,
+        "basketReturn": -0.0059,
+        "trainRows": 97334,
+        "psi": 0.4075
+      },
+      {
+        "date": "2026-01-13",
+        "n": 56,
+        "nBuy": 20,
+        "accuracy": 0.3036,
+        "basketReturn": -0.00437,
+        "trainRows": 97614,
+        "psi": 0.3734
+      },
+      {
+        "date": "2026-01-21",
+        "n": 56,
+        "nBuy": 13,
+        "accuracy": 0.3929,
+        "basketReturn": 0.033,
+        "trainRows": 97894,
+        "psi": 0.4013
+      },
+      {
+        "date": "2026-01-28",
+        "n": 56,
+        "nBuy": 16,
+        "accuracy": 0.2857,
+        "basketReturn": -0.059,
+        "trainRows": 98174,
+        "psi": 0.5006
+      },
+      {
+        "date": "2026-02-04",
+        "n": 56,
+        "nBuy": 17,
+        "accuracy": 0.4286,
+        "basketReturn": 0.02278,
+        "trainRows": 98454,
+        "psi": 0.3191
+      },
+      {
+        "date": "2026-02-11",
+        "n": 56,
+        "nBuy": 17,
+        "accuracy": 0.4286,
+        "basketReturn": -0.0062,
+        "trainRows": 98734,
+        "psi": 0.2064
+      },
+      {
+        "date": "2026-02-19",
+        "n": 56,
+        "nBuy": 17,
+        "accuracy": 0.2857,
+        "basketReturn": 0.00807,
+        "trainRows": 99014,
+        "psi": 0.1991
+      },
+      {
+        "date": "2026-02-26",
+        "n": 56,
+        "nBuy": 16,
+        "accuracy": 0.3036,
+        "basketReturn": -0.0145,
+        "trainRows": 99294,
+        "psi": 0.2614
+      },
+      {
+        "date": "2026-03-05",
+        "n": 56,
+        "nBuy": 16,
+        "accuracy": 0.2857,
+        "basketReturn": -0.04562,
+        "trainRows": 99574,
+        "psi": 0.2109
+      },
+      {
+        "date": "2026-03-12",
+        "n": 56,
+        "nBuy": 27,
+        "accuracy": 0.4821,
+        "basketReturn": 0.00525,
+        "trainRows": 99854,
+        "psi": 0.2893
+      },
+      {
+        "date": "2026-03-19",
+        "n": 56,
+        "nBuy": 23,
+        "accuracy": 0.375,
+        "basketReturn": -0.02377,
+        "trainRows": 100134,
+        "psi": 0.3247
+      },
+      {
+        "date": "2026-03-26",
+        "n": 56,
+        "nBuy": 24,
+        "accuracy": 0.4286,
+        "basketReturn": 0.01092,
+        "trainRows": 100414,
+        "psi": 0.2583
+      },
+      {
+        "date": "2026-04-02",
+        "n": 56,
+        "nBuy": 18,
+        "accuracy": 0.4643,
+        "basketReturn": 0.05577,
+        "trainRows": 100694,
+        "psi": 0.272
+      },
+      {
+        "date": "2026-04-10",
+        "n": 56,
+        "nBuy": 17,
+        "accuracy": 0.3571,
+        "basketReturn": 0.07434,
+        "trainRows": 100974,
+        "psi": 0.275
+      },
+      {
+        "date": "2026-04-17",
+        "n": 56,
+        "nBuy": 21,
+        "accuracy": 0.3036,
+        "basketReturn": 0.02087,
+        "trainRows": 101254,
+        "psi": 0.3551
+      },
+      {
+        "date": "2026-04-24",
+        "n": 56,
+        "nBuy": 16,
+        "accuracy": 0.3929,
+        "basketReturn": 0.03486,
+        "trainRows": 101534,
+        "psi": 0.3324
+      },
+      {
+        "date": "2026-05-01",
+        "n": 56,
+        "nBuy": 18,
+        "accuracy": 0.4821,
+        "basketReturn": 0.06624,
+        "trainRows": 101814,
+        "psi": 0.5056
+      },
+      {
+        "date": "2026-05-08",
+        "n": 56,
+        "nBuy": 17,
+        "accuracy": 0.3571,
+        "basketReturn": -0.00662,
+        "trainRows": 102094,
+        "psi": 0.5899
+      },
+      {
+        "date": "2026-05-15",
+        "n": 56,
+        "nBuy": 15,
+        "accuracy": 0.4821,
+        "basketReturn": 0.0526,
+        "trainRows": 102374,
+        "psi": 0.4439
+      },
+      {
+        "date": "2026-05-22",
+        "n": 56,
+        "nBuy": 15,
+        "accuracy": 0.4464,
+        "basketReturn": 0.066,
+        "trainRows": 102654,
+        "psi": 0.515
+      },
+      {
+        "date": "2026-06-01",
+        "n": 56,
+        "nBuy": 15,
+        "accuracy": 0.3214,
+        "basketReturn": -0.03622,
+        "trainRows": 102934,
+        "psi": 0.5408
+      }
+    ]
+  },
+  "windowComparison": {
+    "note": "Anchored weekly scheme with capped look-backs, all aligned to the same evaluation weeks. 'volatility' is annualised weekly dispersion (lower = steadier).",
+    "generatedAt": "2026-06-16",
+    "evalStartIdx": 1260,
+    "step": 10,
+    "windows": {
+      "2y": {
+        "accuracy": 0.358,
+        "auc": 0.5261,
+        "buy_hit_rate": 0.5643,
+        "sharpe": 1.46,
+        "cagr": 0.3964,
+        "maxDrawdown": -0.2203,
+        "hitRate": 0.6066,
+        "volatility": 0.2509,
+        "weeks": 61
+      },
+      "3y": {
+        "accuracy": 0.368,
+        "auc": 0.5345,
+        "buy_hit_rate": 0.5783,
+        "sharpe": 1.75,
+        "cagr": 0.4726,
+        "maxDrawdown": -0.2396,
+        "hitRate": 0.6721,
+        "volatility": 0.2376,
+        "weeks": 61
+      },
+      "4y": {
+        "accuracy": 0.3686,
+        "auc": 0.5353,
+        "buy_hit_rate": 0.5666,
+        "sharpe": 1.9,
+        "cagr": 0.5373,
+        "maxDrawdown": -0.2209,
+        "hitRate": 0.623,
+        "volatility": 0.2426,
+        "weeks": 61
+      },
+      "5y": {
+        "accuracy": 0.3607,
+        "auc": 0.53,
+        "buy_hit_rate": 0.5655,
+        "sharpe": 1.66,
+        "cagr": 0.4647,
+        "maxDrawdown": -0.2111,
+        "hitRate": 0.6393,
+        "volatility": 0.2499,
+        "weeks": 61
+      },
+      "expanding": {
+        "accuracy": 0.3732,
+        "auc": 0.5418,
+        "buy_hit_rate": 0.57,
+        "sharpe": 1.77,
+        "cagr": 0.4905,
+        "maxDrawdown": -0.1952,
+        "hitRate": 0.6721,
+        "volatility": 0.2433,
+        "weeks": 61
+      }
+    },
+    "bestBySharpe": "4y",
+    "steadiestByVol": "3y"
+  },
+  "regimeModels": {
+    "note": "Bull/bear specialists routed by the 200d-SMA regime, same expanding folds as the general model. Honest test: ship the ensemble only if it wins.",
+    "generatedAt": "2026-06-16",
+    "general": {
+      "accuracy": 0.366,
+      "auc": 0.54,
+      "buy_hit_rate": 0.5282,
+      "sharpe": 1.19,
+      "cagr": 0.3117,
+      "maxDrawdown": -0.293
+    },
+    "ensemble": {
+      "accuracy": 0.3626,
+      "auc": 0.5371,
+      "buy_hit_rate": 0.5331,
+      "sharpe": 0.95,
+      "cagr": 0.2262,
+      "maxDrawdown": -0.3093
+    },
+    "year2022": {
+      "general": -0.77,
+      "ensemble": -0.5
+    },
+    "ensembleBeatsGeneral": false,
+    "verdict": "Regime ensemble Sharpe 0.95 vs general 1.19 \u2014 no improvement; general model stays champion."
+  },
+  "ood": {
+    "trainEnd": "2023-01-01",
+    "trainRows": 55342,
+    "testRows": 47872,
+    "metrics": {
+      "accuracy": 0.3659,
+      "auc": 0.5396,
+      "buy_hit_rate": 0.5499,
+      "sharpe": 1.89,
+      "cagr": 0.4478,
+      "maxDrawdown": -0.2036
+    },
+    "eraDrift": [
+      {
+        "feature": "dist_52w_low",
+        "label": "Distance from 52w low",
+        "psi": 0.0233,
+        "status": "OK"
+      },
+      {
+        "feature": "vol_of_vol",
+        "label": "Volatility of volatility",
+        "psi": 0.0146,
+        "status": "OK"
+      },
+      {
+        "feature": "vol_60",
+        "label": "60-day volatility",
+        "psi": 0.013,
+        "status": "OK"
+      },
+      {
+        "feature": "ret_kurt_20",
+        "label": "Return kurtosis (20d)",
+        "psi": 0.0099,
+        "status": "OK"
+      },
+      {
+        "feature": "ret_60",
+        "label": "60-day momentum",
+        "psi": 0.0078,
+        "status": "OK"
+      },
+      {
+        "feature": "vol_20",
+        "label": "20-day volatility",
+        "psi": 0.0072,
+        "status": "OK"
+      },
+      {
+        "feature": "bb_pctb",
+        "label": "Bollinger %b",
+        "psi": 0.006,
+        "status": "OK"
+      },
+      {
+        "feature": "sma200_dist",
+        "label": "Distance from 200d MA",
+        "psi": 0.0044,
+        "status": "OK"
+      },
+      {
+        "feature": "dist_52w_high",
+        "label": "Distance from 52w high",
+        "psi": 0.0044,
+        "status": "OK"
+      },
+      {
+        "feature": "ret_skew_20",
+        "label": "Return skew (20d)",
+        "psi": 0.0042,
+        "status": "OK"
+      },
+      {
+        "feature": "sma50_dist",
+        "label": "Distance from 50d MA",
+        "psi": 0.003,
+        "status": "OK"
+      },
+      {
+        "feature": "ret_120",
+        "label": "120-day momentum",
+        "psi": 0.0025,
+        "status": "OK"
+      },
+      {
+        "feature": "ret_20",
+        "label": "20-day momentum",
+        "psi": 0.0018,
+        "status": "OK"
+      },
+      {
+        "feature": "rel_strength_20",
+        "label": "Relative strength (20d)",
+        "psi": 0.0018,
+        "status": "OK"
+      },
+      {
+        "feature": "dollar_vol_z",
+        "label": "Dollar-volume z-score",
+        "psi": 0.0017,
+        "status": "OK"
+      },
+      {
+        "feature": "intraday_range",
+        "label": "Intraday range",
+        "psi": 0.0016,
+        "status": "OK"
+      },
+      {
+        "feature": "atr_pct",
+        "label": "ATR % of price",
+        "psi": 0.0014,
+        "status": "OK"
+      },
+      {
+        "feature": "rsi_14",
+        "label": "RSI (14)",
+        "psi": 0.0013,
+        "status": "OK"
+      },
+      {
+        "feature": "volume_z",
+        "label": "Volume z-score",
+        "psi": 0.0013,
+        "status": "OK"
+      },
+      {
+        "feature": "sma20_dist",
+        "label": "Distance from 20d MA",
+        "psi": 0.001,
+        "status": "OK"
+      },
+      {
+        "feature": "gap",
+        "label": "Overnight gap",
+        "psi": 0.0009,
+        "status": "OK"
+      },
+      {
+        "feature": "ret_5",
+        "label": "5-day momentum",
+        "psi": 0.0007,
+        "status": "OK"
+      },
+      {
+        "feature": "obv_slope",
+        "label": "On-balance-volume slope",
+        "psi": 0.0006,
+        "status": "OK"
+      },
+      {
+        "feature": "macd_hist",
+        "label": "MACD histogram",
+        "psi": 0.0005,
+        "status": "OK"
+      }
+    ],
+    "overallDrift": "OK",
+    "note": "Trained on data before 2023 and frozen; evaluated untouched on 2023+. eraDrift is per-feature PSI between the two eras (how hard the test was).",
+    "generatedAt": "2026-06-16"
+  },
+  "confidence": {
+    "note": "Equal-weight vs conviction-weighted BUY basket, plus BUY-probability calibration (reliability curve + Brier). Frictionless, OOS.",
+    "generatedAt": "2026-06-16",
+    "sizing": {
+      "equalWeight": {
+        "sharpe": 1.19,
+        "cagr": 0.3117,
+        "maxDrawdown": -0.293
+      },
+      "confidenceWeighted": {
+        "sharpe": 1.21,
+        "cagr": 0.3269,
+        "maxDrawdown": -0.2969
+      }
+    },
+    "confidenceImprovesSharpe": true,
+    "calibration": {
+      "brier": 0.227,
+      "ece": 0.0432,
+      "bins": [
+        {
+          "pMean": 0.2145,
+          "observed": 0.3008,
+          "n": 6260
+        },
+        {
+          "pMean": 0.2703,
+          "observed": 0.3145,
+          "n": 6260
+        },
+        {
+          "pMean": 0.2937,
+          "observed": 0.3244,
+          "n": 6260
+        },
+        {
+          "pMean": 0.312,
+          "observed": 0.3327,
+          "n": 6260
+        },
+        {
+          "pMean": 0.3286,
+          "observed": 0.3326,
+          "n": 6260
+        },
+        {
+          "pMean": 0.3454,
+          "observed": 0.3313,
+          "n": 6260
+        },
+        {
+          "pMean": 0.3642,
+          "observed": 0.3447,
+          "n": 6260
+        },
+        {
+          "pMean": 0.3878,
+          "observed": 0.3513,
+          "n": 6260
+        },
+        {
+          "pMean": 0.4224,
+          "observed": 0.366,
+          "n": 6260
+        },
+        {
+          "pMean": 0.5148,
+          "observed": 0.3949,
+          "n": 6260
+        }
+      ]
+    }
+  },
+  "onlineLearning": {
+    "note": "Weekly leakage-purged predictions; only the refit frequency varies. Shows the compute (refits) vs OOS Sharpe trade-off for a live cadence.",
+    "generatedAt": "2026-06-16",
+    "cadences": {
+      "weekly": {
+        "refitEvery": 1,
+        "refits": 76,
+        "seconds": 745.9,
+        "sharpe": 1.5,
+        "hitRate": 0.6053,
+        "weeks": 76
+      },
+      "biweekly": {
+        "refitEvery": 2,
+        "refits": 38,
+        "seconds": 323.4,
+        "sharpe": 1.67,
+        "hitRate": 0.6184,
+        "weeks": 76
+      },
+      "monthly": {
+        "refitEvery": 4,
+        "refits": 19,
+        "seconds": 152.7,
+        "sharpe": 1.63,
+        "hitRate": 0.5921,
+        "weeks": 76
+      },
+      "quarterly": {
+        "refitEvery": 12,
+        "refits": 7,
+        "seconds": 59.2,
+        "sharpe": 1.44,
+        "hitRate": 0.5395,
+        "weeks": 76
+      }
+    },
+    "fullRetrainSharpe": 1.5
+  }
+}

@@ -1,0 +1,378 @@
+{
+  "source": "live",
+  "flags": [
+    {
+      "id": "conc-name",
+      "level": "info",
+      "title": "Single-name concentration",
+      "detail": "IDXX is the largest position at 9.0% of gross (hard cap 20%).",
+      "metric": "9.0% / 20%"
+    },
+    {
+      "id": "conc-sector",
+      "level": "warning",
+      "title": "Sector concentration",
+      "detail": "Technology is the largest sector exposure at 40.0% (hard cap 40%).",
+      "metric": "40.0% / 40%"
+    },
+    {
+      "id": "deploy",
+      "level": "info",
+      "title": "Capital deployment",
+      "detail": "Risk engine deployed 84.8% gross across 18 names, holding 15.2% in cash.",
+      "metric": "84.8% gross"
+    },
+    {
+      "id": "conviction",
+      "level": "warning",
+      "title": "Model conviction",
+      "detail": "Mean BUY confidence is 41.0% across 18 BUY signals. Below the 50% conviction guide \u2014 size cautiously.",
+      "metric": "41.0% mean BUY"
+    },
+    {
+      "id": "source",
+      "level": "info",
+      "title": "Research output",
+      "detail": "Exposures derived from experimental model signals. Research use only \u2014 not advice.",
+      "metric": "experimental"
+    }
+  ],
+  "budget": [
+    {
+      "label": "Gross exposure",
+      "used": 84.8,
+      "limit": 100
+    },
+    {
+      "label": "Single-name max",
+      "used": 9.0,
+      "limit": 20
+    },
+    {
+      "label": "Sector max",
+      "used": 40.0,
+      "limit": 40
+    },
+    {
+      "label": "Active positions",
+      "used": 18,
+      "limit": 25
+    },
+    {
+      "label": "Cash buffer",
+      "used": 15.2,
+      "limit": 100
+    }
+  ],
+  "exposureByAsset": [
+    {
+      "name": "IDXX",
+      "value": 9.0
+    },
+    {
+      "name": "NFLX",
+      "value": 7.0
+    },
+    {
+      "name": "MELI",
+      "value": 6.3
+    },
+    {
+      "name": "ODFL",
+      "value": 5.7
+    },
+    {
+      "name": "ADP",
+      "value": 5.7
+    },
+    {
+      "name": "DXCM",
+      "value": 5.6
+    },
+    {
+      "name": "META",
+      "value": 5.5
+    },
+    {
+      "name": "SNPS",
+      "value": 4.5
+    },
+    {
+      "name": "Cash",
+      "value": 15.2
+    }
+  ],
+  "exposureBySector": [
+    {
+      "name": "Technology",
+      "value": 40.0
+    },
+    {
+      "name": "Health Care",
+      "value": 14.5
+    },
+    {
+      "name": "Communication Services",
+      "value": 12.5
+    },
+    {
+      "name": "Industrials",
+      "value": 11.4
+    },
+    {
+      "name": "Consumer Discretionary",
+      "value": 6.3
+    },
+    {
+      "name": "Cash",
+      "value": 15.2
+    }
+  ],
+  "volatilityRegime": [
+    {
+      "t": 0,
+      "vix": 23.2,
+      "realized": 20.81
+    },
+    {
+      "t": 1,
+      "vix": 23.7,
+      "realized": 18.82
+    },
+    {
+      "t": 2,
+      "vix": 23.84,
+      "realized": 14.52
+    },
+    {
+      "t": 3,
+      "vix": 23.84,
+      "realized": 14.67
+    },
+    {
+      "t": 4,
+      "vix": 23.25,
+      "realized": 14.03
+    },
+    {
+      "t": 5,
+      "vix": 23.25,
+      "realized": 15.52
+    },
+    {
+      "t": 6,
+      "vix": 21.96,
+      "realized": 16.3
+    },
+    {
+      "t": 7,
+      "vix": 22.22,
+      "realized": 12.58
+    },
+    {
+      "t": 8,
+      "vix": 22.15,
+      "realized": 14.3
+    },
+    {
+      "t": 9,
+      "vix": 22.66,
+      "realized": 15.24
+    },
+    {
+      "t": 10,
+      "vix": 20.04,
+      "realized": 15.67
+    },
+    {
+      "t": 11,
+      "vix": 18.68,
+      "realized": 16.61
+    },
+    {
+      "t": 12,
+      "vix": 17.86,
+      "realized": 15.81
+    },
+    {
+      "t": 13,
+      "vix": 15.25,
+      "realized": 16.05
+    },
+    {
+      "t": 14,
+      "vix": 15.16,
+      "realized": 15.61
+    },
+    {
+      "t": 15,
+      "vix": 15.34,
+      "realized": 15.45
+    },
+    {
+      "t": 16,
+      "vix": 15.48,
+      "realized": 15.38
+    },
+    {
+      "t": 17,
+      "vix": 15.97,
+      "realized": 16.3
+    },
+    {
+      "t": 18,
+      "vix": 14.16,
+      "realized": 15.54
+    },
+    {
+      "t": 19,
+      "vix": 15.32,
+      "realized": 16.63
+    },
+    {
+      "t": 20,
+      "vix": 15.26,
+      "realized": 16.41
+    },
+    {
+      "t": 21,
+      "vix": 16.18,
+      "realized": 15.96
+    },
+    {
+      "t": 22,
+      "vix": 15.69,
+      "realized": 16.02
+    },
+    {
+      "t": 23,
+      "vix": 15.44,
+      "realized": 16.0
+    },
+    {
+      "t": 24,
+      "vix": 17.06,
+      "realized": 19.54
+    },
+    {
+      "t": 25,
+      "vix": 17.08,
+      "realized": 19.82
+    },
+    {
+      "t": 26,
+      "vix": 17.27,
+      "realized": 19.95
+    },
+    {
+      "t": 27,
+      "vix": 17.56,
+      "realized": 18.99
+    },
+    {
+      "t": 28,
+      "vix": 17.04,
+      "realized": 18.88
+    },
+    {
+      "t": 29,
+      "vix": 16.66,
+      "realized": 15.1
+    },
+    {
+      "t": 30,
+      "vix": 16.52,
+      "realized": 17.32
+    },
+    {
+      "t": 31,
+      "vix": 16.58,
+      "realized": 16.39
+    },
+    {
+      "t": 32,
+      "vix": 15.75,
+      "realized": 16.16
+    },
+    {
+      "t": 33,
+      "vix": 15.76,
+      "realized": 16.0
+    },
+    {
+      "t": 34,
+      "vix": 15.69,
+      "realized": 12.62
+    },
+    {
+      "t": 35,
+      "vix": 15.61,
+      "realized": 11.59
+    },
+    {
+      "t": 36,
+      "vix": 15.65,
+      "realized": 10.69
+    },
+    {
+      "t": 37,
+      "vix": 15.7,
+      "realized": 10.12
+    },
+    {
+      "t": 38,
+      "vix": 22.88,
+      "realized": 27.98
+    },
+    {
+      "t": 39,
+      "vix": 23.44,
+      "realized": 29.16
+    }
+  ],
+  "positionRules": [
+    "Long-only book constructed from BUY signals above the confidence floor.",
+    "Per-name exposure hard-capped at 20% of gross.",
+    "Per-sector exposure hard-capped at 40% of gross.",
+    "Gross exposure capped at 100% \u2014 no leverage.",
+    "Weights scaled by model confidence and inverse risk level (Low 1.0x to Elevated 0.45x)."
+  ],
+  "concentration": {
+    "top1": 9.0,
+    "top3": 22.3,
+    "hhi": 0.0444,
+    "numPositions": 18
+  },
+  "confidenceDistribution": {
+    "buckets": [
+      {
+        "range": "0-40",
+        "count": 34
+      },
+      {
+        "range": "40-50",
+        "count": 20
+      },
+      {
+        "range": "50-60",
+        "count": 2
+      },
+      {
+        "range": "60-70",
+        "count": 0
+      },
+      {
+        "range": "70-100",
+        "count": 0
+      }
+    ],
+    "meanAll": 40.2,
+    "meanBuy": 41.0,
+    "nBuy": 18
+  },
+  "signalMix": {
+    "BUY": 18,
+    "HOLD": 25,
+    "AVOID": 13
+  }
+}

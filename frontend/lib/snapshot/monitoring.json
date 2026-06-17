@@ -1,0 +1,335 @@
+{
+  "dataHealth": {
+    "artifact": "features",
+    "ok": true,
+    "checks": [
+      {
+        "name": "non_empty",
+        "passed": true,
+        "severity": "critical",
+        "detail": "103494 rows"
+      },
+      {
+        "name": "required_columns",
+        "passed": true,
+        "severity": "critical",
+        "detail": "all present"
+      },
+      {
+        "name": "min_rows",
+        "passed": true,
+        "severity": "critical",
+        "detail": "103494 >= 10000"
+      },
+      {
+        "name": "finite:ret_5",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "finite:ret_20",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "finite:ret_60",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "finite:ret_120",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "finite:sma20_dist",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "finite:sma50_dist",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "finite:sma200_dist",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "finite:rsi_14",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "finite:vol_20",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "finite:vol_60",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "finite:vol_of_vol",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "finite:atr_pct",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "finite:bb_pctb",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "finite:macd_hist",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "finite:volume_z",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "finite:dollar_vol_z",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "finite:obv_slope",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "finite:dist_52w_high",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "finite:dist_52w_low",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "finite:ret_skew_20",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "finite:ret_kurt_20",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "finite:gap",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "finite:intraday_range",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "finite:rel_strength_20",
+        "passed": true,
+        "severity": "critical",
+        "detail": "0 non-finite"
+      },
+      {
+        "name": "freshness",
+        "passed": true,
+        "severity": "warn",
+        "detail": "latest 2026-06-08, 6d old (limit 10)"
+      }
+    ],
+    "failures": [],
+    "warnings": []
+  },
+  "drift": {
+    "recentDays": 5,
+    "referenceDates": 1863,
+    "overall": "ALERT",
+    "features": [
+      {
+        "feature": "dist_52w_low",
+        "label": "Distance from 52w low",
+        "psi": 2.6575,
+        "status": "ALERT"
+      },
+      {
+        "feature": "ret_60",
+        "label": "60-day momentum",
+        "psi": 0.3735,
+        "status": "ALERT"
+      },
+      {
+        "feature": "sma200_dist",
+        "label": "Distance from 200d MA",
+        "psi": 0.2529,
+        "status": "ALERT"
+      },
+      {
+        "feature": "ret_120",
+        "label": "120-day momentum",
+        "psi": 0.2249,
+        "status": "WARN"
+      },
+      {
+        "feature": "ret_20",
+        "label": "20-day momentum",
+        "psi": 0.1958,
+        "status": "WARN"
+      },
+      {
+        "feature": "rel_strength_20",
+        "label": "Relative strength (20d)",
+        "psi": 0.1958,
+        "status": "WARN"
+      },
+      {
+        "feature": "vol_20",
+        "label": "20-day volatility",
+        "psi": 0.1463,
+        "status": "WARN"
+      },
+      {
+        "feature": "sma50_dist",
+        "label": "Distance from 50d MA",
+        "psi": 0.1389,
+        "status": "WARN"
+      },
+      {
+        "feature": "atr_pct",
+        "label": "ATR % of price",
+        "psi": 0.1052,
+        "status": "WARN"
+      },
+      {
+        "feature": "vol_of_vol",
+        "label": "Volatility of volatility",
+        "psi": 0.0998,
+        "status": "OK"
+      },
+      {
+        "feature": "dist_52w_high",
+        "label": "Distance from 52w high",
+        "psi": 0.0962,
+        "status": "OK"
+      },
+      {
+        "feature": "gap",
+        "label": "Overnight gap",
+        "psi": 0.0855,
+        "status": "OK"
+      },
+      {
+        "feature": "ret_kurt_20",
+        "label": "Return kurtosis (20d)",
+        "psi": 0.0817,
+        "status": "OK"
+      },
+      {
+        "feature": "sma20_dist",
+        "label": "Distance from 20d MA",
+        "psi": 0.0778,
+        "status": "OK"
+      },
+      {
+        "feature": "vol_60",
+        "label": "60-day volatility",
+        "psi": 0.0604,
+        "status": "OK"
+      },
+      {
+        "feature": "ret_5",
+        "label": "5-day momentum",
+        "psi": 0.0511,
+        "status": "OK"
+      },
+      {
+        "feature": "intraday_range",
+        "label": "Intraday range",
+        "psi": 0.0506,
+        "status": "OK"
+      },
+      {
+        "feature": "macd_hist",
+        "label": "MACD histogram",
+        "psi": 0.0492,
+        "status": "OK"
+      },
+      {
+        "feature": "bb_pctb",
+        "label": "Bollinger %b",
+        "psi": 0.0455,
+        "status": "OK"
+      },
+      {
+        "feature": "rsi_14",
+        "label": "RSI (14)",
+        "psi": 0.0379,
+        "status": "OK"
+      },
+      {
+        "feature": "ret_skew_20",
+        "label": "Return skew (20d)",
+        "psi": 0.0319,
+        "status": "OK"
+      },
+      {
+        "feature": "dollar_vol_z",
+        "label": "Dollar-volume z-score",
+        "psi": 0.0273,
+        "status": "OK"
+      },
+      {
+        "feature": "obv_slope",
+        "label": "On-balance-volume slope",
+        "psi": 0.025,
+        "status": "OK"
+      },
+      {
+        "feature": "volume_z",
+        "label": "Volume z-score",
+        "psi": 0.0235,
+        "status": "OK"
+      }
+    ],
+    "note": "PSI of the latest cross-sections vs the historical reference window. OK<0.10, WARN<0.25, ALERT>=0.25.",
+    "generatedAt": "2026-06-14"
+  },
+  "status": {
+    "data": "ok",
+    "drift": "ALERT"
+  }
+}

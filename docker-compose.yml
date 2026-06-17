@@ -1,17 +1,14 @@
-# Run the whole stack with one command:  docker compose up
-# (Dockerfiles are added when we containerize — see docs/BACKEND.md go-live checklist.)
+# One command brings up the whole stack:  docker compose up --build
+#   - FastAPI backend on http://localhost:8000  (docs at /docs, metrics at /metrics)
+#   - Next.js dashboard on http://localhost:3000
 services:
   backend:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: quantml-api
-    env_file: .env
     ports:
       - "8000:8000"
-    volumes:
-      - ./backend:/app
-      - ./ml:/ml
-      - ./data:/data
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
   frontend:
     build: ./frontend
@@ -23,17 +20,15 @@ services:
       - "3000:3000"
     depends_on:
       - backend
-    command: npm run dev
 
-  # Uncomment when moving off SQLite/DuckDB to Postgres:
-  # db:
-  #   image: postgres:16
-  #   environment:
-  #     POSTGRES_USER: quant
-  #     POSTGRES_PASSWORD: quant
-  #     POSTGRES_DB: quantml
-  #   ports: ["5432:5432"]
-  #   volumes: ["pgdata:/var/lib/postgresql/data"]
-
-# volumes:
-#   pgdata:
+  # Optional: run the pipeline on a daily cadence (dry-run plan by default — a real
+  # run needs the data feed + Alpaca secrets). Enable with:
+  #   docker compose --profile scheduler up
+  scheduler:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: quantml-scheduler
+    profiles: ["scheduler"]
+    working_dir: /app
+    command: sh -c "while true; do python -m ml.pipeline --dry-run; sleep 86400; done"

@@ -1,0 +1,18 @@
+# Backend image build context is the repo root; keep it lean.
+.git
+.github
+.venv
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.ruff_cache
+node_modules
+frontend/node_modules
+frontend/.next
+tests
+
+# Heavy parquet — the API serves the JSON artifacts, not the raw bars. Mount
+# data/ at runtime if you need a cold backtest re-simulation.
+data/raw
+data/processed
+data/vectorstore

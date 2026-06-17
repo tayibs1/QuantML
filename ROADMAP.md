@@ -16,7 +16,7 @@ risk decision, never a rewrite.
 Phase 0 ─────────► Phase 1 ─────────► Phase 2 ─────────► Phase 3
 Research            Production          Paper trading       Live trading
 (validated)         hardening           (forward test)      (hard-gated)
-   ✅                 🔄                    ⏭️                   🔒
+   ✅                 ✅                    ⏭️                   🔒
 ```
 
 | Legend | Meaning |
@@ -46,7 +46,9 @@ Research            Production          Paper trading       Live trading
 | Data-quality gates (schema/rows/freshness) | ✅ | Blocks promotion on critical failure |
 | Feature-drift monitoring (PSI) | ✅ | OK/WARN/ALERT, served at `/api/monitoring` |
 | Pipeline orchestrator + scheduled CI | ✅ | Staged graph with the gate inline |
-| Model registry / versioning | ⏭️ | Phase 1 |
+| Model registry / versioning | ✅ | DSR-gated promotion + rollback |
+| Observability (`/metrics` + tracing) | ✅ | Prometheus exposition, dependency-free |
+| Containerised one-command deploy | ✅ | `docker compose up` + Vercel for the demo |
 | Live-vs-backtest tracking + P&L reconciliation | ⏭️ | Phase 2 (needs paper feed) |
 | Live risk controls + kill switch | 🔒 | Phase 3 |
 
@@ -66,9 +68,11 @@ The credibility base. Everything downstream inherits its honesty from here.
 
 ---
 
-## Phase 1 — Production hardening 🔄 *(in progress)*
+## Phase 1 — Production hardening ✅ *(shipped)*
 
-Turn the research repo into a system that runs itself reliably.
+Turn the research repo into a system that runs itself reliably. The one remaining item
+(live-vs-backtest tracking) is deliberately deferred to Phase 2, since it needs a paper
+feed to compare against.
 
 - [x] **Data quality gates** — `ml/validation.py` runs schema / row-count / finite-value /
       staleness checks and `gate()` blocks promotion on any *critical* failure (never
@@ -81,14 +85,17 @@ Turn the research repo into a system that runs itself reliably.
       wired *between* feature-build and training, structured logging, and stage selection;
       `.github/workflows/pipeline.yml` runs the daily score/drift cadence (a real run is
       gated on the data feed + Alpaca secrets).
-- [ ] **Model registry + versioning** — promote/rollback champions (MLflow, or extend the
-      existing trial registry) with the Deflated Sharpe Ratio as the promotion gate.
-- [ ] **Full observability** — request tracing and a Prometheus `/metrics` endpoint
-      (structured pipeline logging is already in; this extends it).
+- [x] **Model registry + versioning** (`ml/registry.py`) — every champion is versioned in
+      `data/models/registry.json`; promotion is gated on the **Deflated Sharpe Ratio** and
+      `rollback` restores the previous champion in one command. Shown on the Models page.
+- [x] **Full observability** — a dependency-free Prometheus **`/metrics`** endpoint (request
+      counters, per-route latency, live model/drift/data-quality gauges) plus request-tracing
+      middleware that stamps every response with an `X-Request-ID`.
 - [ ] **Live-vs-backtest tracking** — tracking error / calibration decay against the paper
       account (lands with Phase 2, once there's a live feed to compare to).
-- [ ] **Containerised one-command deploy** — extend `docker-compose` to a cloud deploy
-      (backend + frontend + scheduler).
+- [x] **Containerised one-command deploy** — `docker compose up --build` brings up backend +
+      dashboard (+ optional scheduler); the dashboard also deploys standalone to Vercel.
+      See [DEPLOY.md](DEPLOY.md).
 
 ---
 

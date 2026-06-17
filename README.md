@@ -511,11 +511,20 @@ The research is only trustworthy if the system that produces it is. Phase 1 of t
   data feed and Alpaca secrets.
 - **Monitoring endpoint** — `GET /api/monitoring` serves the latest data-health report and
   drift status for the dashboard, degrading cleanly to nulls before the pipeline has run.
+- **Model registry** (`ml/registry.py`) — every trained champion is versioned, and a
+  promotion is only allowed once the **Deflated Sharpe Ratio** clears the gate, so a lucky
+  in-sample run can't quietly take over. `rollback` restores the previous champion in one
+  command; the version history shows on the Models page.
+- **Observability** — a dependency-free Prometheus **`/metrics`** endpoint (request counters,
+  per-route latency, and live model/drift/data-quality gauges read off the artifacts), plus
+  request-tracing middleware that stamps every response with an `X-Request-ID`.
 
 ```bash
 python -m ml.pipeline --dry-run        # print the stage plan
 python -m ml.pipeline --only validate  # run just the data-quality gate
 python -m ml.research.drift            # compute feature-drift PSI report
+python -m ml.registry                  # show the versioned model registry
+curl localhost:8000/metrics            # Prometheus scrape
 ```
 
 ---
@@ -688,12 +697,18 @@ ruff check ml backend tests                   # lint
 pytest                                         # 129 passed
 ```
 
-### Docker
+### Docker — the whole stack, one command
 
 ```bash
-cp .env.example .env
 docker compose up --build
+# dashboard → http://localhost:3000 · API → http://localhost:8000 (/docs, /metrics)
 ```
+
+### Deploy a public demo
+
+The dashboard runs standalone on its own route handlers (which serve the real measured
+numbers), so the fastest public link needs no backend — deploy `frontend/` to Vercel.
+Full instructions, including the containerised cloud path, are in **[DEPLOY.md](DEPLOY.md)**.
 
 ---
 

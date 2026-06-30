@@ -169,6 +169,17 @@
   ],
   "experiments": [
     {
+      "id": "a4abcc06",
+      "model": "backtest",
+      "metric": "Sharpe 0.88",
+      "status": "finished",
+      "time": "2026-06-17",
+      "tags": [
+        "walk-forward",
+        "net-of-cost"
+      ]
+    },
+    {
       "id": "56772cf0",
       "model": "backtest",
       "metric": "Sharpe 0.88",
@@ -236,17 +247,6 @@
     },
     {
       "id": "c632d652",
-      "model": "backtest",
-      "metric": "Sharpe 0.88",
-      "status": "finished",
-      "time": "2026-06-16",
-      "tags": [
-        "walk-forward",
-        "net-of-cost"
-      ]
-    },
-    {
-      "id": "25ef0665",
       "model": "backtest",
       "metric": "Sharpe 0.88",
       "status": "finished",

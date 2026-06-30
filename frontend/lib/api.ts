@@ -103,6 +103,30 @@ export interface RiskSummary {
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
 const API_TIMEOUT_MS = 2000;  // 2 second timeout - if backend is slow, fall back to mock
 
+export interface ReplayPoint {
+  date: string;
+  close: number;
+}
+
+export interface ReplayScenario {
+  id: string;
+  ticker: string;
+  company: string;
+  sector: string;
+  entryDate: string;
+  exitDate: string;
+  entryPrice: number;
+  exitPrice: number;
+  ret: number;
+  pnl: number;
+  holdDays: number;
+  pBuy: number | null;
+  volRegime: string | null;
+  entryIndex: number;
+  exitIndex: number;
+  series: ReplayPoint[];
+}
+
 async function get<T>(path: string, init?: RequestInit): Promise<T> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
@@ -142,6 +166,7 @@ export const api = {
     };
   }>("/api/models"),
   trades: () => get<Trade[]>("/api/trades"),
+  replay: () => get<{ scenarios: ReplayScenario[] }>("/api/replay"),
   backtests: (config?: BacktestConfig) =>
     get<BacktestResult>("/api/backtests", {
       method: "POST",

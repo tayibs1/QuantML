@@ -36,6 +36,7 @@ GET_ENDPOINTS = {
     "models": "/api/models",
     "validation": "/api/validation",
     "monitoring": "/api/monitoring",
+    "replay": "/api/replay",
 }
 
 

@@ -45,7 +45,7 @@ from schemas import (
     Signal,
     Trade,
 )
-from services import backtest_service, risk_service, store
+from services import backtest_service, replay_service, risk_service, store
 
 app = FastAPI(title="QuantML API", version="0.2.0")
 
@@ -224,6 +224,12 @@ def metrics():
 def equity(range: int = 0):
     series = backtest_service.equity_series()  # real backtest NAV vs QQQ
     return series[-range:] if range > 0 else series
+
+
+@api.get("/replay")
+def replay():
+    """Real backtest trades replayed: the model's entry, the price path, the realized P&L."""
+    return {"scenarios": replay_service.build_scenarios()}
 
 
 @api.get("/trades", response_model=list[Trade])

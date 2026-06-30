@@ -49,6 +49,19 @@ def test_validation_endpoint_degrades_cleanly(client):
     assert set(body) >= {"rollingWindow", "windowComparison"}
 
 
+def test_replay_endpoint_shape(client):
+    r = client.get("/api/replay")
+    assert r.status_code == 200
+    scenarios = r.json()["scenarios"]
+    assert isinstance(scenarios, list)
+    # data/ artifacts are absent in CI, so the list may be empty; when present,
+    # each scenario carries the trade, the price path, and the entry/exit markers.
+    for sc in scenarios:
+        assert {"ticker", "entryPrice", "exitPrice", "ret", "pnl", "series"} <= set(sc)
+        assert isinstance(sc["series"], list) and sc["series"]
+        assert 0 <= sc["entryIndex"] < sc["exitIndex"] < len(sc["series"])
+
+
 def test_signals_shape(client):
     r = client.get("/api/signals")
     assert r.status_code == 200

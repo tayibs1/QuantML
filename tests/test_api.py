@@ -57,7 +57,8 @@ def test_replay_endpoint_shape(client):
     # data/ artifacts are absent in CI, so the list may be empty; when present,
     # each scenario carries the trade, the price path, and the entry/exit markers.
     for sc in scenarios:
-        assert {"ticker", "entryPrice", "exitPrice", "ret", "pnl", "series"} <= set(sc)
+        assert {"signal", "ticker", "ret", "drivers", "correct", "series"} <= set(sc)
+        assert sc["signal"] in {"BUY", "HOLD", "AVOID"}
         assert isinstance(sc["series"], list) and sc["series"]
         assert 0 <= sc["entryIndex"] < sc["exitIndex"] < len(sc["series"])
 

@@ -169,6 +169,61 @@
   ],
   "experiments": [
     {
+      "id": "c4fe26ea",
+      "model": "backtest",
+      "metric": "Sharpe 0.88",
+      "status": "finished",
+      "time": "2026-06-30",
+      "tags": [
+        "walk-forward",
+        "net-of-cost"
+      ]
+    },
+    {
+      "id": "00b6050d",
+      "model": "backtest",
+      "metric": "Sharpe 0.88",
+      "status": "finished",
+      "time": "2026-06-30",
+      "tags": [
+        "walk-forward",
+        "net-of-cost"
+      ]
+    },
+    {
+      "id": "ebf8a352",
+      "model": "backtest",
+      "metric": "Sharpe 0.88",
+      "status": "finished",
+      "time": "2026-06-30",
+      "tags": [
+        "walk-forward",
+        "net-of-cost"
+      ]
+    },
+    {
+      "id": "b4d678c2",
+      "model": "backtest",
+      "metric": "Sharpe 0.88",
+      "status": "finished",
+      "time": "2026-06-30",
+      "tags": [
+        "walk-forward",
+        "net-of-cost"
+      ]
+    },
+    {
+      "id": "2e353354",
+      "model": "backtest",
+      "metric": "Sharpe 0.88",
+      "status": "finished",
+      "time": "2026-06-30",
+      "tags": [
+        "walk-forward",
+        "net-of-cost"
+      ]
+    },
+    {
       "id": "a4abcc06",
       "model": "backtest",
       "metric": "Sharpe 0.88",
@@ -196,61 +251,6 @@
       "metric": "Sharpe 0.88",
       "status": "finished",
       "time": "2026-06-17",
-      "tags": [
-        "walk-forward",
-        "net-of-cost"
-      ]
-    },
-    {
-      "id": "fa3b7d83",
-      "model": "backtest",
-      "metric": "Sharpe 0.88",
-      "status": "finished",
-      "time": "2026-06-17",
-      "tags": [
-        "walk-forward",
-        "net-of-cost"
-      ]
-    },
-    {
-      "id": "65d8d8b3",
-      "model": "backtest",
-      "metric": "Sharpe 0.88",
-      "status": "finished",
-      "time": "2026-06-16",
-      "tags": [
-        "walk-forward",
-        "net-of-cost"
-      ]
-    },
-    {
-      "id": "2ec841e4",
-      "model": "backtest",
-      "metric": "Sharpe 0.88",
-      "status": "finished",
-      "time": "2026-06-16",
-      "tags": [
-        "walk-forward",
-        "net-of-cost"
-      ]
-    },
-    {
-      "id": "20dcadd4",
-      "model": "backtest",
-      "metric": "Sharpe 0.88",
-      "status": "finished",
-      "time": "2026-06-16",
-      "tags": [
-        "walk-forward",
-        "net-of-cost"
-      ]
-    },
-    {
-      "id": "c632d652",
-      "model": "backtest",
-      "metric": "Sharpe 0.88",
-      "status": "finished",
-      "time": "2026-06-16",
       "tags": [
         "walk-forward",
         "net-of-cost"

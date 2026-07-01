@@ -2,22 +2,28 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Play, RotateCcw, TrendingUp, Gauge } from "lucide-react";
+import { Play, RotateCcw, Sparkles, Check, X, Cpu } from "lucide-react";
 import { PageTransition } from "@/components/motion-primitives";
 import { PageHeader } from "@/components/page-header";
 import { GlassPanel } from "@/components/glass-panel";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ReplayChart } from "@/components/charts/replay-chart";
-import { api, type ReplayScenario } from "@/lib/api";
+import { api, type ReplayScenario, type SignalType } from "@/lib/api";
 import replaySnapshot from "@/lib/snapshot/replay.json";
 import { cn } from "@/lib/utils";
 
 const INITIAL = (replaySnapshot as { scenarios: ReplayScenario[] }).scenarios;
 const SPEEDS = [
-  { label: "1×", ms: 130 },
-  { label: "2×", ms: 60 },
+  { label: "1×", ms: 140 },
+  { label: "2×", ms: 65 },
 ];
+const FILTERS: (SignalType | "ALL")[] = ["ALL", "BUY", "HOLD", "AVOID"];
+
+const SIG: Record<SignalType, { accent: string; chip: string; text: string; bar: string; dot: string }> = {
+  BUY: { accent: "#2dd4bf", chip: "bg-bull/15 text-bull-soft", text: "text-bull-soft", bar: "bg-bull", dot: "bg-bull" },
+  HOLD: { accent: "#fbbf24", chip: "bg-amber-400/15 text-amber-300", text: "text-amber-300", bar: "bg-amber-400", dot: "bg-amber-400" },
+  AVOID: { accent: "#f87171", chip: "bg-bear/15 text-bear-soft", text: "text-bear-soft", bar: "bg-bear", dot: "bg-bear" },
+};
 
 function monthLabel(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", year: "numeric" });
@@ -25,26 +31,31 @@ function monthLabel(iso: string) {
 function dayLabel(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
+function pct(n: number) {
+  return `${n >= 0 ? "+" : ""}${n.toFixed(1)}%`;
+}
 
 type Phase = "armed" | "playing" | "done";
 
 export default function ReplayPage() {
-  const [scenarios, setScenarios] = useState<ReplayScenario[]>(INITIAL);
+  const [all, setAll] = useState<ReplayScenario[]>(INITIAL);
+  const [filter, setFilter] = useState<(typeof FILTERS)[number]>("ALL");
+  const scenarios = filter === "ALL" ? all : all.filter((s) => s.signal === filter);
+
   const [idx, setIdx] = useState(0);
-  const sc = scenarios[idx];
+  const sc = scenarios[Math.min(idx, scenarios.length - 1)];
 
   const [revealed, setRevealed] = useState(sc?.entryIndex ?? 0);
   const [phase, setPhase] = useState<Phase>("armed");
   const [speed, setSpeed] = useState(SPEEDS[0].ms);
+  const [tour, setTour] = useState(false);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const tourTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Refresh from the API (same real snapshot the page is seeded with).
   useEffect(() => {
     api
       .replay()
-      .then((d) => {
-        if (Array.isArray(d.scenarios) && d.scenarios.length) setScenarios(d.scenarios);
-      })
+      .then((d) => Array.isArray(d.scenarios) && d.scenarios.length && setAll(d.scenarios))
       .catch(() => {});
   }, []);
 
@@ -53,14 +64,22 @@ export default function ReplayPage() {
     timer.current = null;
   }, []);
 
-  // Reset the reveal whenever the chosen scenario changes.
+  useEffect(() => setIdx(0), [filter]);
+
+  // Reset when the scenario changes; if touring, auto-start after a beat.
   useEffect(() => {
     stop();
     setRevealed(sc?.entryIndex ?? 0);
     setPhase("armed");
-  }, [idx, sc, stop]);
+    if (tour && sc) {
+      tourTimer.current = setTimeout(() => setPhase("playing"), 1400);
+      return () => {
+        if (tourTimer.current) clearTimeout(tourTimer.current);
+      };
+    }
+  }, [idx, sc, tour, stop]);
 
-  // Drive the forward reveal, stopping at the exit (where P&L is realized).
+  // Drive the forward reveal to the exit.
   useEffect(() => {
     if (phase !== "playing" || !sc) return;
     timer.current = setInterval(() => {
@@ -76,25 +95,44 @@ export default function ReplayPage() {
     return stop;
   }, [phase, sc, speed, stop]);
 
+  // Tour: after the reveal lands, pause on the result, then advance.
+  useEffect(() => {
+    if (!tour || phase !== "done") return;
+    tourTimer.current = setTimeout(() => {
+      setIdx((i) => (i + 1) % scenarios.length);
+    }, 2600);
+    return () => {
+      if (tourTimer.current) clearTimeout(tourTimer.current);
+    };
+  }, [tour, phase, scenarios.length]);
+
   if (!sc) return null;
 
-  const gain = sc.ret >= 0;
+  const sig = SIG[sc.signal];
   const head = Math.min(revealed, sc.series.length - 1);
-  const currentClose = sc.series[head]?.close ?? sc.entryPrice;
-  const currentRet = (currentClose / sc.entryPrice - 1) * 100;
-  const position = sc.pnl / (sc.ret / 100); // implied notional from the realized trade
-  const currentPnl = (currentRet / 100) * position;
-  const progress = Math.max(
-    0,
-    Math.min(1, (revealed - sc.entryIndex) / Math.max(1, sc.exitIndex - sc.entryIndex))
-  );
+  const done = phase === "done";
   const started = revealed > sc.entryIndex;
-  const heldDays = phase === "done" ? sc.holdDays : Math.round(progress * sc.holdDays);
-  const toneText = currentRet >= 0 ? "text-bull-soft" : "text-bear-soft";
+  const liveRet = (sc.series[head]?.value ?? 100) - 100;
+  const ret = done ? sc.ret : liveRet;
+  const benchRet = done ? sc.benchRet ?? 0 : (sc.series[head]?.bench ?? 100) - 100;
+  const dollar = done ? sc.endValue : Math.round((sc.notional * (sc.series[head]?.value ?? 100)) / 100);
+  const curPrice = done ? sc.exitPrice : sc.entryPrice * (1 + ret / 100);
+  const retTone = ret >= 0 ? "text-bull-soft" : "text-bear-soft";
+  const progress = Math.max(0, Math.min(1, (revealed - sc.entryIndex) / Math.max(1, sc.exitIndex - sc.entryIndex)));
+  const heldDays = done ? sc.holdDays : Math.round(progress * sc.holdDays);
 
   function play() {
-    if (phase === "done") setRevealed(sc.entryIndex);
+    if (done) setRevealed(sc.entryIndex);
     setPhase("playing");
+  }
+  function toggleTour() {
+    if (tour) {
+      setTour(false);
+      stop();
+    } else {
+      setTour(true);
+      play();
+    }
   }
 
   return (
@@ -102,55 +140,78 @@ export default function ReplayPage() {
       <PageHeader
         eyebrow="Interactive demo"
         title="Signal Replay"
-        description="A real moment from the walk-forward backtest. The model fired a signal here — press play to watch how it actually played out."
+        description="QuantML scores every NASDAQ-100 name as BUY, HOLD, or AVOID. Pick a call, see the model's reasoning, then press play to watch what happened next."
         actions={
-          <Badge variant="bull" className="hidden sm:inline-flex">
-            <span className="size-1.5 rounded-full bg-bull" />
-            Real backtest trades
-          </Badge>
+          <Button size="sm" variant={tour ? "primary" : "outline"} onClick={toggleTour}>
+            <Sparkles className="size-4" />
+            {tour ? "Stop tour" : "Auto-play tour"}
+          </Button>
         }
       />
 
-      {/* Scenario picker — outcomes hidden so the reveal stays a surprise */}
+      {/* Class filter */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-1 rounded-lg border border-white/8 bg-white/[0.02] p-0.5">
+          {FILTERS.map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={cn(
+                "rounded-md px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider transition-colors",
+                filter === f ? "bg-white/10 text-white" : "text-slate-500 hover:text-slate-300"
+              )}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+        <span className="font-mono text-[10px] text-slate-600">
+          {scenarios.length} {scenarios.length === 1 ? "call" : "calls"}
+        </span>
+      </div>
+
+      {/* Scenario picker — colour = the model's call, outcome hidden */}
       <div className="flex flex-wrap gap-2">
-        {scenarios.map((s, i) => (
-          <button
-            key={s.id}
-            onClick={() => setIdx(i)}
-            className={cn(
-              "group flex items-center gap-2.5 rounded-xl border px-3.5 py-2 text-left transition-colors",
-              i === idx
-                ? "border-brand-400/40 bg-brand-400/10"
-                : "border-white/8 bg-white/[0.02] hover:border-white/15"
-            )}
-          >
-            <span className="font-mono text-[11px] font-semibold text-brand-200">{s.ticker}</span>
-            <span className="hidden text-sm text-slate-300 sm:block">{s.company}</span>
-            <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500">
-              {monthLabel(s.entryDate)}
-            </span>
-          </button>
-        ))}
+        {scenarios.map((s, i) => {
+          const c = SIG[s.signal];
+          return (
+            <button
+              key={s.id}
+              onClick={() => setIdx(i)}
+              className={cn(
+                "flex items-center gap-2.5 rounded-xl border px-3.5 py-2 transition-colors",
+                i === idx ? "border-white/20 bg-white/[0.05]" : "border-white/8 bg-white/[0.02] hover:border-white/15"
+              )}
+            >
+              <span className={cn("size-1.5 rounded-full", c.dot)} />
+              <span className="font-mono text-[11px] font-semibold text-slate-200">{s.ticker}</span>
+              <span className="hidden text-sm text-slate-400 sm:block">{s.company}</span>
+              <span className="font-mono text-[10px] uppercase tracking-wider text-slate-600">
+                {monthLabel(s.entryDate)}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {/* Chart + transport */}
         <GlassPanel strong className="xl:col-span-2">
           <div className="flex items-center justify-between border-b border-white/6 px-5 py-3.5">
-            <div>
-              <h3 className="text-sm font-semibold text-white">
-                {sc.company} <span className="font-mono text-slate-500">· {sc.ticker}</span>
-              </h3>
-              <p className="text-[11px] text-slate-500">Daily close · {sc.sector}</p>
+            <div className="flex items-center gap-2.5">
+              <span className={cn("rounded-md px-2 py-0.5 font-mono text-[11px] font-bold", sig.chip)}>
+                {sc.signal}
+              </span>
+              <div>
+                <h3 className="text-sm font-semibold text-white">
+                  {sc.company} <span className="font-mono text-slate-500">· {sc.ticker}</span>
+                </h3>
+                <p className="text-[11px] text-slate-500">Rebased to 100 at the signal · vs QQQ</p>
+              </div>
             </div>
             <div className="text-right">
-              <div className={cn("font-mono text-lg font-semibold data", toneText)}>
-                ${currentClose.toFixed(2)}
-              </div>
-              <div className={cn("font-mono text-[11px]", toneText)}>
-                {currentRet >= 0 ? "+" : ""}
-                {currentRet.toFixed(2)}% {started ? "since entry" : "at entry"}
-              </div>
+              <div className={cn("font-mono text-lg font-semibold data", retTone)}>{pct(ret)}</div>
+              <div className="font-mono text-[11px] text-slate-500">QQQ {pct(benchRet)}</div>
             </div>
           </div>
 
@@ -160,16 +221,15 @@ export default function ReplayPage() {
               entryIndex={sc.entryIndex}
               exitIndex={sc.exitIndex}
               revealed={revealed}
-              gain={gain}
-              height={360}
+              accent={sig.accent}
+              height={380}
             />
           </div>
 
-          {/* Transport */}
           <div className="flex flex-wrap items-center gap-3 border-t border-white/6 px-5 py-3.5">
             <Button size="sm" onClick={play} disabled={phase === "playing"}>
-              {phase === "done" ? <RotateCcw className="size-4" /> : <Play className="size-4" />}
-              {phase === "done" ? "Replay" : phase === "playing" ? "Playing…" : "Play"}
+              {done ? <RotateCcw className="size-4" /> : <Play className="size-4" />}
+              {done ? "Replay" : phase === "playing" ? "Playing…" : "Play"}
             </Button>
             <div className="flex items-center gap-1 rounded-lg border border-white/8 bg-white/[0.02] p-0.5">
               {SPEEDS.map((s) => (
@@ -178,123 +238,113 @@ export default function ReplayPage() {
                   onClick={() => setSpeed(s.ms)}
                   className={cn(
                     "rounded-md px-2 py-1 font-mono text-[11px] transition-colors",
-                    speed === s.ms ? "bg-brand-400/15 text-brand-200" : "text-slate-500 hover:text-slate-300"
+                    speed === s.ms ? "bg-white/10 text-white" : "text-slate-500 hover:text-slate-300"
                   )}
                 >
                   {s.label}
                 </button>
               ))}
             </div>
-            <div className="h-1.5 min-w-[120px] flex-1 overflow-hidden rounded-full bg-white/8">
+            <div className="h-1.5 min-w-[100px] flex-1 overflow-hidden rounded-full bg-white/8">
               <motion.div
-                className={cn("h-full rounded-full", gain ? "bg-bull" : "bg-bear")}
+                className={cn("h-full rounded-full", sig.bar)}
                 animate={{ width: `${progress * 100}%` }}
                 transition={{ ease: "linear", duration: 0.1 }}
               />
             </div>
             <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500">
-              {started ? `${heldDays}d / ${sc.holdDays}d held` : "armed"}
+              {started ? `${heldDays}d / ${sc.holdDays}d` : "armed"}
             </span>
           </div>
         </GlassPanel>
 
-        {/* Signal + outcome */}
+        {/* Signal reasoning + outcome */}
         <div className="space-y-6">
-          {/* The signal the model fired at entry */}
           <GlassPanel strong>
             <div className="flex items-center gap-2 border-b border-white/6 px-5 py-3.5">
-              <Gauge className="size-4 text-brand-300" />
-              <h3 className="text-sm font-semibold text-white">Model signal</h3>
+              <Cpu className="size-4 text-brand-300" />
+              <h3 className="text-sm font-semibold text-white">Why the model called it</h3>
             </div>
             <div className="space-y-4 p-5">
               <div className="flex items-center justify-between">
-                <Badge variant="bull" className="text-[11px]">BUY</Badge>
+                <span className={cn("rounded-md px-2.5 py-1 font-mono text-sm font-bold", sig.chip)}>
+                  {sc.signal}
+                </span>
                 <span className="font-mono text-[11px] text-slate-500">{dayLabel(sc.entryDate)}</span>
               </div>
 
-              {sc.pBuy != null && (
-                <div>
-                  <div className="mb-1.5 flex items-center justify-between">
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500">
-                      BUY conviction
-                    </span>
-                    <span className="font-mono text-xs text-brand-200">
-                      {(sc.pBuy * 100).toFixed(0)}%
-                    </span>
-                  </div>
-                  <div className="h-1.5 overflow-hidden rounded-full bg-white/8">
-                    <div
-                      className="h-full rounded-full bg-brand-400"
-                      style={{ width: `${Math.min(100, (sc.pBuy / 0.6) * 100)}%` }}
-                    />
-                  </div>
-                  <p className="mt-1 text-[10px] text-slate-600">vs 33% for a random 3-class call</p>
+              <div>
+                <div className="mb-1.5 flex items-center justify-between">
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500">Conviction</span>
+                  <span className="font-mono text-xs text-slate-300">{sc.conviction.toFixed(0)}%</span>
                 </div>
-              )}
+                <div className="h-1.5 overflow-hidden rounded-full bg-white/8">
+                  <div className={cn("h-full rounded-full", sig.bar)} style={{ width: `${sc.conviction}%` }} />
+                </div>
+              </div>
 
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <Field label="Entry price" value={`$${sc.entryPrice.toFixed(2)}`} />
-                <Field label="Vol regime" value={sc.volRegime ?? "—"} />
+              <div>
+                <div className="mb-2 font-mono text-[10px] uppercase tracking-wider text-slate-500">
+                  Top drivers (SHAP)
+                </div>
+                <div className="space-y-1.5">
+                  {sc.drivers.map((d, i) => (
+                    <div key={d} className="flex items-center gap-2 text-sm text-slate-300">
+                      <span className="font-mono text-[10px] text-slate-600">{i + 1}</span>
+                      <span className={cn("size-1 rounded-full", sig.dot)} />
+                      {d}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 border-t border-white/6 pt-3 text-sm">
                 <Field label="Sector" value={sc.sector} />
-                <Field label="Planned hold" value={`${sc.holdDays} days`} />
+                <Field label="Vol regime" value={sc.volRegime ?? "—"} />
               </div>
             </div>
           </GlassPanel>
 
-          {/* The outcome — ticks live during play, locks in at exit */}
-          <GlassPanel strong className={cn("transition-colors", phase === "done" && (gain ? "ring-1 ring-bull/30" : "ring-1 ring-bear/30"))}>
-            <div className="flex items-center gap-2 border-b border-white/6 px-5 py-3.5">
-              <TrendingUp className="size-4 text-brand-300" />
-              <h3 className="text-sm font-semibold text-white">
-                {phase === "done" ? "Result" : "Position P&L"}
-              </h3>
+          <GlassPanel strong className={cn("transition-all", done && (sc.correct ? "ring-1 ring-bull/30" : "ring-1 ring-bear/30"))}>
+            <div className="flex items-center justify-between border-b border-white/6 px-5 py-3.5">
+              <h3 className="text-sm font-semibold text-white">{done ? "Outcome" : "Live P&L"}</h3>
+              {done && (
+                <span
+                  className={cn(
+                    "flex items-center gap-1 rounded-md px-2 py-0.5 font-mono text-[11px] font-semibold",
+                    sc.correct ? "bg-bull/15 text-bull-soft" : "bg-bear/15 text-bear-soft"
+                  )}
+                >
+                  {sc.correct ? <Check className="size-3" /> : <X className="size-3" />}
+                  {sc.correct ? "Called it" : "Missed"}
+                </span>
+              )}
             </div>
             <div className="p-5">
               <AnimatePresence mode="wait">
                 {!started ? (
-                  <motion.p
-                    key="waiting"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="py-6 text-center text-sm text-slate-500"
-                  >
-                    Press <span className="text-brand-200">Play</span> to run the trade forward.
+                  <motion.p key="wait" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="py-6 text-center text-sm text-slate-500">
+                    Press <span className="text-brand-200">Play</span> to run the next {sc.holdDays} trading days.
                   </motion.p>
                 ) : (
-                  <motion.div
-                    key="pnl"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="space-y-4"
-                  >
+                  <motion.div key="out" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
                     <div>
-                      <div className={cn("font-mono text-4xl font-bold data", toneText)}>
-                        {currentRet >= 0 ? "+" : ""}
-                        {currentRet.toFixed(1)}%
-                      </div>
-                      <div className={cn("mt-1 font-mono text-sm", toneText)}>
-                        {currentPnl >= 0 ? "+" : "−"}$
-                        {Math.abs(currentPnl).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                      <div className={cn("font-mono text-4xl font-bold data", retTone)}>{pct(ret)}</div>
+                      <div className="mt-1 font-mono text-sm text-slate-400">
+                        ${sc.notional.toLocaleString()} → <span className={retTone}>${dollar.toLocaleString()}</span>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3 text-sm">
-                      <Field label="Entry" value={`$${sc.entryPrice.toFixed(2)}`} />
-                      <Field
-                        label={phase === "done" ? "Exit" : "Now"}
-                        value={`$${currentClose.toFixed(2)}`}
-                      />
+                      <Field label="vs QQQ" value={pct(benchRet)} />
                       <Field label="Held" value={`${heldDays} days`} />
-                      <Field label="Exit date" value={phase === "done" ? dayLabel(sc.exitDate) : "—"} />
+                      <Field label="Entry" value={`$${sc.entryPrice.toFixed(2)}`} />
+                      <Field label={done ? "Exit" : "Now"} value={`$${curPrice.toFixed(2)}`} />
                     </div>
-                    {phase === "done" && (
-                      <p className="border-t border-white/6 pt-3 text-[11px] text-slate-500">
-                        The model exited on the rebalance after {sc.holdDays} days, realizing a{" "}
-                        <span className={toneText}>
-                          {sc.ret >= 0 ? "+" : ""}
-                          {sc.ret.toFixed(1)}%
-                        </span>{" "}
-                        move.
+                    {done && (
+                      <p className="border-t border-white/6 pt-3 text-[11px] leading-relaxed text-slate-500">
+                        {sc.company} {sc.verdictVerb} over the next {sc.holdDays} trading days
+                        {" "}({pct(sc.ret)} vs QQQ {pct(sc.benchRet ?? 0)}). The model called{" "}
+                        <span className={sig.text}>{sc.signal}</span> — {sc.correct ? "a correct read." : "and got this one wrong."}
                       </p>
                     )}
                   </motion.div>
@@ -304,6 +354,12 @@ export default function ReplayPage() {
           </GlassPanel>
         </div>
       </div>
+
+      <p className="text-[11px] leading-relaxed text-slate-600">
+        The production model applied to historical setups, to show how it reasons. Picks span all three
+        signals and include honest misses. For rigorous walk-forward, out-of-sample performance, see the
+        Backtests and Validation pages.
+      </p>
     </PageTransition>
   );
 }

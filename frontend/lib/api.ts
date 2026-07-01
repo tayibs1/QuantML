@@ -103,13 +103,17 @@ export interface RiskSummary {
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
 const API_TIMEOUT_MS = 2000;  // 2 second timeout - if backend is slow, fall back to mock
 
+export type SignalType = "BUY" | "HOLD" | "AVOID";
+
 export interface ReplayPoint {
   date: string;
-  close: number;
+  value: number; // stock, rebased to 100 at entry
+  bench: number | null; // QQQ, rebased to 100 at entry
 }
 
 export interface ReplayScenario {
   id: string;
+  signal: SignalType;
   ticker: string;
   company: string;
   sector: string;
@@ -118,10 +122,15 @@ export interface ReplayScenario {
   entryPrice: number;
   exitPrice: number;
   ret: number;
-  pnl: number;
+  benchRet: number | null;
+  notional: number;
+  endValue: number;
   holdDays: number;
-  pBuy: number | null;
+  conviction: number;
+  drivers: string[];
   volRegime: string | null;
+  correct: boolean;
+  verdictVerb: string;
   entryIndex: number;
   exitIndex: number;
   series: ReplayPoint[];

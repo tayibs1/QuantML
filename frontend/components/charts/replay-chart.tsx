@@ -2,8 +2,9 @@
 
 import {
   Area,
-  AreaChart,
   CartesianGrid,
+  ComposedChart,
+  Line,
   ReferenceDot,
   ReferenceLine,
   ResponsiveContainer,
@@ -18,28 +19,28 @@ const axisStyle = {
   fill: "rgba(148,163,184,0.6)",
 };
 
-// Two-tone area: the lookback context is drawn muted and complete; the trade window
-// (entry -> revealed) is drawn in the outcome colour and grows as `revealed` advances.
+// Rebased-to-100 chart: the stock (accent, two-tone) races QQQ (dashed) from the
+// signal date. The lookback is drawn muted; the outcome window grows as `revealed`
+// advances.
 export function ReplayChart({
   series,
   entryIndex,
   exitIndex,
   revealed,
-  gain,
-  height = 360,
+  accent,
+  height = 380,
 }: {
   series: ReplayPoint[];
   entryIndex: number;
   exitIndex: number;
   revealed: number;
-  gain: boolean;
+  accent: string;
   height?: number;
 }) {
-  const closes = series.map((p) => p.close);
-  const min = Math.min(...closes);
-  const max = Math.max(...closes);
-  const pad = (max - min) * 0.12 || 1;
-  const accent = gain ? "#2dd4bf" : "#f87171";
+  const vals = series.flatMap((p) => [p.value, p.bench ?? p.value]);
+  const min = Math.min(...vals);
+  const max = Math.max(...vals);
+  const pad = (max - min) * 0.1 || 1;
 
   const head = Math.min(revealed, series.length - 1);
   const entryDate = series[entryIndex]?.date;
@@ -48,16 +49,17 @@ export function ReplayChart({
 
   const data = series.map((p, i) => ({
     date: p.date,
-    context: i <= entryIndex ? p.close : null,
-    active: i >= entryIndex && i <= revealed ? p.close : null,
+    context: i <= entryIndex ? p.value : null,
+    active: i >= entryIndex && i <= revealed ? p.value : null,
+    bench: i <= revealed ? p.bench : null,
   }));
 
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <AreaChart data={data} margin={{ top: 12, right: 18, left: -8, bottom: 0 }}>
+      <ComposedChart data={data} margin={{ top: 12, right: 18, left: -6, bottom: 0 }}>
         <defs>
           <linearGradient id="replayFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={accent} stopOpacity={0.38} />
+            <stop offset="0%" stopColor={accent} stopOpacity={0.32} />
             <stop offset="100%" stopColor={accent} stopOpacity={0} />
           </linearGradient>
         </defs>
@@ -74,26 +76,37 @@ export function ReplayChart({
           tick={axisStyle}
           tickLine={false}
           axisLine={false}
-          width={54}
+          width={44}
           domain={[min - pad, max + pad]}
-          tickFormatter={(v: number) => `$${v.toFixed(0)}`}
+          tickFormatter={(v: number) => v.toFixed(0)}
         />
+        <ReferenceLine y={100} stroke="rgba(255,255,255,0.14)" strokeDasharray="2 4" />
         <ReferenceLine
           x={entryDate}
-          stroke="#2dd4bf"
+          stroke={accent}
           strokeDasharray="4 3"
-          strokeOpacity={0.75}
-          label={{ value: "BUY", position: "insideTopLeft", fill: "#2dd4bf", fontSize: 11, fontWeight: 700 }}
+          strokeOpacity={0.7}
+          label={{ value: "SIGNAL", position: "insideTopLeft", fill: accent, fontSize: 10, fontWeight: 700 }}
         />
         {showExit && (
           <ReferenceLine
             x={exitDate}
-            stroke={accent}
+            stroke="rgba(148,163,184,0.5)"
             strokeDasharray="4 3"
-            strokeOpacity={0.75}
-            label={{ value: "EXIT", position: "insideTopRight", fill: accent, fontSize: 11, fontWeight: 700 }}
+            label={{ value: "EXIT", position: "insideTopRight", fill: "rgba(148,163,184,0.7)", fontSize: 10, fontWeight: 700 }}
           />
         )}
+        <Line
+          type="monotone"
+          dataKey="bench"
+          name="QQQ"
+          stroke="#a78bfa"
+          strokeWidth={1.5}
+          strokeDasharray="4 3"
+          dot={false}
+          isAnimationActive={false}
+          connectNulls
+        />
         <Area
           type="monotone"
           dataKey="context"
@@ -118,7 +131,7 @@ export function ReplayChart({
         {series[head] && (
           <ReferenceDot
             x={series[head].date}
-            y={series[head].close}
+            y={series[head].value}
             r={4.5}
             fill={accent}
             stroke="#04060c"
@@ -126,7 +139,7 @@ export function ReplayChart({
             isFront
           />
         )}
-      </AreaChart>
+      </ComposedChart>
     </ResponsiveContainer>
   );
 }

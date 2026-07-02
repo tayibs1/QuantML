@@ -8,16 +8,46 @@ import { Button } from "@/components/ui/button";
 import { GlassPanel } from "@/components/glass-panel";
 import { ConfidenceRing } from "@/components/confidence-ring";
 import { EquityCurveChart } from "@/components/charts/equity-curve-chart";
-import { equitySeriesShort } from "@/lib/mock-data";
+import type { MetricPoint, Signal } from "@/lib/mock-data";
+import equitySnapshot from "@/lib/snapshot/equity.json";
+import signalsSnapshot from "@/lib/snapshot/signals.json";
+import metricsSnapshot from "@/lib/snapshot/metrics.json";
+import monitoringSnapshot from "@/lib/snapshot/monitoring.json";
 import { cn } from "@/lib/utils";
 
 const ease = [0.21, 0.6, 0.35, 1] as const;
 
-const CHIPS = [
-  { ticker: "NVDA", signal: "BUY", conf: 78, Icon: TrendingUp, tone: "bull" },
-  { ticker: "TSLA", signal: "AVOID", conf: 71, Icon: TrendingDown, tone: "bear" },
-  { ticker: "MSFT", signal: "HOLD", conf: 54, Icon: Minus, tone: "hold" },
-] as const;
+// Hero stats read the same snapshot the dashboard serves.
+const equity = equitySnapshot as MetricPoint[];
+const totalReturn =
+  equity.length > 1
+    ? (equity[equity.length - 1].strategy / equity[0].strategy - 1) * 100
+    : 0;
+
+const signals = signalsSnapshot as Signal[];
+const chipStyle = {
+  BUY: { Icon: TrendingUp, tone: "bull" },
+  AVOID: { Icon: TrendingDown, tone: "bear" },
+  HOLD: { Icon: Minus, tone: "hold" },
+} as const;
+
+// Highest-conviction live call of each type.
+const CHIPS = (["BUY", "AVOID", "HOLD"] as const).flatMap((type) => {
+  const top = signals
+    .filter((s) => s.signal === type)
+    .sort((a, b) => b.confidence - a.confidence)[0];
+  if (!top) return [];
+  return [{ ticker: top.ticker, signal: type, conf: Math.round(top.confidence), ...chipStyle[type] }];
+});
+
+const confidenceMetric = (metricsSnapshot as { key: string; value: number }[]).find(
+  (m) => m.key === "confidence"
+);
+const confidence = Math.round(confidenceMetric?.value ?? 0);
+const confidenceBand = confidence >= 60 ? "High" : confidence >= 45 ? "Moderate" : "Modest";
+const driftStatus = (
+  (monitoringSnapshot as { status?: { drift?: string } }).status?.drift ?? "n/a"
+).toLowerCase();
 
 function FloatingChip({
   chip,
@@ -76,10 +106,10 @@ export function Hero() {
     <section className="relative overflow-hidden pb-20 pt-36 sm:pt-44">
       <HeroBackground />
 
-      {/* Floating signal chips */}
-      <FloatingChip chip={CHIPS[0]} className="left-[6%] top-[28%]" delay={0.5} />
-      <FloatingChip chip={CHIPS[1]} className="right-[7%] top-[34%]" delay={0.7} />
-      <FloatingChip chip={CHIPS[2]} className="left-[10%] top-[62%]" delay={0.9} />
+      {/* Floating signal chips — the highest-conviction live call of each type */}
+      {CHIPS[0] && <FloatingChip chip={CHIPS[0]} className="left-[6%] top-[28%]" delay={0.5} />}
+      {CHIPS[1] && <FloatingChip chip={CHIPS[1]} className="right-[7%] top-[34%]" delay={0.7} />}
+      {CHIPS[2] && <FloatingChip chip={CHIPS[2]} className="left-[10%] top-[62%]" delay={0.9} />}
 
       <div className="relative mx-auto max-w-4xl px-6 text-center">
         <motion.div
@@ -169,21 +199,22 @@ export function Hero() {
                   </p>
                 </div>
                 <span className="inline-flex items-center gap-1 rounded-md bg-bull/10 px-2 py-0.5 font-mono text-[11px] text-bull-soft">
-                  <TrendingUp className="size-3" /> +28.4%
+                  <TrendingUp className="size-3" /> {totalReturn >= 0 ? "+" : ""}
+                  {totalReturn.toFixed(1)}%
                 </span>
               </div>
-              <EquityCurveChart data={equitySeriesShort} height={180} />
+              <EquityCurveChart data={equity} height={180} />
             </div>
 
             {/* Confidence + signals */}
             <div className="space-y-3">
               <div className="flex items-center gap-4 rounded-xl border border-white/6 bg-ink-950/40 p-4">
-                <ConfidenceRing value={78} size={64} stroke={6} />
+                <ConfidenceRing value={confidence} size={64} stroke={6} />
                 <div>
                   <p className="text-xs text-slate-400">Model Confidence</p>
-                  <p className="mt-0.5 text-lg font-semibold text-white">High</p>
+                  <p className="mt-0.5 text-lg font-semibold text-white">{confidenceBand}</p>
                   <p className="font-mono text-[10px] text-slate-500">
-                    XGBoost-v3 · drift low
+                    XGBoost-v3 · drift {driftStatus}
                   </p>
                 </div>
               </div>

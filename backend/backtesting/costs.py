@@ -1,56 +1,87 @@
 """
-Transaction-cost model for the backtest.
+Transaction-cost model used by the backtest.
 
-Every rebalance moves the book, and moving the book isn't free. Two charges,
-both proportional to turnover (the fraction of the book that changes each
-rebalance):
+Whenever the portfolio is rebalanced, positions are bought, sold, or resized.
+These trades are not free, so the backtest deducts two costs:
 
-    commission   broker/exchange fees, in bps of traded notional
-    slippage     gap between the decision price and the actual fill, in bps
-                 (market impact + spread)
+- Commission: fees charged by the broker or exchange.
+- Slippage: the difference between the expected trade price and the actual
+  execution price, including spread and market impact.
 
-Turnover here is Sum|w_t - w_{t-1}|. Dumping the whole book and buying entirely
-new names gets charged on the way out and again on the way in, i.e. on the full
-Sum|dw| - so we charge on Sum|dw| directly instead of halving it.
+Both costs are measured in basis points. One basis point is equal to 0.01%.
 
-Costs come straight out of the period return, so the equity curve, drawdown,
-Sharpe, all of it land net of costs. That's the number that actually means
-something.
+Turnover measures how much of the portfolio changes during a rebalance:
+
+    turnover = sum(abs(new_weight - previous_weight))
+
+We do not divide turnover by two. Selling an old position and buying a new
+position are separate trades, and both sides create costs.
+
+The calculated transaction cost is deducted directly from the portfolio's
+return. This means performance measures such as total return, Sharpe ratio,
+and drawdown reflect realistic returns after trading costs.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
 
+
+# Convert basis points into decimal form.
+# For example, 5 bps becomes 0.0005, or 0.05%.
 _BPS = 1e-4
 
 
 @dataclass(frozen=True)
 class CostModel:
-    """Linear cost model in basis points of traded notional."""
+    """
+    Stores the trading costs used by the backtest.
 
+    The class is frozen because these assumptions should remain unchanged
+    after the cost model has been created.
+    """
+
+    # Fee charged by the broker or exchange for each unit of traded notional.
     commission_bps: float = 5.0
+
+    # Estimated execution cost caused by spread, market impact, and price movement.
     slippage_bps: float = 8.0
 
     @property
     def round_trip_bps(self) -> float:
+        """
+        Return the total cost applied to traded notional.
+
+        With the default values, each unit traded costs:
+
+            5 bps commission + 8 bps slippage = 13 bps
+        """
         return self.commission_bps + self.slippage_bps
 
     def cost_of_trading(self, traded_notional_fraction: float) -> float:
-        """Cost, as a fraction of equity, of trading Sum|dw| of the book.
-
-        traded_notional_fraction is the sum of absolute weight changes over all
-        names at one rebalance (entries plus exits). Returns the slice of equity
-        eaten by commission + slippage on that trade.
         """
-        return max(0.0, traded_notional_fraction) * self.round_trip_bps * _BPS
+        Calculate how much of the portfolio changed during rebalancing.
+        """
+        valid_traded_fraction = max(0.0, traded_notional_fraction)
+
+        return valid_traded_fraction * self.round_trip_bps * _BPS
 
 
 def turnover(prev: dict[str, float], cur: dict[str, float]) -> float:
-    """Traded notional for one rebalance: sum of |w_cur - w_prev| over all names.
-
-    A name only in prev is a full exit, only in cur a full entry, in both the
-    absolute change. This is what the cost model charges on, and what the
-    annualised-turnover metric is built from.
     """
+    Calculate the trading cost as a percentage of the portfolio.
+
+    The cost depends on how much of the portfolio was traded.
+    Negative values are treated as zero.
+    """
+
+    # Use the union so that entries, exits, and resized positions are included.
     names = set(prev) | set(cur)
-    return float(sum(abs(cur.get(t, 0.0) - prev.get(t, 0.0)) for t in names))
+
+    # Missing assets are given a weight of zero.
+    total_traded = sum(
+        abs(cur.get(ticker, 0.0) - prev.get(ticker, 0.0))
+        for ticker in names
+    )
+
+    return float(total_traded)

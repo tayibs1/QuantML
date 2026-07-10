@@ -1,31 +1,42 @@
+
 """
-Walk-forward backtest engine.
+Walk-Forward Backtest Engine
 
-This is the part of QuantML I'd actually stake the numbers on: a real,
-cost-aware, time-respecting simulation of the strategy the live system runs.
-What keeps it honest:
+Tests how the QuantML strategy would have performed over time using only the
+information that was available at each point in the past.
 
-  1. No look-ahead. Signals come from walk-forward out-of-sample predictions,
-     each fold trained only on its own past, using the same ml.training code.
-     The final all-data model never gets to "predict" history.
-  2. Same risk engine. Every rebalance turns the OOS signals into a book through
-     the same portfolio.propose_orders the live /risk endpoint calls, so this
-     tests the real strategy and not a stripped-down stand-in.
-  3. Net of costs. Commission + slippage hit turnover at every rebalance, so
-     equity, drawdown, Sharpe, all of it is after-cost.
-  4. Benchmarked. Always shown against buy-and-hold QQQ over the same dates.
+The goal is to make the backtest as close as possible to how the live system
+actually works.
 
-Split in two so the API stays fast and doesn't drag in the ML deps:
+A few things keep the results realistic:
 
-    generate_oos_predictions()   slow - retrains per fold, caches a parquet.
-                                 Needs xgboost/sklearn, so run it offline / once.
-    simulate(oos, ...)           fast - pure pandas/numpy plus the risk engine.
-                                 Re-runs per request with new cost/rebalance
-                                 settings, no retraining.
+1. No future data is used.
+   The model is trained on past data and then tested on the next unseen period.
+   This process is repeated as time moves forward.
 
-Run it directly to (re)build the cached artifacts the API serves:
+2. The same portfolio and risk logic is used as the live system.
+   Predictions are passed through ``portfolio.propose_orders``, so the backtest
+   follows the same position-sizing and risk rules as the live API.
 
-    cd backend && python -m backtesting.engine
+3. Trading costs are included.
+   Commission and slippage are deducted whenever the portfolio is rebalanced.
+   This means returns, drawdown, and Sharpe ratio are all shown after costs.
+
+4. Results are compared with QQQ.
+   The strategy is measured against simply buying and holding QQQ over the same
+   period.
+
+The process is split into two parts:
+
+    generate_oos_predictions()
+        The slower step. It repeatedly trains the model using past data and
+        saves the predictions to a parquet file. This usually only needs to be
+        run when the model or data changes.
+
+    simulate(oos, ...)
+        The faster step. It uses the saved predictions to run the backtest.
+        This can be repeated with different trading costs or rebalance settings
+        without training the model again.
 """
 from __future__ import annotations
 
@@ -301,7 +312,7 @@ def _load_prices() -> tuple[dict, dict]:
 
 
 def _record_trial(cfg: BacktestConfig, result: dict) -> None:
-    """Log this run to the trial registry. Best-effort - never fatal."""
+    """Log this run to the trial registry."""
     try:
         if str(REPO_ROOT) not in sys.path:
             sys.path.insert(0, str(REPO_ROOT))
@@ -324,7 +335,7 @@ def _record_trial(cfg: BacktestConfig, result: dict) -> None:
 def run_backtest(
     cfg: BacktestConfig | None = None, force_oos: bool = False, log_trial: bool = True
 ) -> dict:
-    """Full pipeline: OOS predictions -> portfolio simulation -> result dict.
+    """Full pipeline from OOS predictions toportfolio simulation to result dict.
 
     Every run gets logged to the trial registry unless log_trial=False, so the
     count and spread of trials are there when we want to check for selection bias.

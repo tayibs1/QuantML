@@ -182,10 +182,70 @@ export function SignalGraph({ signals }: { signals: Signal[] }) {
       });
     }
 
+    // ── Physics ──────────────────────────────────────────────────────────────
+    let raf = 0;
+    let frame = 0;
+
+    const step = () => {
+      frame++;
+      // repulsion
+      for (let i = 0; i < nodes.length; i++) {
+        const a = nodes[i];
+        for (let j = i + 1; j < nodes.length; j++) {
+          const b = nodes[j];
+          const dx = a.x - b.x;
+          const dy = a.y - b.y;
+          let d2 = dx * dx + dy * dy;
+          if (d2 < 0.01) d2 = 0.01;
+          const d = Math.sqrt(d2);
+          const rep = (a.kind === "cluster" && b.kind === "cluster" ? 2600 : 520) / d2;
+          const fx = (dx / d) * rep;
+          const fy = (dy / d) * rep;
+          a.vx += fx;
+          a.vy += fy;
+          b.vx -= fx;
+          b.vy -= fy;
+        }
+      }
+      // springs
+      for (const e of edges) {
+        const rest = e.a.kind === "cluster" || e.b.kind === "cluster" ? 62 : 150;
+        const dx = e.b.x - e.a.x;
+        const dy = e.b.y - e.a.y;
+        const d = Math.sqrt(dx * dx + dy * dy) || 0.01;
+        const k = (d - rest) * 0.0016;
+        const fx = (dx / d) * k;
+        const fy = (dy / d) * k;
+        e.a.vx += fx;
+        e.a.vy += fy;
+        e.b.vx -= fx;
+        e.b.vy -= fy;
+      }
+      // centering + damping + integrate
+      const cx = W / 2;
+      const cy = H / 2;
+      for (const n of nodes) {
+        n.vx += (cx - n.x) * (n.kind === "cluster" ? 0.0016 : 0.0009);
+        n.vy += (cy - n.y) * (n.kind === "cluster" ? 0.0016 : 0.0009);
+        n.vx *= 0.86;
+        n.vy *= 0.86;
+        n.x += n.vx;
+        n.y += n.vy;
+        const pad = 24;
+        n.x = Math.max(pad, Math.min(W - pad, n.x));
+        n.y = Math.max(pad + 8, Math.min(H - pad, n.y));
+      }
+
+      ctx.clearRect(0, 0, W, H);
+      raf = requestAnimationFrame(step);
+    };
+
     const ro = new ResizeObserver(resize);
     ro.observe(wrap);
+    raf = requestAnimationFrame(step);
 
     return () => {
+      cancelAnimationFrame(raf);
       ro.disconnect();
     };
   }, [signals]);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 /**
  * Signal Relationship Graph — an animated, force-directed map of the model's
@@ -30,6 +30,34 @@ const C = {
   collision: "#f472b6", // bull/bear disagreement
 } as const;
 
+type Kind = "signal" | "cluster";
+
+interface Node {
+  id: string;
+  kind: Kind;
+  sector: string;
+  color: string;
+  r: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  label: string;
+  hub: boolean;
+  catalyst: boolean;
+  sig?: Signal;
+  phase: number;
+}
+
+interface Edge {
+  a: Node;
+  b: Node;
+  collision: boolean;
+  color: string;
+  t: number; // particle position 0..1
+  speed: number;
+}
+
 export function SignalGraph({ signals }: { signals: Signal[] }) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -49,6 +77,117 @@ export function SignalGraph({ signals }: { signals: Signal[] }) {
     const avgConf = signals.reduce((a, s) => a + s.confidence, 0) / total;
     const medPrice = signals.map((s) => s.price).sort((a, b) => a - b)[Math.floor(total / 2)] ?? 0;
     return { buy, avoid, hold, total, bullPct, bearPct, convergence, call, avgConf, medPrice };
+  }, [signals]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const wrap = wrapRef.current;
+    if (!canvas || !wrap) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let W = wrap.clientWidth;
+    let H = wrap.clientHeight;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    const resize = () => {
+      W = wrap.clientWidth;
+      H = wrap.clientHeight;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      canvas.style.width = `${W}px`;
+      canvas.style.height = `${H}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize();
+
+    // ── Build graph ─────────────────────────────────────────────────────────
+    const sectors = Array.from(new Set(signals.map((s) => s.sector)));
+    const nodes: Node[] = [];
+    const clusterBySector = new Map<string, Node>();
+
+    sectors.forEach((sector, i) => {
+      const a = (i / sectors.length) * Math.PI * 2;
+      const cn: Node = {
+        id: `hub:${sector}`,
+        kind: "cluster",
+        sector,
+        color: C.cluster,
+        r: 9,
+        x: W / 2 + Math.cos(a) * Math.min(W, H) * 0.26,
+        y: H / 2 + Math.sin(a) * Math.min(W, H) * 0.26,
+        vx: 0,
+        vy: 0,
+        label: sector.split(" ")[0].toUpperCase(),
+        hub: true,
+        catalyst: false,
+        phase: Math.random() * Math.PI * 2,
+      };
+      clusterBySector.set(sector, cn);
+      nodes.push(cn);
+    });
+
+    // Top conviction per sector become highlighted hub names.
+    const topBySector = new Map<string, number>();
+    signals.forEach((s) => {
+      const cur = topBySector.get(s.sector);
+      if (cur === undefined || s.confidence > cur) topBySector.set(s.sector, s.confidence);
+    });
+
+    signals.forEach((s, i) => {
+      const hub = clusterBySector.get(s.sector)!;
+      const jitter = 40 + Math.random() * 30;
+      const a = Math.random() * Math.PI * 2;
+      const isHub = topBySector.get(s.sector) === s.confidence;
+      const catalyst = Math.abs(s.change) >= 6 || s.expectedReturn5d >= 1.2;
+      nodes.push({
+        id: `${s.ticker}:${i}`,
+        kind: "signal",
+        sector: s.sector,
+        color: catalyst && s.signal !== "AVOID" ? C.catalyst : C[s.signal],
+        r: 3.5 + (s.confidence - 34) / 6 + (isHub ? 3 : 0),
+        x: hub.x + Math.cos(a) * jitter,
+        y: hub.y + Math.sin(a) * jitter,
+        vx: 0,
+        vy: 0,
+        label: s.ticker,
+        hub: isHub,
+        catalyst,
+        sig: s,
+        phase: Math.random() * Math.PI * 2,
+      });
+    });
+
+    // ── Edges: spokes to sector hub + a few cross-sector correlations ────────
+    const edges: Edge[] = [];
+    const signalNodes = nodes.filter((n) => n.kind === "signal");
+    signalNodes.forEach((n) => {
+      const hub = clusterBySector.get(n.sector)!;
+      edges.push({ a: hub, b: n, collision: false, color: n.color, t: Math.random(), speed: 0.003 + Math.random() * 0.004 });
+    });
+    // Cross-sector links between high-conviction names (some are "collisions").
+    const strong = [...signalNodes].sort((a, b) => b.sig!.confidence - a.sig!.confidence).slice(0, 22);
+    for (let i = 0; i < strong.length; i++) {
+      const a = strong[i];
+      const b = strong[(i + 3) % strong.length];
+      if (a.sector === b.sector) continue;
+      const collision = a.sig!.signal !== "HOLD" && b.sig!.signal !== "HOLD" && a.sig!.signal !== b.sig!.signal;
+      edges.push({
+        a,
+        b,
+        collision,
+        color: collision ? C.collision : "rgba(148,163,184,0.35)",
+        t: Math.random(),
+        speed: 0.002 + Math.random() * 0.003,
+      });
+    }
+
+    const ro = new ResizeObserver(resize);
+    ro.observe(wrap);
+
+    return () => {
+      ro.disconnect();
+    };
   }, [signals]);
 
   const callTone =

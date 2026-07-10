@@ -236,7 +236,31 @@ export function SignalGraph({ signals }: { signals: Signal[] }) {
         n.y = Math.max(pad + 8, Math.min(H - pad, n.y));
       }
 
+      // ── Render ──────────────────────────────────────────────────────────────
       ctx.clearRect(0, 0, W, H);
+
+      // edges
+      for (const e of edges) {
+        ctx.beginPath();
+        ctx.moveTo(e.a.x, e.a.y);
+        ctx.lineTo(e.b.x, e.b.y);
+        ctx.strokeStyle = e.collision ? "rgba(244,114,182,0.28)" : "rgba(148,163,184,0.10)";
+        ctx.lineWidth = e.collision ? 1.1 : 0.7;
+        ctx.stroke();
+
+        // travelling particle
+        e.t += e.speed;
+        if (e.t > 1) e.t -= 1;
+        const px = e.a.x + (e.b.x - e.a.x) * e.t;
+        const py = e.a.y + (e.b.y - e.a.y) * e.t;
+        ctx.beginPath();
+        ctx.arc(px, py, e.collision ? 1.7 : 1.2, 0, Math.PI * 2);
+        ctx.fillStyle = e.collision ? C.collision : e.color;
+        ctx.globalAlpha = 0.9;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+
       raf = requestAnimationFrame(step);
     };
 

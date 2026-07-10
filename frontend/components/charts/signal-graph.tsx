@@ -261,6 +261,41 @@ export function SignalGraph({ signals }: { signals: Signal[] }) {
         ctx.globalAlpha = 1;
       }
 
+      // nodes
+      for (const n of nodes) {
+        const pulse = n.hub || n.catalyst ? 0.5 + 0.5 * Math.sin(frame * 0.06 + n.phase) : 0;
+        const glowR = n.r * (n.kind === "cluster" ? 5 : 4) + pulse * 6;
+        const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, glowR);
+        g.addColorStop(0, hexA(n.color, 0.55));
+        g.addColorStop(0.4, hexA(n.color, 0.16));
+        g.addColorStop(1, hexA(n.color, 0));
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, glowR, 0, Math.PI * 2);
+        ctx.fill();
+
+        // core
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+        ctx.fillStyle = n.color;
+        ctx.fill();
+        if (n.hub || n.kind === "cluster") {
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, n.r + 2.5 + pulse * 2, 0, Math.PI * 2);
+          ctx.strokeStyle = hexA(n.color, 0.5);
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+
+        // label for hubs / clusters
+        if (n.kind === "cluster" || n.hub) {
+          ctx.font = `600 ${n.kind === "cluster" ? 9 : 8.5}px ui-monospace, monospace`;
+          ctx.fillStyle = n.kind === "cluster" ? hexA(n.color, 0.85) : "rgba(226,232,240,0.85)";
+          ctx.textAlign = "center";
+          ctx.fillText(n.label, n.x, n.y - n.r - 5);
+        }
+      }
+
       raf = requestAnimationFrame(step);
     };
 

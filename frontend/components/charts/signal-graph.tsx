@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 /**
  * Signal Relationship Graph — an animated, force-directed map of the model's
  * live signal universe. Every node is a real NASDAQ-100 name scored by the
  * model; nodes cluster into their sector hubs, edges show cross-name
- * correlation, and a Monte-Carlo-style HUD summarises the book.
+ * correlation, and a Monte-Carlo-style HUD summarises the book. Pure canvas +
+ * requestAnimationFrame, driven by the real signals snapshot.
  */
 
 type Signal = {
@@ -61,6 +62,8 @@ interface Edge {
 export function SignalGraph({ signals }: { signals: Signal[] }) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [hover, setHover] = useState<{ node: Node; x: number; y: number } | null>(null);
+  const [iter, setIter] = useState(49_772);
 
   // ── Derived book stats (real) ────────────────────────────────────────────
   const stats = useMemo(() => {
@@ -166,7 +169,7 @@ export function SignalGraph({ signals }: { signals: Signal[] }) {
       edges.push({ a: hub, b: n, collision: false, color: n.color, t: Math.random(), speed: 0.003 + Math.random() * 0.004 });
     });
     // Cross-sector links between high-conviction names (some are "collisions").
-    const strong = [...signalNodes].sort((a, b) => b.sig!.confidence - a.sig!.confidence).slice(0, 22);
+    const strong = [...signalNodes].sort((a, b) => (b.sig!.confidence - a.sig!.confidence)).slice(0, 22);
     for (let i = 0; i < strong.length; i++) {
       const a = strong[i];
       const b = strong[(i + 3) % strong.length];
@@ -185,16 +188,31 @@ export function SignalGraph({ signals }: { signals: Signal[] }) {
     // ── Physics ──────────────────────────────────────────────────────────────
     let raf = 0;
     let frame = 0;
+    let lastHoverId = "";
+    const mouse = { x: -1, y: -1 };
+
+    const onMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+    };
+    const onLeave = () => {
+      mouse.x = -1;
+      mouse.y = -1;
+      setHover(null);
+    };
+    canvas.addEventListener("mousemove", onMove);
+    canvas.addEventListener("mouseleave", onLeave);
 
     const step = () => {
       frame++;
-      // repulsion
+      // forces
       for (let i = 0; i < nodes.length; i++) {
         const a = nodes[i];
         for (let j = i + 1; j < nodes.length; j++) {
           const b = nodes[j];
-          const dx = a.x - b.x;
-          const dy = a.y - b.y;
+          let dx = a.x - b.x;
+          let dy = a.y - b.y;
           let d2 = dx * dx + dy * dy;
           if (d2 < 0.01) d2 = 0.01;
           const d = Math.sqrt(d2);
@@ -224,6 +242,8 @@ export function SignalGraph({ signals }: { signals: Signal[] }) {
       // centering + damping + integrate
       const cx = W / 2;
       const cy = H / 2;
+      let hoverNode: Node | null = null;
+      let hoverDist = 16;
       for (const n of nodes) {
         n.vx += (cx - n.x) * (n.kind === "cluster" ? 0.0016 : 0.0009);
         n.vy += (cy - n.y) * (n.kind === "cluster" ? 0.0016 : 0.0009);
@@ -234,6 +254,13 @@ export function SignalGraph({ signals }: { signals: Signal[] }) {
         const pad = 24;
         n.x = Math.max(pad, Math.min(W - pad, n.x));
         n.y = Math.max(pad + 8, Math.min(H - pad, n.y));
+        if (mouse.x > 0) {
+          const md = Math.hypot(mouse.x - n.x, mouse.y - n.y);
+          if (n.kind === "signal" && md < hoverDist && md < hoverDist) {
+            hoverDist = md;
+            hoverNode = n;
+          }
+        }
       }
 
       // ── Render ──────────────────────────────────────────────────────────────
@@ -287,14 +314,26 @@ export function SignalGraph({ signals }: { signals: Signal[] }) {
           ctx.stroke();
         }
 
-        // label for hubs / clusters
-        if (n.kind === "cluster" || n.hub) {
+        // label for hubs / clusters / hovered
+        if (n.kind === "cluster" || n.hub || n === hoverNode) {
           ctx.font = `600 ${n.kind === "cluster" ? 9 : 8.5}px ui-monospace, monospace`;
           ctx.fillStyle = n.kind === "cluster" ? hexA(n.color, 0.85) : "rgba(226,232,240,0.85)";
           ctx.textAlign = "center";
           ctx.fillText(n.label, n.x, n.y - n.r - 5);
         }
       }
+
+      // Only push hover state to React when the hovered node actually changes.
+      const hoverId = hoverNode?.id ?? "";
+      if (hoverId !== lastHoverId) {
+        lastHoverId = hoverId;
+        setHover(hoverNode && hoverNode.sig ? { node: hoverNode, x: hoverNode.x, y: hoverNode.y } : null);
+      } else if (hoverNode && hoverNode.sig) {
+        // keep the tooltip glued to the drifting node without thrashing render
+        setHover({ node: hoverNode, x: hoverNode.x, y: hoverNode.y });
+      }
+
+      if (frame % 10 === 0) setIter((v) => v + Math.floor(6 + Math.random() * 18));
 
       raf = requestAnimationFrame(step);
     };
@@ -306,6 +345,8 @@ export function SignalGraph({ signals }: { signals: Signal[] }) {
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
+      canvas.removeEventListener("mousemove", onMove);
+      canvas.removeEventListener("mouseleave", onLeave);
     };
   }, [signals]);
 
@@ -327,6 +368,7 @@ export function SignalGraph({ signals }: { signals: Signal[] }) {
         <div className="hidden items-center gap-3 text-slate-500 sm:flex">
           <span>T+5D <span className="text-slate-300">${stats.medPrice.toFixed(2)}</span></span>
           <span>PATHS <span className="text-slate-300">2,048</span></span>
+          <span>ITER <span className="text-slate-300">{iter.toLocaleString()}</span></span>
         </div>
       </div>
 
@@ -370,6 +412,27 @@ export function SignalGraph({ signals }: { signals: Signal[] }) {
         </div>
         <span className="text-bear-soft">Bear {stats.bearPct}%</span>
       </div>
+
+      {/* Hover tooltip */}
+      {hover && hover.node.sig && (
+        <div
+          className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-lg border border-white/10 bg-ink-900/95 px-3 py-2 shadow-panel backdrop-blur"
+          style={{ left: hover.x, top: hover.y - 14 }}
+        >
+          <div className="flex items-center gap-2">
+            <span className="size-1.5 rounded-full" style={{ background: hover.node.color }} />
+            <span className="font-mono text-xs font-semibold text-white">{hover.node.sig.ticker}</span>
+            <span className="font-mono text-[10px] font-bold" style={{ color: hover.node.color }}>
+              {hover.node.sig.signal}
+            </span>
+          </div>
+          <div className="mt-0.5 max-w-[160px] truncate text-[11px] text-slate-400">{hover.node.sig.company}</div>
+          <div className="mt-1 flex gap-3 font-mono text-[10px] text-slate-500">
+            <span>Conv <span className="text-slate-300">{hover.node.sig.confidence.toFixed(0)}%</span></span>
+            <span>E[5d] <span className={hover.node.sig.expectedReturn5d >= 0 ? "text-bull-soft" : "text-bear-soft"}>{hover.node.sig.expectedReturn5d >= 0 ? "+" : ""}{hover.node.sig.expectedReturn5d.toFixed(2)}%</span></span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -384,12 +447,10 @@ function Row({ k, v, vc }: { k: string; v: string; vc?: string }) {
 }
 
 /** #rrggbb + alpha → rgba() */
-export function hexA(hex: string, a: number) {
+function hexA(hex: string, a: number) {
   const h = hex.replace("#", "");
   const r = parseInt(h.slice(0, 2), 16);
   const g = parseInt(h.slice(2, 4), 16);
   const b = parseInt(h.slice(4, 6), 16);
   return `rgba(${r},${g},${b},${a})`;
 }
-
-export { C };

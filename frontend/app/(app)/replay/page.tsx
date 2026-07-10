@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Play, RotateCcw, Sparkles, Check, X, Cpu } from "lucide-react";
+import { Play, RotateCcw, Sparkles, Check, X, Cpu, Sigma, Share2, History } from "lucide-react";
 import { PageTransition } from "@/components/motion-primitives";
 import { PageHeader } from "@/components/page-header";
 import { GlassPanel } from "@/components/glass-panel";
+import { HowItWorks } from "@/components/how-it-works";
 import { Button } from "@/components/ui/button";
 import { ReplayChart } from "@/components/charts/replay-chart";
 import { SignalGraph } from "@/components/charts/signal-graph";
@@ -15,6 +16,29 @@ import signalsSnapshot from "@/lib/snapshot/signals.json";
 import { cn } from "@/lib/utils";
 
 const GRAPH_SIGNALS = signalsSnapshot as Parameters<typeof SignalGraph>[0]["signals"];
+
+const HOW_IT_WORKS = [
+  {
+    icon: Sigma,
+    title: "Engineer features",
+    desc: "Each NASDAQ-100 name is turned into momentum, volatility, mean-reversion and volume factors from its daily price history.",
+  },
+  {
+    icon: Cpu,
+    title: "Score the signal",
+    desc: "A gradient-boosted model (XGBoost) rates every name BUY, HOLD or AVOID with a conviction score and SHAP-ranked drivers.",
+  },
+  {
+    icon: Share2,
+    title: "Map the universe",
+    desc: "Signals are clustered by sector into the relationship graph — hubs, catalysts and bull/bear disagreements at a glance.",
+  },
+  {
+    icon: History,
+    title: "Replay the outcome",
+    desc: "Pick any call and press play to watch the real price path that followed — honest wins and misses, marked vs QQQ.",
+  },
+];
 
 const INITIAL = (replaySnapshot as { scenarios: ReplayScenario[] }).scenarios;
 const SPEEDS = [
@@ -152,6 +176,9 @@ export default function ReplayPage() {
           </Button>
         }
       />
+
+      {/* Recruiter-friendly pipeline explainer */}
+      <HowItWorks steps={HOW_IT_WORKS} />
 
       {/* Signal universe — animated relationship graph over the live book */}
       <GlassPanel strong className="overflow-hidden">

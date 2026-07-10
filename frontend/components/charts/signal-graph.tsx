@@ -51,6 +51,9 @@ export function SignalGraph({ signals }: { signals: Signal[] }) {
     return { buy, avoid, hold, total, bullPct, bearPct, convergence, call, avgConf, medPrice };
   }, [signals]);
 
+  const callTone =
+    stats.call.includes("LONG") ? "text-bull-soft" : stats.call.includes("SHORT") ? "text-bear-soft" : "text-slate-300";
+
   return (
     <div ref={wrapRef} className="relative h-[440px] w-full overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0" />
@@ -68,6 +71,56 @@ export function SignalGraph({ signals }: { signals: Signal[] }) {
           <span>PATHS <span className="text-slate-300">2,048</span></span>
         </div>
       </div>
+
+      {/* Legend */}
+      <div className="pointer-events-none absolute left-4 top-11 space-y-1 font-mono text-[9px] uppercase tracking-wider text-slate-500">
+        {[
+          ["BUY signal", C.BUY],
+          ["Avoid signal", C.AVOID],
+          ["Median / hold", C.HOLD],
+          ["Catalyst", C.catalyst],
+          ["Sector hub", C.cluster],
+          ["Collision", C.collision],
+        ].map(([label, col]) => (
+          <div key={label} className="flex items-center gap-1.5">
+            <span className="size-1.5 rounded-full" style={{ background: col as string }} />
+            {label}
+          </div>
+        ))}
+      </div>
+
+      {/* Stats HUD */}
+      <div className="pointer-events-none absolute right-4 top-11 space-y-1 text-right font-mono text-[9px] uppercase tracking-wider text-slate-500">
+        <Row k="Convergence" v={`${stats.convergence}%`} />
+        <Row k="Bear signals" v={`${stats.avoid}`} vc="text-bear-soft" />
+        <Row k="Bull signals" v={`${stats.buy}`} vc="text-bull-soft" />
+        <Row k="Hold / median" v={`${stats.hold}`} />
+        <Row k="Avg conviction" v={`${stats.avgConf.toFixed(1)}%`} />
+        <div className="mt-1 flex items-center justify-end gap-2 border-t border-white/8 pt-1">
+          <span>Signal</span>
+          <span className={callTone}>{stats.call}</span>
+        </div>
+      </div>
+
+      {/* Bull/Bear ratio bar */}
+      <div className="pointer-events-none absolute inset-x-4 bottom-3 flex items-center gap-3 font-mono text-[9px] uppercase tracking-wider">
+        <span className="text-bull-soft">Bull {stats.bullPct}%</span>
+        <div className="flex h-1.5 flex-1 overflow-hidden rounded-full bg-white/8">
+          <div className="h-full bg-bull" style={{ width: `${stats.bullPct}%` }} />
+          <div className="h-full bg-slate-600" style={{ width: `${100 - stats.bullPct - stats.bearPct}%` }} />
+          <div className="h-full bg-bear" style={{ width: `${stats.bearPct}%` }} />
+        </div>
+        <span className="text-bear-soft">Bear {stats.bearPct}%</span>
+      </div>
+    </div>
+  );
+}
+
+function Row({ k, v, vc }: { k: string; v: string; vc?: string }) {
+  return (
+    <div className="flex items-center justify-end gap-2">
+      <span>{k}</span>
+      <span className={vc ?? "text-slate-300"}>{v}</span>
     </div>
   );
 }

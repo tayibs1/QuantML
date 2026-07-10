@@ -8,9 +8,13 @@ import { PageHeader } from "@/components/page-header";
 import { GlassPanel } from "@/components/glass-panel";
 import { Button } from "@/components/ui/button";
 import { ReplayChart } from "@/components/charts/replay-chart";
+import { SignalGraph } from "@/components/charts/signal-graph";
 import { api, type ReplayScenario, type SignalType } from "@/lib/api";
 import replaySnapshot from "@/lib/snapshot/replay.json";
+import signalsSnapshot from "@/lib/snapshot/signals.json";
 import { cn } from "@/lib/utils";
+
+const GRAPH_SIGNALS = signalsSnapshot as Parameters<typeof SignalGraph>[0]["signals"];
 
 const INITIAL = (replaySnapshot as { scenarios: ReplayScenario[] }).scenarios;
 const SPEEDS = [

@@ -153,6 +153,22 @@ export default function ReplayPage() {
         }
       />
 
+      {/* Signal universe — animated relationship graph over the live book */}
+      <GlassPanel strong className="overflow-hidden">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/6 px-5 py-3.5">
+          <div>
+            <h3 className="text-sm font-semibold text-white">Signal universe</h3>
+            <p className="text-[11px] text-slate-500">
+              Every NASDAQ-100 name the model is scoring right now, clustered by sector. Hover any node.
+            </p>
+          </div>
+          <span className="font-mono text-[10px] uppercase tracking-wider text-slate-600">
+            {GRAPH_SIGNALS.length} live signals · Monte-Carlo view
+          </span>
+        </div>
+        <SignalGraph signals={GRAPH_SIGNALS} />
+      </GlassPanel>
+
       {/* Class filter */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex items-center gap-1 rounded-lg border border-white/8 bg-white/[0.02] p-0.5">

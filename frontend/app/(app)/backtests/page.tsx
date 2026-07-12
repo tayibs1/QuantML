@@ -1,12 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { Play, Settings2, Loader2 } from "lucide-react";
+import { Settings2 } from "lucide-react";
 import { PageTransition } from "@/components/motion-primitives";
 import { PageHeader } from "@/components/page-header";
 import { GlassPanel } from "@/components/glass-panel";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { EquityCurveChart } from "@/components/charts/equity-curve-chart";
@@ -22,6 +21,7 @@ import {
   type MetricPoint,
   type Trade,
 } from "@/lib/mock-data";
+import { applyCostModel } from "@/lib/backtest-cost";
 import { cn } from "@/lib/utils";
 
 type Card = { label: string; value: string; tone: "bull" | "bear" | "neutral" };
@@ -125,12 +125,12 @@ export default function BacktestsPage() {
     neutral: "text-white",
   };
 
-  // Config controls that actually drive the engine.
+  // knobs the user can change
   const [rebalance, setRebalance] = useState<Rebalance>("Weekly");
   const [txnCost, setTxnCost] = useState(5);
   const [slippage, setSlippage] = useState(8);
 
-  // Results (seeded with mock so the page renders instantly, then goes live).
+  // seeded with mock, swapped for the snapshot on mount
   const [cards, setCards] = useState<Card[]>(backtestMetrics as unknown as Card[]);
   const [equity, setEquity] = useState<MetricPoint[]>(equitySeries);
   const [tradeRows, setTradeRows] = useState<Trade[]>(mockTrades);
@@ -138,10 +138,8 @@ export default function BacktestsPage() {
   const [windowLabel, setWindowLabel] = useState("2021 – 2026");
   const [tradeCount, setTradeCount] = useState(mockTrades.length);
   const [live, setLive] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   const runBacktest = useCallback(async () => {
-    setLoading(true);
     try {
       const d = await api.backtests({
         rebalance,
@@ -163,16 +161,25 @@ export default function BacktestsPage() {
       setLive(d.source === "live");
     } catch {
       /* keep mock fallback */
-    } finally {
-      setLoading(false);
     }
   }, [rebalance, txnCost, slippage]);
 
-  // Run once on mount with the default config.
+  // initial load
   useEffect(() => {
     runBacktest();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // re-price the snapshot whenever a slider moves
+  const view = useMemo(
+    () =>
+      applyCostModel(equity, cards, {
+        commissionBps: txnCost,
+        slippageBps: slippage,
+        rebalance,
+      }),
+    [equity, cards, txnCost, slippage, rebalance]
+  );
 
   return (
     <PageTransition className="space-y-6">
@@ -181,20 +188,10 @@ export default function BacktestsPage() {
         title="Backtests"
         description="Walk-forward, out-of-sample evaluation. Net of costs, benchmarked against buy-and-hold QQQ."
         actions={
-          <>
-            <Badge variant={live ? "bull" : "outline"} className="hidden sm:inline-flex">
-              <span className={`size-1.5 rounded-full ${live ? "bg-bull" : "bg-slate-500"}`} />
-              {live ? "Live engine" : "Sample data"}
-            </Badge>
-            <Button size="sm" onClick={runBacktest} disabled={loading}>
-              {loading ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Play className="size-4" />
-              )}
-              Run Backtest
-            </Button>
-          </>
+          <Badge variant={live ? "bull" : "outline"} className="hidden sm:inline-flex">
+            <span className={`size-1.5 rounded-full ${live ? "bg-bull" : "bg-slate-500"}`} />
+            {live ? "Live engine" : "Sample data"}
+          </Badge>
         }
       />
 
@@ -237,14 +234,9 @@ export default function BacktestsPage() {
               </span>
               <Badge variant="brand">Walk-forward</Badge>
             </div>
-            <Button className="w-full" onClick={runBacktest} disabled={loading}>
-              {loading ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Play className="size-4" />
-              )}
-              {loading ? "Running…" : "Run Backtest"}
-            </Button>
+            <p className="pt-1 text-center font-mono text-[10px] uppercase tracking-wider text-slate-600">
+              Results update live as you adjust
+            </p>
           </div>
         </GlassPanel>
 
@@ -252,7 +244,7 @@ export default function BacktestsPage() {
         <div className="space-y-6 xl:col-span-3">
           {/* Metrics */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {cards.map((m, i) => (
+            {view.summaryCards.map((m, i) => (
               <motion.div
                 key={m.label}
                 initial={{ opacity: 0, y: 14 }}
@@ -294,10 +286,10 @@ export default function BacktestsPage() {
               </div>
               <div className="p-4">
                 <TabsContent value="equity" className="mt-0">
-                  <EquityCurveChart height={320} data={equity} />
+                  <EquityCurveChart height={320} data={view.equity} />
                 </TabsContent>
                 <TabsContent value="drawdown" className="mt-0">
-                  <DrawdownChart height={320} data={equity} />
+                  <DrawdownChart height={320} data={view.equity} />
                 </TabsContent>
                 <TabsContent value="monthly" className="mt-0">
                   <MonthlyHeatmap data={monthly} />

@@ -12,11 +12,7 @@ export interface HowItWorksStep {
   desc: string;
 }
 
-/**
- * A compact, recruiter-friendly pipeline explainer: numbered steps connected
- * left-to-right, each with an icon, a title, and one plain-English line. Reads
- * instantly on a screen recording; collapsible so it never gets in the way.
- */
+// Numbered pipeline steps, each with an icon and a one-line description.
 export function HowItWorks({
   steps,
   title = "How it works",

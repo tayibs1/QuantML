@@ -2,13 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
-/**
- * Signal Relationship Graph — an animated, force-directed map of the model's
- * live signal universe. Every node is a real NASDAQ-100 name scored by the
- * model; nodes cluster into their sector hubs, edges show cross-name
- * correlation, and a Monte-Carlo-style HUD summarises the book. Pure canvas +
- * requestAnimationFrame, driven by the real signals snapshot.
- */
+// Force-directed map of the current signal book. Each node is a scored name;
+// nodes pull toward their sector hub and edges link correlated names.
+// Canvas + requestAnimationFrame, fed by the signals snapshot.
 
 type Signal = {
   ticker: string;
@@ -59,13 +55,23 @@ interface Edge {
   speed: number;
 }
 
-export function SignalGraph({ signals }: { signals: Signal[] }) {
+export function SignalGraph({
+  signals,
+  height = 440,
+  compact = false,
+}: {
+  signals: Signal[];
+  /** canvas height in px */
+  height?: number;
+  /** drop the legend and stats HUD for a slim strip */
+  compact?: boolean;
+}) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [hover, setHover] = useState<{ node: Node; x: number; y: number } | null>(null);
   const [iter, setIter] = useState(49_772);
 
-  // ── Derived book stats (real) ────────────────────────────────────────────
+  // book stats shown in the HUD
   const stats = useMemo(() => {
     const buy = signals.filter((s) => s.signal === "BUY").length;
     const avoid = signals.filter((s) => s.signal === "AVOID").length;
@@ -130,7 +136,7 @@ export function SignalGraph({ signals }: { signals: Signal[] }) {
       nodes.push(cn);
     });
 
-    // Top conviction per sector become highlighted hub names.
+    // highest-conviction name per sector becomes a hub
     const topBySector = new Map<string, number>();
     signals.forEach((s) => {
       const cur = topBySector.get(s.sector);
@@ -323,13 +329,13 @@ export function SignalGraph({ signals }: { signals: Signal[] }) {
         }
       }
 
-      // Only push hover state to React when the hovered node actually changes.
+      // only touch React state when the hovered node changes
       const hoverId = hoverNode?.id ?? "";
       if (hoverId !== lastHoverId) {
         lastHoverId = hoverId;
         setHover(hoverNode && hoverNode.sig ? { node: hoverNode, x: hoverNode.x, y: hoverNode.y } : null);
       } else if (hoverNode && hoverNode.sig) {
-        // keep the tooltip glued to the drifting node without thrashing render
+        // follow the node as it drifts
         setHover({ node: hoverNode, x: hoverNode.x, y: hoverNode.y });
       }
 
@@ -354,7 +360,7 @@ export function SignalGraph({ signals }: { signals: Signal[] }) {
     stats.call.includes("LONG") ? "text-bull-soft" : stats.call.includes("SHORT") ? "text-bear-soft" : "text-slate-300";
 
   return (
-    <div ref={wrapRef} className="relative h-[440px] w-full overflow-hidden">
+    <div ref={wrapRef} className="relative w-full overflow-hidden" style={{ height }}>
       <canvas ref={canvasRef} className="absolute inset-0" />
 
       {/* Title bar */}
@@ -365,42 +371,54 @@ export function SignalGraph({ signals }: { signals: Signal[] }) {
           <span className="text-slate-600">·</span>
           <span>Signal Relationship Graph</span>
         </div>
-        <div className="hidden items-center gap-3 text-slate-500 sm:flex">
-          <span>T+5D <span className="text-slate-300">${stats.medPrice.toFixed(2)}</span></span>
-          <span>PATHS <span className="text-slate-300">2,048</span></span>
-          <span>ITER <span className="text-slate-300">{iter.toLocaleString()}</span></span>
-        </div>
-      </div>
-
-      {/* Legend */}
-      <div className="pointer-events-none absolute left-4 top-11 space-y-1 font-mono text-[9px] uppercase tracking-wider text-slate-500">
-        {[
-          ["BUY signal", C.BUY],
-          ["Avoid signal", C.AVOID],
-          ["Median / hold", C.HOLD],
-          ["Catalyst", C.catalyst],
-          ["Sector hub", C.cluster],
-          ["Collision", C.collision],
-        ].map(([label, col]) => (
-          <div key={label} className="flex items-center gap-1.5">
-            <span className="size-1.5 rounded-full" style={{ background: col as string }} />
-            {label}
+        {!compact && (
+          <div className="hidden items-center gap-3 text-slate-500 sm:flex">
+            <span>T+5D <span className="text-slate-300">${stats.medPrice.toFixed(2)}</span></span>
+            <span>PATHS <span className="text-slate-300">2,048</span></span>
+            <span>ITER <span className="text-slate-300">{iter.toLocaleString()}</span></span>
           </div>
-        ))}
+        )}
+        {compact && (
+          <div className="flex items-center gap-2 text-slate-500">
+            <span>Signal</span>
+            <span className={callTone}>{stats.call}</span>
+          </div>
+        )}
       </div>
 
-      {/* Stats HUD */}
-      <div className="pointer-events-none absolute right-4 top-11 space-y-1 text-right font-mono text-[9px] uppercase tracking-wider text-slate-500">
-        <Row k="Convergence" v={`${stats.convergence}%`} />
-        <Row k="Bear signals" v={`${stats.avoid}`} vc="text-bear-soft" />
-        <Row k="Bull signals" v={`${stats.buy}`} vc="text-bull-soft" />
-        <Row k="Hold / median" v={`${stats.hold}`} />
-        <Row k="Avg conviction" v={`${stats.avgConf.toFixed(1)}%`} />
-        <div className="mt-1 flex items-center justify-end gap-2 border-t border-white/8 pt-1">
-          <span>Signal</span>
-          <span className={callTone}>{stats.call}</span>
-        </div>
-      </div>
+      {!compact && (
+        <>
+          {/* Legend */}
+          <div className="pointer-events-none absolute left-4 top-11 space-y-1 font-mono text-[9px] uppercase tracking-wider text-slate-500">
+            {[
+              ["BUY signal", C.BUY],
+              ["Avoid signal", C.AVOID],
+              ["Median / hold", C.HOLD],
+              ["Catalyst", C.catalyst],
+              ["Sector hub", C.cluster],
+              ["Collision", C.collision],
+            ].map(([label, col]) => (
+              <div key={label} className="flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full" style={{ background: col as string }} />
+                {label}
+              </div>
+            ))}
+          </div>
+
+          {/* Stats HUD */}
+          <div className="pointer-events-none absolute right-4 top-11 space-y-1 text-right font-mono text-[9px] uppercase tracking-wider text-slate-500">
+            <Row k="Convergence" v={`${stats.convergence}%`} />
+            <Row k="Bear signals" v={`${stats.avoid}`} vc="text-bear-soft" />
+            <Row k="Bull signals" v={`${stats.buy}`} vc="text-bull-soft" />
+            <Row k="Hold / median" v={`${stats.hold}`} />
+            <Row k="Avg conviction" v={`${stats.avgConf.toFixed(1)}%`} />
+            <div className="mt-1 flex items-center justify-end gap-2 border-t border-white/8 pt-1">
+              <span>Signal</span>
+              <span className={callTone}>{stats.call}</span>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Bull/Bear ratio bar */}
       <div className="pointer-events-none absolute inset-x-4 bottom-3 flex items-center gap-3 font-mono text-[9px] uppercase tracking-wider">

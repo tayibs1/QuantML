@@ -282,16 +282,16 @@ The platform is built in three strict, independently deployable layers:
 
 ```mermaid
 flowchart LR
-    px[Yahoo Finance<br/>OHLCV · 117k bars] --> feat[Feature engineering<br/>24 features]
-    news[News &amp; events] --> feat
-    feat --> train[Walk-forward<br/>XGBoost + Optuna]
-    train --> reg[Model registry<br/>+ SHAP]
-    reg --> inf[Inference<br/>56 signals]
-    inf --> risk[Risk engine<br/>hard limits]
-    risk --> exec[Execution adapter<br/>backtest · paper · live]
-    inf --> api[FastAPI]
+    px["Market data (OHLCV, 117k bars)"] --> feat["Feature engineering (24 features)"]
+    news["News and events"] --> feat
+    feat --> train["Walk-forward XGBoost + Optuna"]
+    train --> reg["Model registry + SHAP"]
+    reg --> inf["Inference: 56 signals"]
+    inf --> risk["Risk engine (hard limits)"]
+    risk --> exc["Execution: backtest / paper / live"]
+    inf --> api["FastAPI"]
     risk --> api
-    api --> ui[Next.js dashboard]
+    api --> ui["Next.js dashboard"]
 ```
 
 **Detailed view:**

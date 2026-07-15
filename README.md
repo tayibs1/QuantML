@@ -27,6 +27,16 @@ explainable ML signals, portfolio construction, and a live full-stack dashboard.
 > engineered, an Optuna-tuned XGBoost trained with walk-forward validation, and 56
 > NASDAQ-100 signals scored, all visible in the dashboard.
 
+<br/>
+
+### 🔗 [Live demo — quant-ml-flax.vercel.app](https://quant-ml-flax.vercel.app)
+
+*Live signals, cost-aware backtests, the signal-replay view and the full pipeline walkthrough — running in the browser.*
+
+<!-- Demo recording: film cinematic mode (Pipeline → Replay → Backtests), export a GIF to docs/demo.gif, then uncomment the line below.
+<img src="docs/demo.gif" alt="QuantML walkthrough" width="860"/>
+-->
+
 </div>
 
 ---
@@ -269,6 +279,22 @@ the cadence ranking is the result.)
 ## System Architecture
 
 The platform is built in three strict, independently deployable layers:
+
+```mermaid
+flowchart LR
+    px[Yahoo Finance<br/>OHLCV · 117k bars] --> feat[Feature engineering<br/>24 features]
+    news[News &amp; events] --> feat
+    feat --> train[Walk-forward<br/>XGBoost + Optuna]
+    train --> reg[Model registry<br/>+ SHAP]
+    reg --> inf[Inference<br/>56 signals]
+    inf --> risk[Risk engine<br/>hard limits]
+    risk --> exec[Execution adapter<br/>backtest · paper · live]
+    inf --> api[FastAPI]
+    risk --> api
+    api --> ui[Next.js dashboard]
+```
+
+**Detailed view:**
 
 ```
 ╔══════════════════════════════════════════════════════════════════════╗

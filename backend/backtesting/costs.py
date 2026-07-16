@@ -26,7 +26,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-
 # Convert basis points into decimal form.
 # For example, 5 bps becomes 0.0005, or 0.05%.
 _BPS = 1e-4

@@ -36,7 +36,7 @@ def equity_series(points: int = 180) -> list[dict]:
     return out
 
 
-# dashboard metrics     
+# dashboard metrics
 METRICS = [
     {"key": "portfolio", "label": "Portfolio Value", "value": 1284500, "prefix": "$", "decimals": 0, "delta": 3.2, "spark": 1, "up": True},
     {"key": "strategy", "label": "Strategy Return", "value": 28.4, "suffix": "%", "decimals": 1, "delta": 28.4, "spark": 2, "up": True},
@@ -121,7 +121,7 @@ def trades() -> list[dict]:
     return out
 
 
-#  risk 
+#  risk
 EXPOSURE_BY_ASSET = [
     {"name": "NVDA", "value": 18}, {"name": "MSFT", "value": 14},
     {"name": "AAPL", "value": 12}, {"name": "META", "value": 10},
@@ -167,7 +167,7 @@ def volatility_regime() -> list[dict]:
     ]
 
 
-# rag 
+# rag
 RAG_DEFAULT = {
     "prompt": "Why did the model generate a BUY signal for NVDA?",
     "answer": "XGBoost-v3 issued a BUY for NVDA with 78% confidence. The decision is dominated by strong 20-day momentum and a volume spike (+2.3 sigma vs trailing mean), reinforced by positive analyst earnings revisions over the past two weeks. Relative strength versus the semiconductor peer group sits in the 88th percentile. The model projects a +2.1% five-day forward return, though it flags the signal as High risk given elevated implied volatility.",

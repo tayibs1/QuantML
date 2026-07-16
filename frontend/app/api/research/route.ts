@@ -84,6 +84,39 @@ function buildContext() {
 
 const SYSTEM = `You are QuantML's research assistant. Explain why the model made a call, grounded strictly in the signal snapshot and model facts provided. Be concrete and quantitative and cite the SHAP drivers behind the call. This is a research tool, not financial advice, so never tell the user to buy or sell. If a name isn't in the snapshot, say so and answer from the model's general behaviour. Return JSON matching the schema: a clear answer, 2-3 plausible sources (earnings, sell-side research, or the model's SHAP report), the signalContext for the name in question, honest riskWarnings, and an overall confidence 0-100.`;
 
+// Basic in-memory rate limit so a public endpoint can't burn through the token
+// budget: a few calls per IP per minute, plus a global hourly ceiling. Over
+// either limit we serve the canned answer instead of calling the model — no
+// spend, and the demo still responds. (In-memory only: resets on cold start and
+// isn't shared across serverless instances; enough for a demo, not a hard cap.)
+const PER_IP = 5;
+const IP_WINDOW = 60_000;
+const GLOBAL_MAX = 120;
+const GLOBAL_WINDOW = 3_600_000;
+
+const ipHits = new Map<string, number[]>();
+let globalHits: number[] = [];
+
+function ipOf(req: Request) {
+  return req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
+}
+
+function overLimit(ip: string) {
+  const now = Date.now();
+  globalHits = globalHits.filter((t) => now - t < GLOBAL_WINDOW);
+  if (globalHits.length >= GLOBAL_MAX) return true;
+  const hits = (ipHits.get(ip) ?? []).filter((t) => now - t < IP_WINDOW);
+  if (hits.length >= PER_IP) {
+    ipHits.set(ip, hits);
+    return true;
+  }
+  hits.push(now);
+  ipHits.set(ip, hits);
+  globalHits.push(now);
+  if (ipHits.size > 5000) ipHits.clear(); // keep the map from growing unbounded
+  return false;
+}
+
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   const prompt = typeof body?.prompt === "string" ? body.prompt.slice(0, MAX_PROMPT) : "";
@@ -93,6 +126,11 @@ export async function POST(request: Request) {
 
   const mock = getRagResponse(prompt);
   if (!process.env.ANTHROPIC_API_KEY) {
+    return NextResponse.json(mock);
+  }
+
+  // Over the rate limit → serve the canned answer, don't spend tokens.
+  if (overLimit(ipOf(request))) {
     return NextResponse.json(mock);
   }
 

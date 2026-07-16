@@ -1,94 +1,23 @@
 import { NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
-import { getRagResponse } from "@/lib/mock-data";
-import signalsSnapshot from "@/lib/snapshot/signals.json";
-import modelsSnapshot from "@/lib/snapshot/models.json";
-import metricsSnapshot from "@/lib/snapshot/metrics.json";
+import { explainSignal, buildContext } from "@/lib/signal-explainer";
 
-// POST /api/research { prompt } - RAG explanation for a signal/question.
-// With ANTHROPIC_API_KEY set, Claude answers grounded in the current signal
-// snapshot; without a key (or on any error) it falls back to the canned
-// response so the demo still works.
+// POST /api/research { prompt } - research explanation for a signal/question.
+// Default: a free, no-key answer built from the model's own SHAP output.
+// If GEMINI_API_KEY is set, it upgrades to a live LLM answer (Google Gemini
+// free tier); on any error or over the rate limit it falls back to the free
+// answer, so the demo always responds and never runs up a bill.
 
-const MODEL = "claude-opus-4-8";
+const MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
 const MAX_PROMPT = 600;
 
-type Signal = {
-  ticker: string;
-  company: string;
-  signal: string;
-  confidence: number;
-  expectedReturn5d: number;
-  risk: string;
-  model: string;
-  drivers: string[];
-  sector: string;
-};
+const SYSTEM = `You are QuantML's research assistant. Explain why the model made a call, grounded strictly in the signal snapshot and model facts provided. Be concrete and quantitative and cite the SHAP drivers. This is a research tool, not financial advice — never tell the user to buy or sell. If a name isn't in the snapshot, say so and answer from the model's general behaviour.
+Return ONLY a JSON object, no markdown, with exactly this shape:
+{"answer": string, "sources": [{"title": string, "type": "Model report"|"Research"|"Earnings"|"News"|"Filing", "date": string, "snippet": string}], "signalContext": {"ticker": string, "signal": "BUY"|"HOLD"|"AVOID", "confidence": number, "model": string}, "riskWarnings": string[], "confidence": number}`;
 
-// The JSON Claude must return — matches the RagResponse the UI renders.
-const schema = {
-  type: "object",
-  additionalProperties: false,
-  required: ["answer", "sources", "signalContext", "riskWarnings", "confidence"],
-  properties: {
-    answer: { type: "string" },
-    sources: {
-      type: "array",
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: ["title", "type", "date", "snippet"],
-        properties: {
-          title: { type: "string" },
-          type: { type: "string" },
-          date: { type: "string" },
-          snippet: { type: "string" },
-        },
-      },
-    },
-    signalContext: {
-      type: "object",
-      additionalProperties: false,
-      required: ["ticker", "signal", "confidence", "model"],
-      properties: {
-        ticker: { type: "string" },
-        signal: { type: "string", enum: ["BUY", "HOLD", "AVOID"] },
-        confidence: { type: "number" },
-        model: { type: "string" },
-      },
-    },
-    riskWarnings: { type: "array", items: { type: "string" } },
-    confidence: { type: "number" },
-  },
-} as const;
-
-function buildContext() {
-  const signals = signalsSnapshot as Signal[];
-  const rows = signals
-    .map(
-      (s) =>
-        `${s.ticker} (${s.company}, ${s.sector}) — ${s.signal} @ ${s.confidence}% conf, E[5d] ${s.expectedReturn5d}%, ${s.risk} risk. Drivers: ${s.drivers.join(", ")}`
-    )
-    .join("\n");
-  const model = (modelsSnapshot as { models: Record<string, unknown>[] }).models?.[0] ?? {};
-  const feats = ((modelsSnapshot as { featureImportance?: { feature: string; importance: number }[] }).featureImportance ?? [])
-    .slice(0, 8)
-    .map((f) => `${f.feature} (${(f.importance * 100).toFixed(1)}%)`)
-    .join(", ");
-  const kpis = (metricsSnapshot as { label: string; value: number; suffix: string }[])
-    .map((m) => `${m.label}: ${m.value}${m.suffix}`)
-    .join(" · ");
-
-  return `MODEL\n${JSON.stringify(model)}\n\nTOP FEATURES (SHAP importance)\n${feats}\n\nBACKTEST KPIs\n${kpis}\n\nCURRENT SIGNALS\n${rows}`;
-}
-
-const SYSTEM = `You are QuantML's research assistant. Explain why the model made a call, grounded strictly in the signal snapshot and model facts provided. Be concrete and quantitative and cite the SHAP drivers behind the call. This is a research tool, not financial advice, so never tell the user to buy or sell. If a name isn't in the snapshot, say so and answer from the model's general behaviour. Return JSON matching the schema: a clear answer, 2-3 plausible sources (earnings, sell-side research, or the model's SHAP report), the signalContext for the name in question, honest riskWarnings, and an overall confidence 0-100.`;
-
-// Basic in-memory rate limit so a public endpoint can't burn through the token
-// budget: a few calls per IP per minute, plus a global hourly ceiling. Over
-// either limit we serve the canned answer instead of calling the model — no
-// spend, and the demo still responds. (In-memory only: resets on cold start and
-// isn't shared across serverless instances; enough for a demo, not a hard cap.)
+// Basic in-memory rate limit so the optional LLM can't be abused: a few calls
+// per IP per minute, plus a global hourly ceiling. Over either limit we serve
+// the free answer instead of calling the model. (In-memory only: resets on cold
+// start and isn't shared across serverless instances — enough for a demo.)
 const PER_IP = 5;
 const IP_WINDOW = 60_000;
 const GLOBAL_MAX = 120;
@@ -117,6 +46,23 @@ function overLimit(ip: string) {
   return false;
 }
 
+async function callGemini(key: string, prompt: string) {
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: `${SYSTEM}\n\n---\n${buildContext()}` }] },
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: { responseMimeType: "application/json", maxOutputTokens: 1500, temperature: 0.4 },
+    }),
+  });
+  if (!res.ok) throw new Error(`gemini ${res.status}`);
+  const data = await res.json();
+  const text: string | undefined = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error("gemini: empty response");
+  return JSON.parse(text);
+}
+
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   const prompt = typeof body?.prompt === "string" ? body.prompt.slice(0, MAX_PROMPT) : "";
@@ -124,34 +70,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "prompt is required" }, { status: 400 });
   }
 
-  const mock = getRagResponse(prompt);
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json(mock);
-  }
+  // Free, no-key answer from the model's own output — always available.
+  const base = explainSignal(prompt);
 
-  // Over the rate limit → serve the canned answer, don't spend tokens.
-  if (overLimit(ipOf(request))) {
-    return NextResponse.json(mock);
+  const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  if (!key || overLimit(ipOf(request))) {
+    return NextResponse.json(base);
   }
 
   try {
-    const client = new Anthropic();
-    const res = await client.messages.create({
-      model: MODEL,
-      max_tokens: 1500,
-      system: [
-        { type: "text", text: `${SYSTEM}\n\n---\n${buildContext()}`, cache_control: { type: "ephemeral" } },
-      ],
-      output_config: { format: { type: "json_schema", schema } },
-      messages: [{ role: "user", content: prompt }],
-    } as Anthropic.MessageCreateParamsNonStreaming);
-
-    const text = res.content.find((b) => b.type === "text");
-    if (!text || text.type !== "text") return NextResponse.json(mock);
-    const parsed = JSON.parse(text.text);
-    return NextResponse.json({ prompt, ...parsed });
+    const llm = await callGemini(key, prompt);
+    return NextResponse.json({ prompt, ...llm });
   } catch {
-    // key present but the call failed — keep the demo working
-    return NextResponse.json(mock);
+    return NextResponse.json(base);
   }
 }

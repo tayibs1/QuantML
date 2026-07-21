@@ -5,252 +5,231 @@
       "name": "XGBoost-v3",
       "family": "Gradient Boosting",
       "status": "Champion",
-      "trainingWindow": "2019-01-02 \u2026 2026-06-01",
+      "trainingWindow": "2019-01-02 \u2026 2026-06-25",
       "validation": "6-fold walk-forward",
-      "sharpe": 1.19,
-      "cagr": 31.2,
-      "maxDrawdown": -29.3,
+      "sharpe": 0.91,
+      "cagr": 21.1,
+      "maxDrawdown": -35.3,
       "drift": "Low",
-      "auc": 0.54,
-      "accuracy": 0.366,
+      "auc": 0.5404,
+      "accuracy": 0.3674,
       "features": 24,
-      "lastTrained": "2026-06-12",
-      "experimentId": "exp-2026-06-12-xgboost-v3"
+      "lastTrained": "2026-07-05",
+      "experimentId": "exp-2026-07-05-xgb"
     },
     {
-      "id": "random-forest",
+      "id": "lgbm-v2",
+      "name": "LightGBM-v2",
+      "family": "Gradient Boosting",
+      "status": "Champion",
+      "trainingWindow": "2018-2024",
+      "validation": "Walk-forward (12 folds)",
+      "sharpe": 0.96,
+      "cagr": 17.8,
+      "maxDrawdown": -16.9,
+      "drift": "Low",
+      "auc": 0.62,
+      "accuracy": 0.571,
+      "features": 84,
+      "lastTrained": "2026-05-28",
+      "experimentId": "exp-2033"
+    },
+    {
+      "id": "rf-v1",
       "name": "Random Forest",
-      "family": "Bagged Trees",
+      "family": "Bagging Ensemble",
       "status": "Baseline",
-      "trainingWindow": "2019-01-02 \u2026 2026-06-01",
-      "validation": "6-fold walk-forward",
-      "sharpe": 0.99,
-      "cagr": 27.4,
-      "maxDrawdown": -38.0,
-      "drift": "Low",
-      "auc": 0.5518,
-      "accuracy": 0.3784,
-      "features": 24,
-      "lastTrained": "2026-06-12",
-      "experimentId": "exp-2026-06-12-random-forest"
+      "trainingWindow": "2018-2024",
+      "validation": "Walk-forward (12 folds)",
+      "sharpe": 0.74,
+      "cagr": 13.1,
+      "maxDrawdown": -21.2,
+      "drift": "Medium",
+      "auc": 0.59,
+      "accuracy": 0.552,
+      "features": 84,
+      "lastTrained": "2026-05-12",
+      "experimentId": "exp-1987"
     },
     {
-      "id": "logistic-regression",
+      "id": "logreg",
       "name": "Logistic Regression",
       "family": "Linear",
       "status": "Baseline",
-      "trainingWindow": "2019-01-02 \u2026 2026-06-01",
-      "validation": "6-fold walk-forward",
-      "sharpe": 0.85,
-      "cagr": 21.9,
-      "maxDrawdown": -38.5,
+      "trainingWindow": "2018-2024",
+      "validation": "Walk-forward (12 folds)",
+      "sharpe": 0.61,
+      "cagr": 10.4,
+      "maxDrawdown": -19.8,
       "drift": "Low",
-      "auc": 0.5468,
-      "accuracy": 0.3727,
-      "features": 24,
-      "lastTrained": "2026-06-12",
-      "experimentId": "exp-2026-06-12-logistic-regression"
+      "auc": 0.57,
+      "accuracy": 0.541,
+      "features": 42,
+      "lastTrained": "2026-05-12",
+      "experimentId": "exp-1985"
     },
     {
-      "id": "cross-sectional-momentum",
-      "name": "Cross-sectional Momentum",
-      "family": "Rule-based",
+      "id": "lstm-exp",
+      "name": "LSTM experimental",
+      "family": "Deep Sequence",
+      "status": "Experimental",
+      "trainingWindow": "2019-2024",
+      "validation": "Walk-forward (8 folds)",
+      "sharpe": 0.88,
+      "cagr": 16.2,
+      "maxDrawdown": -24.6,
+      "drift": "High",
+      "auc": 0.61,
+      "accuracy": 0.566,
+      "features": 120,
+      "lastTrained": "2026-06-04",
+      "experimentId": "exp-2055"
+    },
+    {
+      "id": "mom-base",
+      "name": "Momentum baseline",
+      "family": "Rules",
       "status": "Baseline",
-      "trainingWindow": "2019-01-02 \u2026 2026-06-01",
-      "validation": "6-fold walk-forward",
-      "sharpe": 0.89,
-      "cagr": 21.6,
-      "maxDrawdown": -38.9,
+      "trainingWindow": "n/a",
+      "validation": "Walk-forward (12 folds)",
+      "sharpe": 0.52,
+      "cagr": 9.1,
+      "maxDrawdown": -27.4,
       "drift": "Low",
-      "auc": 0.5073,
-      "accuracy": 0.3447,
-      "features": 24,
-      "lastTrained": "2026-06-12",
-      "experimentId": "exp-2026-06-12-cross-sectional-momentum"
+      "auc": 0.54,
+      "accuracy": 0.524,
+      "features": 3,
+      "lastTrained": "n/a",
+      "experimentId": "exp-0001"
     }
   ],
   "featureImportance": [
     {
       "feature": "ATR % of price",
-      "importance": 0.0777
+      "importance": 0.0801
     },
     {
       "feature": "60-day volatility",
-      "importance": 0.0572
-    },
-    {
-      "feature": "Distance from 200d MA",
-      "importance": 0.044
+      "importance": 0.0578
     },
     {
       "feature": "120-day momentum",
-      "importance": 0.0438
+      "importance": 0.0443
     },
     {
-      "feature": "Distance from 52w high",
-      "importance": 0.0435
-    },
-    {
-      "feature": "Volatility of volatility",
-      "importance": 0.0427
+      "feature": "Distance from 200d MA",
+      "importance": 0.0434
     },
     {
       "feature": "Distance from 52w low",
+      "importance": 0.0428
+    },
+    {
+      "feature": "Distance from 52w high",
+      "importance": 0.0428
+    },
+    {
+      "feature": "60-day momentum",
       "importance": 0.0425
     },
     {
       "feature": "Return skew (20d)",
-      "importance": 0.0423
-    },
-    {
-      "feature": "60-day momentum",
-      "importance": 0.0423
-    },
-    {
-      "feature": "20-day volatility",
       "importance": 0.0421
     },
     {
       "feature": "Distance from 50d MA",
-      "importance": 0.0419
+      "importance": 0.0418
+    },
+    {
+      "feature": "20-day volatility",
+      "importance": 0.0417
     },
     {
       "feature": "Return kurtosis (20d)",
       "importance": 0.0416
     },
     {
-      "feature": "Distance from 20d MA",
-      "importance": 0.0399
+      "feature": "Volatility of volatility",
+      "importance": 0.0405
     },
     {
       "feature": "MACD histogram",
       "importance": 0.0395
     },
     {
-      "feature": "20-day momentum",
-      "importance": 0.0381
-    },
-    {
-      "feature": "On-balance-volume slope",
-      "importance": 0.0377
+      "feature": "Distance from 20d MA",
+      "importance": 0.0388
     },
     {
       "feature": "Bollinger %b",
-      "importance": 0.0376
+      "importance": 0.0382
     },
     {
-      "feature": "RSI (14)",
-      "importance": 0.0373
+      "feature": "20-day momentum",
+      "importance": 0.0379
     },
     {
       "feature": "Relative strength (20d)",
-      "importance": 0.0371
+      "importance": 0.0377
     },
     {
       "feature": "5-day momentum",
+      "importance": 0.0374
+    },
+    {
+      "feature": "On-balance-volume slope",
       "importance": 0.037
     },
     {
+      "feature": "RSI (14)",
+      "importance": 0.0368
+    },
+    {
       "feature": "Volume z-score",
-      "importance": 0.0345
+      "importance": 0.0353
     },
     {
       "feature": "Intraday range",
-      "importance": 0.034
+      "importance": 0.0347
     },
     {
       "feature": "Overnight gap",
-      "importance": 0.033
+      "importance": 0.0337
     },
     {
       "feature": "Dollar-volume z-score",
-      "importance": 0.0328
+      "importance": 0.0316
     }
   ],
   "experiments": [
     {
-      "id": "c4fe26ea",
+      "id": "89d4f3b6",
       "model": "backtest",
-      "metric": "Sharpe 0.88",
+      "metric": "Sharpe 0.51",
       "status": "finished",
-      "time": "2026-06-30",
+      "time": "2026-07-21",
       "tags": [
         "walk-forward",
         "net-of-cost"
       ]
     },
     {
-      "id": "00b6050d",
+      "id": "8fef1a91",
       "model": "backtest",
-      "metric": "Sharpe 0.88",
+      "metric": "Sharpe 0.51",
       "status": "finished",
-      "time": "2026-06-30",
+      "time": "2026-07-16",
       "tags": [
         "walk-forward",
         "net-of-cost"
       ]
     },
     {
-      "id": "ebf8a352",
+      "id": "9c78385a",
       "model": "backtest",
-      "metric": "Sharpe 0.88",
+      "metric": "Sharpe 0.51",
       "status": "finished",
-      "time": "2026-06-30",
-      "tags": [
-        "walk-forward",
-        "net-of-cost"
-      ]
-    },
-    {
-      "id": "b4d678c2",
-      "model": "backtest",
-      "metric": "Sharpe 0.88",
-      "status": "finished",
-      "time": "2026-06-30",
-      "tags": [
-        "walk-forward",
-        "net-of-cost"
-      ]
-    },
-    {
-      "id": "2e353354",
-      "model": "backtest",
-      "metric": "Sharpe 0.88",
-      "status": "finished",
-      "time": "2026-06-30",
-      "tags": [
-        "walk-forward",
-        "net-of-cost"
-      ]
-    },
-    {
-      "id": "a4abcc06",
-      "model": "backtest",
-      "metric": "Sharpe 0.88",
-      "status": "finished",
-      "time": "2026-06-17",
-      "tags": [
-        "walk-forward",
-        "net-of-cost"
-      ]
-    },
-    {
-      "id": "56772cf0",
-      "model": "backtest",
-      "metric": "Sharpe 0.88",
-      "status": "finished",
-      "time": "2026-06-17",
-      "tags": [
-        "walk-forward",
-        "net-of-cost"
-      ]
-    },
-    {
-      "id": "ed8abd93",
-      "model": "backtest",
-      "metric": "Sharpe 0.88",
-      "status": "finished",
-      "time": "2026-06-17",
+      "time": "2026-07-16",
       "tags": [
         "walk-forward",
         "net-of-cost"
@@ -258,28 +237,7 @@
     }
   ],
   "registry": {
-    "versions": [
-      {
-        "id": "9f835283be",
-        "version": "v1",
-        "name": "XGBoost-v3",
-        "family": "Gradient Boosting",
-        "status": "champion",
-        "metrics": {
-          "sharpe": 1.19,
-          "auc": 0.54,
-          "cagr": 31.2,
-          "maxDrawdown": -29.3,
-          "accuracy": 0.366
-        },
-        "trainWindow": "2019-01-02 \u2026 2026-06-01",
-        "features": 24,
-        "dsr": 1.0,
-        "gatePassed": true,
-        "registeredAt": "2026-06-17T14:02:50.615641+00:00",
-        "promotedAt": "2026-06-17T14:02:53.945535+00:00"
-      }
-    ],
-    "championId": "9f835283be"
+    "versions": [],
+    "championId": null
   }
 }

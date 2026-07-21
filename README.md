@@ -173,8 +173,6 @@ Deploying your own public copy is covered in **[DEPLOY.md](DEPLOY.md)**.
 
 **The tests cover the things that matter.** 138 of them, run on every push alongside lint and a production build. They exercise the cost model, risk caps, labelling, and the live-trading lock — the parts where a silent bug would be expensive.
 
-**The research assistant works without an API key.** It answers from the model's own SHAP output for free. Add a free Gemini key and it upgrades to a full LLM. Either way it's rate-limited so a public demo can't run up a bill.
-
 ---
 
 ## Tech stack

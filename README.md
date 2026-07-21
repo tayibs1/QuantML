@@ -161,7 +161,7 @@ docker compose up --build
 # dashboard → localhost:3000 · API → localhost:8000
 ```
 
-Deploying your own public copy is covered in **[DEPLOY.md](DEPLOY.md)**.
+To put your own copy online, deploy the `frontend/` directory to Vercel — it runs standalone on the baked-in results, so there's no backend to host.
 
 ---
 

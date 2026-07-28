@@ -65,7 +65,15 @@ The near-term roadmap is paper trading against a broker API, then gated live exe
 
 **Serving and interface**
 - FastAPI backend with Pydantic v2 response models that mirror the TypeScript interfaces exactly, so the same JSON shapes work against either the API or the Next.js route handlers.
-- Next.js 15 dashboard: live signal cards, walk-forward backtests with adjustable cost assumptions, signal replay, risk exposure, model registry, validation studies, and a research assistant that answers questions grounded in the model's own SHAP output.
+- Next.js 15 dashboard: live signal cards, walk-forward backtests with adjustable cost assumptions, signal replay, risk exposure, model registry and validation studies.
+
+**Research AI — explaining the model's output**
+- A retrieval assistant over QuantML's own artifacts. Ask why a name got its signal, which features pushed it and which pushed back, what the validation evidence supports, and what would make it unreliable. Every claim cites the artifact it came from.
+- Not a chatbot over documents. Exact figures come from six deterministic lookups, so no number is ever generated; search only supplies the explanation around them. Search alone can't answer "what is NVDA's confidence", where approximately right is wrong.
+- Answers are checked back against the evidence afterwards. Figures that don't appear in it get flagged, along with missing citations and anything that reads like advice.
+- Questions built on a false premise get corrected rather than answered — asking why a name got a BUY when it's a HOLD returns the correction, not an invented rationale.
+- Runs with no API key. The default mode assembles answers from the retrieved evidence, which is exactly as accurate as generating them and cannot hallucinate; OpenAI or Gemini can be switched on for fluency.
+- 18-case evaluation harness scoring retrieval, citations, refusals and abstention. See [docs/research_ai.md](docs/research_ai.md) and its [system card](docs/research_ai_system_card.md).
 
 ---
 
@@ -197,6 +205,7 @@ Stated plainly, because a research platform that hides its weaknesses isn't a re
 - **Single asset class, single frequency.** Daily bars, US large-cap equities, long-only. No shorting, no options, no intraday.
 - **Earnings features are inferred**, not sourced from a licensed calendar.
 - **No live capital.** Paper trading against a broker API is the next milestone; the adapter interface is already in place.
+- **Research AI only knows what QuantML produced.** It indexes signals, attribution, validation studies, backtests, the risk framework and the project docs — no filings, news or fundamentals. Questions outside that are refused rather than answered from the language model's own knowledge. Its default embedder matches shared vocabulary rather than meaning, and the index is a snapshot that has to be rebuilt after a pipeline run.
 
 ---
 

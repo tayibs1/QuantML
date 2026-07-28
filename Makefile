@@ -16,6 +16,12 @@ logs: ## Tail stack logs
 test: ## Run the Python test suite
 	python -m pytest -q
 
+research-index: ## Rebuild the Research AI artifact index
+	cd backend && python -c "import research.ingest as i; print(i.build_index()[1])"
+
+research-eval: ## Score the Research AI assistant against the eval set
+	python scripts/evaluate_research_ai.py
+
 build: ## Production-build the dashboard
 	cd frontend && npm run build
 

@@ -1,0 +1,38 @@
+{
+  "models": [
+    {
+      "id": "xgboost-v3",
+      "name": "XGBoost-v3",
+      "family": "Gradient Boosting",
+      "status": "Champion",
+      "trainingWindow": "2019-01-02 \u2026 2026-06-25",
+      "validation": "6-fold walk-forward",
+      "sharpe": 0.91,
+      "cagr": 21.1,
+      "maxDrawdown": -35.26,
+      "drift": "Low",
+      "auc": 0.5404,
+      "accuracy": 36.74,
+      "features": 24,
+      "lastTrained": "2026-07-05",
+      "experimentId": "exp-001"
+    }
+  ],
+  "featureImportance": [
+    {
+      "feature": "ATR % of price",
+      "key": "atr_pct",
+      "importance": 8.01
+    },
+    {
+      "feature": "60-day volatility",
+      "key": "vol_60",
+      "importance": 5.78
+    },
+    {
+      "feature": "120-day momentum",
+      "key": "ret_120",
+      "importance": 5.12
+    }
+  ]
+}

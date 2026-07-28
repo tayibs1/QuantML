@@ -1,0 +1,33 @@
+{
+  "feature_cols": [
+    "ret_5",
+    "ret_20",
+    "vol_20",
+    "atr_pct",
+    "rsi_14"
+  ],
+  "class_to_signal": {
+    "0": "AVOID",
+    "1": "HOLD",
+    "2": "BUY"
+  },
+  "class_mean_fwd_ret": {
+    "0": -0.034,
+    "1": 0.003,
+    "2": 0.045
+  },
+  "label_method": "cross-sectional terciles of 5d forward return",
+  "horizon_days": 5,
+  "train_start": "2019-01-02",
+  "train_end": "2026-06-25",
+  "trained_at": "2026-07-05",
+  "model_name": "XGBoost-v3",
+  "metrics": {
+    "accuracy": 0.3674,
+    "auc": 0.5404,
+    "buy_hit_rate": 0.5281,
+    "sharpe": 0.91,
+    "cagr": 0.2107,
+    "maxDrawdown": -0.3526
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "source": "live",
+  "config": {
+    "rebalance": "Weekly",
+    "top_n": 20,
+    "commission_bps": 5.0,
+    "slippage_bps": 8.0,
+    "model": "XGBoost-v3"
+  },
+  "window": {
+    "start": "2021-12-27",
+    "end": "2026-06-23",
+    "rebalances": 226
+  },
+  "metrics": {
+    "cagr": 0.0883,
+    "totalReturn": 0.4589,
+    "benchTotalReturn": 0.8182,
+    "benchCagr": 0.1433,
+    "sharpe": 0.51,
+    "sortino": 0.71,
+    "volatility": 0.2112,
+    "maxDrawdown": -0.3599,
+    "benchCorrelation": 0.92,
+    "beta": 0.93,
+    "excessReturn": -0.3593
+  },
+  "trades": [
+    {
+      "id": "T-1",
+      "date": "2026-06-23",
+      "ticker": "AMD",
+      "side": "LONG",
+      "entry": 100.0,
+      "exit": 104.0,
+      "pnl": 400,
+      "ret": 4.0,
+      "hold": 5
+    },
+    {
+      "id": "T-2",
+      "date": "2026-05-19",
+      "ticker": "AMD",
+      "side": "LONG",
+      "entry": 98.0,
+      "exit": 95.5,
+      "pnl": -250,
+      "ret": -2.55,
+      "hold": 7
+    },
+    {
+      "id": "T-3",
+      "date": "2026-04-14",
+      "ticker": "INTC",
+      "side": "LONG",
+      "entry": 31.0,
+      "exit": 32.2,
+      "pnl": 120,
+      "ret": 3.87,
+      "hold": 12
+    }
+  ],
+  "tradeCount": 1891,
+  "monthlyReturns": [
+    {
+      "year": 2025,
+      "months": [
+        1.2,
+        -0.8,
+        2.1,
+        -3.4,
+        0.9,
+        1.7,
+        -1.1,
+        2.8,
+        -0.3,
+        1.4,
+        -2.2,
+        0.6
+      ]
+    }
+  ],
+  "generatedAt": "2026-07-21T19:26:34+00:00"
+}

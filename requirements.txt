@@ -1,0 +1,41 @@
+# QuantML API (FastAPI) runtime deps.
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.1
+
+# Risk service reads price artifacts (benchmark/OHLCV parquet) for the realized
+# volatility regime. Shared with the ML pipeline (see ml/requirements.txt).
+pandas==2.2.3
+numpy==2.1.3
+pyarrow==18.1.0
+
+# The backtest engine serves + re-simulates from cached predictions using only
+# the pandas/numpy/pyarrow above. A cold first-run (no oos_predictions.parquet)
+# regenerates walk-forward predictions and reuses ml/ deps (xgboost, scikit-learn,
+# joblib) lazily, so they aren't required just to run the API.
+#
+# The API reads ML artifacts from data/ produced by ml/ (see ml/requirements.txt).
+
+# Research AI (backend/research) runs on the numpy/pydantic already listed above.
+# Out of the box it uses hashing embeddings, an in-memory vector store and
+# template answers: no extra packages, no API key, no network. That's what lets
+# the tests and a fresh clone work.
+#
+# Two optional upgrades, each independent:
+#
+#   pip install chromadb                 persistent vector store. Picked up
+#                                        automatically once installed; the numpy
+#                                        store is used when it isn't.
+#   pip install sentence-transformers    embeddings that match on meaning rather
+#                                        than shared words (downloads a model).
+#
+# chromadb is left out of this file on purpose rather than pinned. Old versions
+# build chroma-hnswlib from source, which needs a C++ toolchain on Windows, and
+# current ones crash when a process opens several persistent clients in a row -
+# which is exactly what the test suite does. Keeping it opt-in means a plain
+# `pip install -r` always works. Set RESEARCH_VECTOR_BACKEND=numpy to pin the
+# fallback even when chromadb is present.
+#
+# LLM providers are called over plain HTTP, so no SDK is needed for OpenAI or
+# Gemini. See docs/research_ai.md.

@@ -102,6 +102,9 @@ export interface RiskSummary {
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
 const API_TIMEOUT_MS = 2000;  // 2 second timeout - if backend is slow, fall back to mock
+// The research assistant is allowed longer: retrieval is fast, but a real LLM
+// answer takes seconds, and cutting it off would drop the demo to the fallback.
+const RESEARCH_TIMEOUT_MS = 45000;
 
 export type SignalType = "BUY" | "HOLD" | "AVOID";
 
@@ -136,9 +139,110 @@ export interface ReplayScenario {
   series: ReplayPoint[];
 }
 
-async function get<T>(path: string, init?: RequestInit): Promise<T> {
+// ── Research AI ─────────────────────────────────────────────────────────────
+// Shapes returned by POST /api/research/query. Every answer arrives with the
+// evidence behind it, so the UI can show what the answer was built from rather
+// than asking the reader to take it on trust.
+
+/** One cited piece of evidence: either an exact lookup or a retrieved passage. */
+export interface ResearchSource {
+  tag: string; // the [S1]/[E2] marker the answer text refers to
+  kind: "structured" | "retrieved";
+  artifact_id: string;
+  artifact_type: string;
+  title: string;
+  source_path: string;
+  heading?: string | null;
+  chunk_id?: string | null;
+  similarity?: number | null;
+  snippet?: string | null;
+}
+
+/** A retrieved passage, shown in full in the evidence panel. */
+export interface ResearchEvidence {
+  chunk_id: string;
+  artifact_id: string;
+  artifact_type: string;
+  title: string;
+  heading?: string | null;
+  source_path: string;
+  similarity: number;
+  retrieval_method: string;
+  text: string;
+}
+
+export interface ResearchDriver {
+  key: string;
+  label: string;
+  contribution: number;
+  direction: "supports" | "opposes";
+  featureValue: number;
+}
+
+/** The live signal the question was about, if it was about one. */
+export interface ResearchSignalContext {
+  ticker: string;
+  company?: string;
+  sector?: string;
+  signal: SignalType;
+  confidence: number;
+  chanceLevel: number; // 33.3 — three classes, so this is the "no opinion" level
+  expectedReturn5d?: number;
+  risk?: string;
+  model?: string;
+  price?: number;
+  change?: number;
+  generatedAt?: string;
+  drivers?: {
+    supporting: ResearchDriver[];
+    opposing: ResearchDriver[];
+    asOf?: string;
+  };
+  riskControls?: {
+    level?: string;
+    sizingFactor?: number;
+    inProposedBook?: boolean;
+    proposedWeight?: number;
+    limits?: Record<string, number | boolean>;
+    note?: string;
+  };
+}
+
+export interface ResearchAnswer {
+  question: string;
+  answer: string;
+  intent: string;
+  ticker: string | null;
+  signal_context: ResearchSignalContext | null;
+  sources: ResearchSource[];
+  evidence: ResearchEvidence[];
+  tool_calls: { tool: string; arguments: Record<string, unknown>; ok: boolean; note?: string }[];
+  retrieval_trace: { step: string; detail: string; result_count: number }[];
+  grounding_warnings: string[];
+  grounded: boolean;
+  llm: { provider: string; model: string; note?: string };
+  latency_ms: number;
+  over_latency_budget: boolean;
+}
+
+export interface ResearchHealth {
+  status: string;
+  indexReady: boolean;
+  index: {
+    chunks: number;
+    artifacts: number;
+    embedder: string;
+    backend: string;
+    byType: Record<string, number>;
+    tickers: string[];
+  };
+  llm: { provider: string; mockMode: boolean; model: string | null; keyConfigured: boolean };
+  embedding: { provider: string; active: string };
+}
+
+async function get<T>(path: string, init?: RequestInit, timeoutMs = API_TIMEOUT_MS): Promise<T> {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const res = await fetch(`${BASE}${path}`, {
@@ -188,4 +292,23 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ prompt }),
     }),
+
+  // The grounded assistant. Needs the FastAPI backend — the Next.js route
+  // handlers only serve the older /api/research shape.
+  researchQuery: (body: {
+    question: string;
+    ticker?: string;
+    model_version?: string;
+    top_k?: number;
+  }) =>
+    get<ResearchAnswer>(
+      "/api/research/query",
+      { method: "POST", body: JSON.stringify(body) },
+      // mock mode answers in milliseconds, but a real LLM needs room to think
+      RESEARCH_TIMEOUT_MS,
+    ),
+
+  researchHealth: () => get<ResearchHealth>("/api/research/health"),
+
+  researchExamples: () => get<{ examples: string[] }>("/api/research/examples"),
 };

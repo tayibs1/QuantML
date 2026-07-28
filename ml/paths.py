@@ -29,6 +29,7 @@ SIGNALS_PATH = SIGNALS_DIR / "latest.json"
 
 RESEARCH_DIR = DATA_DIR / "research"
 TRIALS_PATH = RESEARCH_DIR / "trials.jsonl"
+SHAP_PATH = RESEARCH_DIR / "shap" / "latest.json"
 
 
 def ensure_dirs() -> None:

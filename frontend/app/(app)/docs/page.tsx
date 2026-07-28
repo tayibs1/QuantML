@@ -83,12 +83,13 @@ const SECTIONS = [
   {
     id: "rag-assistant",
     icon: Bot,
-    title: "RAG Research Assistant",
-    body: "The research assistant uses retrieval-augmented generation over filings, news, earnings transcripts and internal model reports (SHAP attributions, drift logs, backtest summaries). It explains why a signal fired, surfaces contradicting risks, and cites every source. It is an explanation layer — it does not place trades or provide financial advice.",
+    title: "Research AI",
+    body: "Retrieval over QuantML's own artifacts: live signals, feature attribution, validation studies, backtest reports, the risk framework and the project docs. Exact figures come from deterministic lookups rather than the language model, so no number is ever generated — search only supplies the explanation around them. Answers are then checked back against that evidence, and figures that don't appear in it get flagged. It explains model output; it does not place trades or give financial advice.",
     bullets: [
-      "Grounded in filings, news, earnings, model reports.",
-      "Cites sources and shows model signal context.",
-      "Explains — never executes — decisions.",
+      "Exact lookups for figures, search for explanation.",
+      "Every claim cited to a specific artifact and chunk.",
+      "Says what's missing instead of guessing.",
+      "No filings or news indexed — it can't answer from them.",
     ],
   },
 ];

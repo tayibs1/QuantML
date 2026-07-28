@@ -30,6 +30,7 @@ from pathlib import Path
 
 import mock_data as mock
 import observability
+import research as research_ai
 from config import settings
 from execution import get_execution_adapter
 from fastapi import APIRouter, FastAPI, Request, Response, WebSocket, WebSocketDisconnect
@@ -41,6 +42,8 @@ from schemas import (
     Metric,
     MetricPoint,
     RagResponse,
+    ResearchAnswer,
+    ResearchQuery,
     ResearchRequest,
     Signal,
     Trade,
@@ -253,10 +256,84 @@ def risk():
     return risk_service.build_risk_summary()
 
 
+# --- research assistant: grounded answers over QuantML's own artifacts ---
+@api.post("/research/query", response_model=ResearchAnswer)
+def research_query(req: ResearchQuery):
+    """Answer a question using exact lookups plus retrieval over indexed artifacts.
+
+    Everything needed to check the answer comes back with it: which tools ran,
+    which chunks were retrieved, and any grounding warnings.
+    """
+    return research_ai.answer(
+        req.question,
+        ticker=req.ticker,
+        model_version=req.model_version,
+        run_id=req.run_id,
+        top_k=req.top_k,
+    )
+
+
+@api.post("/research/ingest")
+def research_ingest():
+    """Rebuild the artifact index. Run this after the pipeline produces new output."""
+    from research import ingest as research_ingest_module
+
+    _, report = research_ingest_module.build_index()
+    return {"status": "ok", **report}
+
+
+@api.get("/research/artifacts")
+def research_artifacts():
+    """Everything currently indexed, for the knowledge-base panel."""
+    return research_ai.artifacts()
+
+
+@api.get("/research/examples")
+def research_examples():
+    from research.service import EXAMPLE_QUESTIONS
+
+    return {"examples": EXAMPLE_QUESTIONS}
+
+
+@api.get("/research/health")
+def research_health():
+    """Index status and which LLM/embedding providers are live."""
+    return research_ai.health()
+
+
 @api.post("/research", response_model=RagResponse)
-async def research(req: ResearchRequest):
-    await asyncio.sleep(0.4)  # TODO: swap in real RAG once the LLM side exists
-    return mock.rag_response(req.prompt)
+def research(req: ResearchRequest):
+    """The original endpoint, kept so the existing dashboard chat keeps working.
+
+    Reshapes a grounded answer into the older RagResponse contract. New callers
+    should use /api/research/query, which returns the full evidence and trace.
+    """
+    result = research_ai.answer(req.prompt)
+    context = result.get("signal_context") or {}
+    sources = [
+        {
+            "title": s["title"],
+            "type": "Model report",
+            "date": (context.get("generatedAt") or "")[:10] or "—",
+            "snippet": s.get("snippet") or s["source_path"],
+        }
+        for s in result["sources"][:4]
+    ]
+    return RagResponse(
+        prompt=req.prompt,
+        answer=result["answer"],
+        sources=sources or mock.rag_response(req.prompt)["sources"],
+        signalContext={
+            "ticker": context.get("ticker", "—"),
+            "signal": context.get("signal", "HOLD"),
+            "confidence": context.get("confidence", 0),
+            "model": context.get("model", settings.default_model),
+        },
+        riskWarnings=result["grounding_warnings"] or [
+            "Model output for research only — not investment advice."
+        ],
+        confidence=context.get("confidence", 0),
+    )
 
 
 # --- websocket: live-ish price/signal ticks at /api/ws/signals ---

@@ -1,37 +1,129 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Bot, Database, FileText, Newspaper, ShieldCheck, Sparkles } from "lucide-react";
+import { AlertTriangle, Bot, Database, Layers, ShieldCheck, Wrench } from "lucide-react";
 import { PageTransition } from "@/components/motion-primitives";
 import { PageHeader } from "@/components/page-header";
 import { GlassPanel } from "@/components/glass-panel";
 import { Badge } from "@/components/ui/badge";
-import { ResearchAssistant } from "@/components/research-assistant";
-import { examplePrompts } from "@/lib/mock-data";
+import { ResearchAI } from "@/components/research-ai";
+import { api, type ResearchHealth } from "@/lib/api";
 
-const SOURCES = [
-  { icon: FileText, label: "SEC filings", count: "10-K / 10-Q · 12.4k docs" },
-  { icon: Newspaper, label: "Market news", count: "Reuters · 48k articles" },
-  { icon: Database, label: "Model reports", count: "SHAP · drift · backtests" },
-  { icon: Sparkles, label: "Earnings", count: "Transcripts · 6.2k calls" },
+/** Readable names for the artifact types the index reports. */
+const TYPE_LABELS: Record<string, string> = {
+  latest_signal: "Live signals",
+  signal_history: "Universe summary",
+  shap_summary: "Feature attribution",
+  feature_dictionary: "Feature definitions",
+  validation_report: "Validation studies",
+  walk_forward_report: "Walk-forward studies",
+  backtest_report: "Backtest reports",
+  risk_report: "Risk framework",
+  model_card: "Model cards",
+  model_registry_entry: "Model registry",
+  drift_report: "Drift reports",
+  calibration_report: "Calibration studies",
+  documentation: "Project docs",
+  research_note: "Research notes",
+};
+
+const TOOLS = [
+  ["get_latest_signal", "signal, confidence, expected return, risk"],
+  ["get_top_shap_drivers", "which features pushed the call, and which way"],
+  ["get_model_metrics", "AUC and accuracy against their chance baselines"],
+  ["get_backtest_summary", "net-of-cost performance and this name's trades"],
+  ["get_risk_summary", "position sizing and the caps that bind it"],
+  ["get_feature_definition", "what a feature is and how it's calculated"],
 ];
+
+/** Counts come from the live index rather than being written in by hand, so the
+ *  panel can't drift out of step with what's actually searchable. */
+function KnowledgeBase() {
+  const [health, setHealth] = useState<ResearchHealth | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    api
+      .researchHealth()
+      .then(setHealth)
+      .catch(() => setFailed(true));
+  }, []);
+
+  const entries = Object.entries(health?.index.byType ?? {});
+
+  return (
+    <GlassPanel strong>
+      <div className="border-b border-white/6 px-5 py-3.5">
+        <h3 className="text-sm font-semibold text-white">Indexed corpus</h3>
+        <p className="text-[11px] text-slate-500">
+          {health
+            ? `${health.index.chunks} chunks from ${health.index.artifacts} artifacts`
+            : failed
+              ? "Backend not reachable"
+              : "Loading…"}
+        </p>
+      </div>
+
+      <div className="space-y-1.5 p-4">
+        {failed && (
+          <p className="text-[11px] leading-relaxed text-slate-500">
+            The FastAPI backend isn&apos;t running, so the assistant falls back to
+            snapshot answers without cited artifacts. Start it with{" "}
+            <code className="rounded bg-white/5 px-1 font-mono text-[10px]">
+              uvicorn main:app --port 8000
+            </code>{" "}
+            from <span className="font-mono">backend/</span>.
+          </p>
+        )}
+
+        {entries.map(([type, count]) => (
+          <div
+            key={type}
+            className="flex items-center gap-3 rounded-lg border border-white/6 bg-white/[0.02] px-3 py-2"
+          >
+            <Layers className="size-3.5 shrink-0 text-slate-500" />
+            <span className="truncate text-xs text-slate-300">
+              {TYPE_LABELS[type] ?? type}
+            </span>
+            <span className="ml-auto font-mono text-[10px] text-slate-500">{count}</span>
+          </div>
+        ))}
+
+        {health && (
+          <div className="mt-3 border-t border-white/6 pt-3 font-mono text-[10px] leading-relaxed text-slate-600">
+            <div>embedder · {health.embedding.active}</div>
+            <div>store · {health.index.backend}</div>
+            <div>
+              llm · {health.llm.provider}
+              {health.llm.mockMode && " (no key needed)"}
+            </div>
+          </div>
+        )}
+
+        <p className="pt-2 text-[11px] leading-relaxed text-slate-500">
+          Only QuantML&apos;s own output is indexed. There are no filings, news
+          articles or earnings transcripts in this corpus, so the assistant cannot
+          answer from them.
+        </p>
+      </div>
+    </GlassPanel>
+  );
+}
 
 function ResearchInner() {
   const params = useSearchParams();
   const ticker = params.get("ticker");
   const initialPrompt = ticker
-    ? `Why did the model generate its current signal for ${ticker}?`
+    ? `Why did the model give ${ticker} its current signal?`
     : undefined;
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-      {/* Assistant */}
       <div className="lg:col-span-2">
-        <ResearchAssistant initialPrompt={initialPrompt} />
+        <ResearchAI initialPrompt={initialPrompt} />
       </div>
 
-      {/* Context rail */}
       <div className="space-y-6">
         <GlassPanel strong inset>
           <div className="flex items-center gap-2">
@@ -39,56 +131,54 @@ function ResearchInner() {
             <h3 className="text-sm font-semibold text-white">How it works</h3>
           </div>
           <p className="mt-3 text-sm leading-relaxed text-slate-400">
-            The assistant retrieves relevant filings, news, earnings and model
-            reports, then grounds its explanation in those sources alongside the
-            live model signal. It{" "}
-            <span className="text-slate-200">explains and contextualises</span> —
-            it does not place trades or give financial advice.
+            Two things happen for every question. Exact figures are looked up
+            directly from the artifacts, so no number is ever generated. Then the
+            explanatory documents are searched to give those numbers meaning.
+          </p>
+          <p className="mt-2.5 text-sm leading-relaxed text-slate-400">
+            The answer is then checked back against that evidence. Figures that
+            don&apos;t appear in it get flagged, and so does anything that reads
+            like advice.
           </p>
         </GlassPanel>
 
+        <KnowledgeBase />
+
         <GlassPanel strong>
           <div className="border-b border-white/6 px-5 py-3.5">
-            <h3 className="text-sm font-semibold text-white">Knowledge base</h3>
-            <p className="text-[11px] text-slate-500">Indexed retrieval corpus</p>
+            <div className="flex items-center gap-2">
+              <Wrench className="size-4 text-brand-300" />
+              <h3 className="text-sm font-semibold text-white">Exact lookups</h3>
+            </div>
+            <p className="text-[11px] text-slate-500">
+              Deterministic — the model never invents these
+            </p>
           </div>
           <div className="space-y-2 p-4">
-            {SOURCES.map((s) => {
-              const Icon = s.icon;
-              return (
-                <div
-                  key={s.label}
-                  className="flex items-center gap-3 rounded-xl border border-white/6 bg-white/[0.02] p-3"
-                >
-                  <span className="grid size-9 place-items-center rounded-lg border border-white/8 bg-white/[0.03]">
-                    <Icon className="size-4 text-slate-300" />
-                  </span>
-                  <div>
-                    <div className="text-sm font-medium text-slate-200">
-                      {s.label}
-                    </div>
-                    <div className="font-mono text-[10px] text-slate-500">
-                      {s.count}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            {TOOLS.map(([name, what]) => (
+              <div key={name}>
+                <div className="font-mono text-[10px] text-brand-200/80">{name}</div>
+                <div className="text-[11px] leading-relaxed text-slate-500">{what}</div>
+              </div>
+            ))}
           </div>
         </GlassPanel>
 
         <GlassPanel strong inset>
           <div className="flex items-center gap-2">
-            <Bot className="size-4 text-violet-glow" />
-            <h3 className="text-sm font-semibold text-white">Try asking</h3>
+            <AlertTriangle className="size-4 text-hold-soft" />
+            <h3 className="text-sm font-semibold text-white">Limitations</h3>
           </div>
-          <ul className="mt-3 space-y-2">
-            {examplePrompts.map((p) => (
-              <li
-                key={p}
-                className="rounded-lg border border-white/6 bg-white/[0.02] px-3 py-2 text-xs text-slate-400"
-              >
-                {p}
+          <ul className="mt-3 space-y-2 text-[11px] leading-relaxed text-slate-400">
+            {[
+              "Model-generated research, not financial advice. It will not tell you what to do.",
+              "It can only answer from indexed QuantML artifacts. It has no fundamentals, news or filings.",
+              "Missing evidence is reported rather than guessed at.",
+              "It explains what the model produced. It does not judge whether the model is right.",
+            ].map((line) => (
+              <li key={line} className="flex gap-2">
+                <span className="mt-1.5 size-1 shrink-0 rounded-full bg-slate-600" />
+                {line}
               </li>
             ))}
           </ul>
@@ -102,10 +192,21 @@ export default function ResearchPage() {
   return (
     <PageTransition className="space-y-6">
       <PageHeader
-        eyebrow="RAG Market Intelligence"
+        eyebrow="Artifact-grounded RAG"
         title="Research AI"
-        description="Ask why a signal fired, what risks contradict it, and how similar setups performed — every answer grounded in retrieved sources."
-        actions={<Badge variant="violet">Retrieval-augmented</Badge>}
+        description="Ask why a signal fired, which features drove it, what the validation evidence supports and what would make it unreliable — every answer cited back to a QuantML artifact."
+        actions={
+          <span className="flex items-center gap-2">
+            <Badge variant="violet">
+              <Database className="mr-1 inline size-3" />
+              Retrieval + tools
+            </Badge>
+            <Badge variant="brand">
+              <Bot className="mr-1 inline size-3" />
+              Cited
+            </Badge>
+          </span>
+        }
       />
       <Suspense fallback={<div className="h-96 animate-pulse rounded-2xl glass" />}>
         <ResearchInner />

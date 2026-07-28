@@ -54,11 +54,35 @@ class Settings(BaseSettings):
     default_model: str = "XGBoost-v3"
     universe: str = "NASDAQ100"
 
-    # --- rag (not building this yet) ---
+    # --- research assistant (retrieval over QuantML artifacts) ---
+    # Everything defaults to a mode that needs no keys and no downloads, so the
+    # assistant works on a fresh clone and in CI. Each one upgrades on its own.
+    #
+    #   provider "mock"     writes the answer from retrieved evidence, no LLM
+    #   provider "openai"   any OpenAI-compatible chat endpoint
+    #   provider "gemini"   Google Gemini (has a free tier)
     llm_provider: str = "anthropic"
     anthropic_api_key: str = ""
     openai_api_key: str = ""
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
+
+    research_llm_provider: str = "mock"
+    research_llm_model: str = ""
+    research_llm_base_url: str = "https://api.openai.com/v1"
+    research_llm_timeout: float = 30.0
+    gemini_api_key: str = ""
+
+    # "hashing" needs nothing; "sentence-transformers" is better and downloads a model
+    research_embedding_provider: str = "hashing"
+
+    # Where vectors live. "auto" uses ChromaDB when it's installed and falls back
+    # to the in-memory numpy store when it isn't. "numpy" pins the fallback,
+    # which the tests do: repeatedly opening persistent Chroma clients in one
+    # process crashes its native layer on Windows.
+    research_vector_backend: str = "auto"
+    research_top_k: int = 6
+    # answers slower than this get flagged in the response, not blocked
+    research_latency_budget_ms: int = 8000
 
     # --- execution architecture ---
     # backtest = simulated (this is what's built), paper = Alpaca paper (stub),

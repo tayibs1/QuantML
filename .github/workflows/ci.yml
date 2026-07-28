@@ -35,10 +35,16 @@ jobs:
       # Tests run with no data/ artifacts (they're gitignored), exercising the
       # same graceful mock fallback the API uses on a cold checkout.
       - name: Lint (ruff)
-        run: ruff check ml backend tests
+        run: ruff check ml backend tests scripts
 
       - name: Tests (pytest)
         run: pytest
+
+      # Scores the research assistant on a fixed question set: right artifacts
+      # retrieved, citations present, refusals where required, no invented
+      # figures. Runs in mock mode, so no API key and the same result every time.
+      - name: Research AI evaluation
+        run: python scripts/evaluate_research_ai.py --strict
 
   frontend:
     name: Frontend · build

@@ -115,6 +115,62 @@ class ResearchRequest(BaseModel):
     prompt: str
 
 
+# --- Research AI (retrieval-grounded answers over QuantML artifacts) ---
+
+class ResearchQuery(BaseModel):
+    """A question for the research assistant, plus optional narrowing."""
+    question: str
+    ticker: str | None = None
+    model_version: str | None = None
+    run_id: str | None = None
+    top_k: int | None = None
+
+
+class ResearchSource(BaseModel):
+    """One cited piece of evidence, either an exact lookup or a retrieved chunk."""
+    tag: str                       # the [S1]/[E2] marker used in the answer
+    kind: Literal["structured", "retrieved"]
+    artifact_id: str
+    artifact_type: str
+    title: str
+    source_path: str
+    heading: str | None = None
+    chunk_id: str | None = None
+    similarity: float | None = None
+    snippet: str | None = None
+
+
+class ResearchEvidence(BaseModel):
+    """A retrieved passage, shown in full in the evidence panel."""
+    chunk_id: str
+    artifact_id: str
+    artifact_type: str
+    title: str
+    heading: str | None = None
+    source_path: str
+    similarity: float
+    retrieval_method: str
+    text: str
+
+
+class ResearchAnswer(BaseModel):
+    question: str
+    answer: str
+    intent: str
+    ticker: str | None = None
+    signal_context: dict | None = None
+    sources: list[ResearchSource]
+    evidence: list[ResearchEvidence]
+    tool_calls: list[dict]
+    retrieval_trace: list[dict]
+    # non-empty means something about the answer needs a second look
+    grounding_warnings: list[str]
+    grounded: bool
+    llm: dict
+    latency_ms: float
+    over_latency_budget: bool
+
+
 class BacktestRequest(BaseModel):
     """Caller-tunable backtest settings (camelCase to match the frontend form)."""
     rebalance: Literal["Daily", "Weekly", "Monthly"] = "Weekly"

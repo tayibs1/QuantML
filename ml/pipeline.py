@@ -30,7 +30,7 @@ from ml.validation import gate, validate_frame
 
 log = logging.getLogger("pipeline")
 
-STAGE_ORDER = ["ingest", "features", "validate", "train", "score", "drift"]
+STAGE_ORDER = ["ingest", "features", "validate", "train", "score", "shap", "drift"]
 
 
 def _ingest() -> dict:
@@ -77,6 +77,13 @@ def _score() -> dict:
     return {}
 
 
+def _shap() -> dict:
+    """Save the per-name feature attribution the research assistant quotes from."""
+    from ml.inference import shap_summary
+    shap_summary.main()
+    return {}
+
+
 def _drift() -> dict:
     from ml.research import drift
     drift.main()
@@ -89,6 +96,7 @@ STAGES = {
     "validate": _validate,
     "train": _train,
     "score": _score,
+    "shap": _shap,
     "drift": _drift,
 }
 

@@ -1,0 +1,125 @@
+{
+  "generatedAt": "2026-07-05T21:01:00+00:00",
+  "asOf": "2026-07-02",
+  "model": "XGBoost-v3",
+  "method": "XGBoost native pred_contribs (TreeSHAP), margin space, predicted class",
+  "topN": 6,
+  "featureCount": 24,
+  "tickers": {
+    "NVDA": {
+      "signal": "HOLD",
+      "predictedClass": 1,
+      "confidence": 36.5,
+      "baseValue": 0.49147,
+      "drivers": [
+        {
+          "key": "bb_pctb",
+          "label": "Bollinger %b",
+          "contribution": 0.06543,
+          "direction": "supports",
+          "featureValue": -1.2018
+        },
+        {
+          "key": "volume_z",
+          "label": "Volume z-score",
+          "contribution": 0.04217,
+          "direction": "supports",
+          "featureValue": -0.6637
+        },
+        {
+          "key": "atr_pct",
+          "label": "ATR % of price",
+          "contribution": 0.03583,
+          "direction": "supports",
+          "featureValue": -0.3859
+        },
+        {
+          "key": "intraday_range",
+          "label": "Intraday range",
+          "contribution": -0.02495,
+          "direction": "opposes",
+          "featureValue": -0.2229
+        },
+        {
+          "key": "rsi_14",
+          "label": "RSI (14)",
+          "contribution": -0.01966,
+          "direction": "opposes",
+          "featureValue": -0.8391
+        }
+      ]
+    },
+    "AMD": {
+      "signal": "BUY",
+      "predictedClass": 2,
+      "confidence": 71.0,
+      "baseValue": -0.31,
+      "drivers": [
+        {
+          "key": "ret_120",
+          "label": "120-day momentum",
+          "contribution": 0.22,
+          "direction": "supports",
+          "featureValue": 1.8
+        },
+        {
+          "key": "ret_20",
+          "label": "20-day momentum",
+          "contribution": 0.14,
+          "direction": "supports",
+          "featureValue": 1.2
+        },
+        {
+          "key": "macd_hist",
+          "label": "MACD histogram",
+          "contribution": 0.09,
+          "direction": "supports",
+          "featureValue": 0.7
+        },
+        {
+          "key": "vol_20",
+          "label": "20-day volatility",
+          "contribution": -0.05,
+          "direction": "opposes",
+          "featureValue": 2.1
+        },
+        {
+          "key": "atr_pct",
+          "label": "ATR % of price",
+          "contribution": -0.03,
+          "direction": "opposes",
+          "featureValue": 1.6
+        }
+      ]
+    },
+    "INTC": {
+      "signal": "AVOID",
+      "predictedClass": 0,
+      "confidence": 55.0,
+      "baseValue": 0.12,
+      "drivers": [
+        {
+          "key": "rsi_14",
+          "label": "RSI (14)",
+          "contribution": 0.18,
+          "direction": "supports",
+          "featureValue": -1.9
+        },
+        {
+          "key": "dist_52w_high",
+          "label": "Distance from 52w high",
+          "contribution": 0.11,
+          "direction": "supports",
+          "featureValue": -2.2
+        },
+        {
+          "key": "ret_5",
+          "label": "5-day momentum",
+          "contribution": -0.04,
+          "direction": "opposes",
+          "featureValue": 0.3
+        }
+      ]
+    }
+  }
+}

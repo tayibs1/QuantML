@@ -1,0 +1,52 @@
+{
+  "generatedAt": "2026-07-05T21:00:00+00:00",
+  "count": 3,
+  "signals": [
+    {
+      "ticker": "NVDA",
+      "company": "NVIDIA",
+      "signal": "HOLD",
+      "confidence": 36.5,
+      "expectedReturn5d": 0.56,
+      "risk": "Moderate",
+      "model": "XGBoost-v3",
+      "drivers": [
+        "Bollinger %b",
+        "Volume z-score"
+      ],
+      "price": 180.0,
+      "change": -1.2,
+      "sector": "Technology"
+    },
+    {
+      "ticker": "AMD",
+      "company": "Advanced Micro Devices",
+      "signal": "BUY",
+      "confidence": 71.0,
+      "expectedReturn5d": 2.4,
+      "risk": "Elevated",
+      "model": "XGBoost-v3",
+      "drivers": [
+        "120-day momentum"
+      ],
+      "price": 210.0,
+      "change": 2.0,
+      "sector": "Technology"
+    },
+    {
+      "ticker": "INTC",
+      "company": "Intel",
+      "signal": "AVOID",
+      "confidence": 55.0,
+      "expectedReturn5d": -1.8,
+      "risk": "High",
+      "model": "XGBoost-v3",
+      "drivers": [
+        "RSI (14)"
+      ],
+      "price": 30.0,
+      "change": -0.5,
+      "sector": "Technology"
+    }
+  ]
+}

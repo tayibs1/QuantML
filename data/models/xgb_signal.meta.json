@@ -1,0 +1,52 @@
+{
+  "feature_cols": [
+    "ret_5",
+    "ret_20",
+    "ret_60",
+    "ret_120",
+    "sma20_dist",
+    "sma50_dist",
+    "sma200_dist",
+    "rsi_14",
+    "vol_20",
+    "vol_60",
+    "vol_of_vol",
+    "atr_pct",
+    "bb_pctb",
+    "macd_hist",
+    "volume_z",
+    "dollar_vol_z",
+    "obv_slope",
+    "dist_52w_high",
+    "dist_52w_low",
+    "ret_skew_20",
+    "ret_kurt_20",
+    "gap",
+    "intraday_range",
+    "rel_strength_20"
+  ],
+  "class_to_signal": {
+    "0": "AVOID",
+    "1": "HOLD",
+    "2": "BUY"
+  },
+  "class_mean_fwd_ret": {
+    "0": -0.03452636541140982,
+    "1": 0.00336626959397488,
+    "2": 0.044931716094095936
+  },
+  "label_method": "cross-sectional terciles of 5d forward return",
+  "horizon_days": 5,
+  "train_start": "2019-01-02",
+  "train_end": "2026-06-25",
+  "trained_at": "2026-07-05",
+  "metrics": {
+    "accuracy": 0.3674,
+    "auc": 0.5404,
+    "buy_hit_rate": 0.5281,
+    "sharpe": 0.91,
+    "cagr": 0.2107,
+    "maxDrawdown": -0.3526
+  },
+  "model_name": "XGBoost-v3"
+}

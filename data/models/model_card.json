@@ -1,0 +1,143 @@
+{
+  "models": [
+    {
+      "id": "xgboost-v3",
+      "name": "XGBoost-v3",
+      "family": "Gradient Boosting",
+      "status": "Champion",
+      "trainingWindow": "2019-01-02 \u2026 2026-06-25",
+      "validation": "6-fold walk-forward",
+      "sharpe": 0.91,
+      "cagr": 21.1,
+      "maxDrawdown": -35.3,
+      "drift": "Low",
+      "auc": 0.5404,
+      "accuracy": 0.3674,
+      "features": 24,
+      "lastTrained": "2026-07-05",
+      "experimentId": "exp-2026-07-05-xgb"
+    }
+  ],
+  "featureImportance": [
+    {
+      "feature": "ATR % of price",
+      "key": "atr_pct",
+      "importance": 8.010000228881836
+    },
+    {
+      "feature": "60-day volatility",
+      "key": "vol_60",
+      "importance": 5.78000020980835
+    },
+    {
+      "feature": "120-day momentum",
+      "key": "ret_120",
+      "importance": 4.429999828338623
+    },
+    {
+      "feature": "Distance from 200d MA",
+      "key": "sma200_dist",
+      "importance": 4.340000152587891
+    },
+    {
+      "feature": "Distance from 52w low",
+      "key": "dist_52w_low",
+      "importance": 4.28000020980835
+    },
+    {
+      "feature": "Distance from 52w high",
+      "key": "dist_52w_high",
+      "importance": 4.28000020980835
+    },
+    {
+      "feature": "60-day momentum",
+      "key": "ret_60",
+      "importance": 4.25
+    },
+    {
+      "feature": "Return skew (20d)",
+      "key": "ret_skew_20",
+      "importance": 4.210000038146973
+    },
+    {
+      "feature": "Distance from 50d MA",
+      "key": "sma50_dist",
+      "importance": 4.179999828338623
+    },
+    {
+      "feature": "20-day volatility",
+      "key": "vol_20",
+      "importance": 4.170000076293945
+    },
+    {
+      "feature": "Return kurtosis (20d)",
+      "key": "ret_kurt_20",
+      "importance": 4.159999847412109
+    },
+    {
+      "feature": "Volatility of volatility",
+      "key": "vol_of_vol",
+      "importance": 4.050000190734863
+    },
+    {
+      "feature": "MACD histogram",
+      "key": "macd_hist",
+      "importance": 3.950000047683716
+    },
+    {
+      "feature": "Distance from 20d MA",
+      "key": "sma20_dist",
+      "importance": 3.880000114440918
+    },
+    {
+      "feature": "Bollinger %b",
+      "key": "bb_pctb",
+      "importance": 3.819999933242798
+    },
+    {
+      "feature": "20-day momentum",
+      "key": "ret_20",
+      "importance": 3.7899999618530273
+    },
+    {
+      "feature": "Relative strength (20d)",
+      "key": "rel_strength_20",
+      "importance": 3.7699999809265137
+    },
+    {
+      "feature": "5-day momentum",
+      "key": "ret_5",
+      "importance": 3.740000009536743
+    },
+    {
+      "feature": "On-balance-volume slope",
+      "key": "obv_slope",
+      "importance": 3.700000047683716
+    },
+    {
+      "feature": "RSI (14)",
+      "key": "rsi_14",
+      "importance": 3.680000066757202
+    },
+    {
+      "feature": "Volume z-score",
+      "key": "volume_z",
+      "importance": 3.5299999713897705
+    },
+    {
+      "feature": "Intraday range",
+      "key": "intraday_range",
+      "importance": 3.4700000286102295
+    },
+    {
+      "feature": "Overnight gap",
+      "key": "gap",
+      "importance": 3.369999885559082
+    },
+    {
+      "feature": "Dollar-volume z-score",
+      "key": "dollar_vol_z",
+      "importance": 3.1600000858306885
+    }
+  ]
+}

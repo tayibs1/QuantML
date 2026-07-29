@@ -66,6 +66,19 @@ exports/
 
 !data/**/.gitkeep
 
+# Seed artifacts for the hosted demo. The pipeline's own output, committed so a
+# deployed backend has something to serve before it has ever run - without them
+# the research assistant answers "no artifact found" for every ticker while the
+# dashboard shows signals for those same tickers. Re-commit them after a
+# pipeline run to refresh what the demo serves.
+
+!data/signals/latest.json
+!data/models/model_card.json
+!data/models/xgb_signal.meta.json
+!data/backtests/latest.json
+!data/research/shap/
+!data/research/shap/latest.json
+
 # Common data/model file formats
 
 *.csv

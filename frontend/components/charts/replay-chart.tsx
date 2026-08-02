@@ -35,7 +35,8 @@ export function ReplayChart({
   exitIndex: number;
   revealed: number;
   accent: string;
-  height?: number;
+  /** a px number, or "100%" to fill a parent that has its own definite height */
+  height?: number | string;
 }) {
   const vals = series.flatMap((p) => [p.value, p.bench ?? p.value]);
   const min = Math.min(...vals);

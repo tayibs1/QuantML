@@ -187,7 +187,7 @@ export default function ReplayPage() {
   const howItWorks = <HowItWorks steps={HOW_IT_WORKS} defaultOpen={!cinematic} />;
 
   const signalUniverse = (
-    <GlassPanel strong className={cn("shrink-0 overflow-hidden", cinematic && "shrink-0")}>
+    <GlassPanel strong className="shrink-0 overflow-hidden">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/6 px-5 py-2.5">
         <div>
           <h3 className="text-sm font-semibold text-white">Signal universe</h3>
@@ -201,7 +201,10 @@ export default function ReplayPage() {
           {GRAPH_SIGNALS.length} live signals · Monte-Carlo view
         </span>
       </div>
-      <SignalGraph signals={GRAPH_SIGNALS} height={cinematic ? 200 : 440} compact={cinematic} />
+      {/* Cinematic scales the whole page to fit, so this is a share of the layout
+          rather than a literal pixel height - a taller graph reads as a bigger,
+          more central panel once everything is normalised to the screen. */}
+      <SignalGraph signals={GRAPH_SIGNALS} height={cinematic ? 330 : 440} compact={cinematic} />
     </GlassPanel>
   );
 
@@ -260,7 +263,7 @@ export default function ReplayPage() {
   const mainGrid = (
     <div className={cn("grid grid-cols-1 gap-6 xl:grid-cols-3", cinematic && "min-h-0 flex-1 gap-4")}>
       {/* Chart + transport */}
-      <GlassPanel strong className="flex flex-col xl:col-span-2">
+      <GlassPanel strong className={cn("flex flex-col xl:col-span-2", cinematic && "min-h-0")}>
         <div className="flex items-center justify-between border-b border-white/6 px-5 py-3.5">
           <div className="flex items-center gap-2.5">
             <span className={cn("rounded-md px-2 py-0.5 font-mono text-[11px] font-bold", sig.chip)}>
@@ -279,14 +282,16 @@ export default function ReplayPage() {
           </div>
         </div>
 
-        <div className={cn("p-4", cinematic && "flex-1")}>
+        {/* In cinematic the panel is stretched by whichever column is taller, so the
+            chart fills it rather than leaving a gap above the transport bar. */}
+        <div className={cn("p-4", cinematic && "min-h-0 flex-1")}>
           <ReplayChart
             series={sc.series}
             entryIndex={sc.entryIndex}
             exitIndex={sc.exitIndex}
             revealed={revealed}
             accent={sig.accent}
-            height={cinematic ? 260 : 380}
+            height={cinematic ? "100%" : 380}
           />
         </div>
 
@@ -329,7 +334,7 @@ export default function ReplayPage() {
             <Cpu className="size-4 text-brand-300" />
             <h3 className="text-sm font-semibold text-white">Why the model called it</h3>
           </div>
-          <div className="space-y-4 p-5">
+          <div className={cn("space-y-4 p-5", cinematic && "space-y-3 p-4")}>
             <div className="flex items-center justify-between">
               <span className={cn("rounded-md px-2.5 py-1 font-mono text-sm font-bold", sig.chip)}>
                 {sc.signal}
@@ -384,8 +389,8 @@ export default function ReplayPage() {
               </span>
             )}
           </div>
-          {/* fixed height so the outcome text doesn't resize the panel */}
-          <div className="min-h-[212px] p-5">
+          {/* reserve the outcome's height so filling it in doesn't resize the panel */}
+          <div className={cn("p-5", cinematic ? "min-h-[168px] p-4" : "min-h-[212px]")}>
             <AnimatePresence mode="wait">
               {!started ? (
                 <motion.p key="wait" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="py-6 text-center text-sm text-slate-500">

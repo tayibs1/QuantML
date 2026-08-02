@@ -27,6 +27,14 @@ const C = {
   collision: "#f472b6", // bull/bear disagreement
 } as const;
 
+// Slows everything that moves, without changing where the layout settles.
+// Lower is calmer: nodes glide into place instead of snapping there.
+const MOTION = 0.35;
+
+// How much speed a node keeps between frames. Raising this makes the drift
+// springy rather than slow, so it stays where it is and MOTION does the slowing.
+const GLIDE = 0.86;
+
 type Kind = "signal" | "cluster";
 
 interface Node {
@@ -253,10 +261,10 @@ export function SignalGraph({
       for (const n of nodes) {
         n.vx += (cx - n.x) * (n.kind === "cluster" ? 0.0016 : 0.0009);
         n.vy += (cy - n.y) * (n.kind === "cluster" ? 0.0016 : 0.0009);
-        n.vx *= 0.86;
-        n.vy *= 0.86;
-        n.x += n.vx;
-        n.y += n.vy;
+        n.vx *= GLIDE;
+        n.vy *= GLIDE;
+        n.x += n.vx * MOTION;
+        n.y += n.vy * MOTION;
         const pad = 24;
         n.x = Math.max(pad, Math.min(W - pad, n.x));
         n.y = Math.max(pad + 8, Math.min(H - pad, n.y));
@@ -282,7 +290,7 @@ export function SignalGraph({
         ctx.stroke();
 
         // travelling particle
-        e.t += e.speed;
+        e.t += e.speed * MOTION;
         if (e.t > 1) e.t -= 1;
         const px = e.a.x + (e.b.x - e.a.x) * e.t;
         const py = e.a.y + (e.b.y - e.a.y) * e.t;
@@ -296,8 +304,10 @@ export function SignalGraph({
 
       // nodes
       for (const n of nodes) {
-        const pulse = n.hub || n.catalyst ? 0.5 + 0.5 * Math.sin(frame * 0.06 + n.phase) : 0;
-        const glowR = n.r * (n.kind === "cluster" ? 5 : 4) + pulse * 6;
+        // Slow breathing on the hubs and catalysts. A deeper swing than the drift
+        // gives the eye something to follow while the layout barely moves.
+        const pulse = n.hub || n.catalyst ? 0.5 + 0.5 * Math.sin(frame * 0.06 * MOTION + n.phase) : 0;
+        const glowR = n.r * (n.kind === "cluster" ? 5 : 4) + pulse * 10;
         const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, glowR);
         g.addColorStop(0, hexA(n.color, 0.55));
         g.addColorStop(0.4, hexA(n.color, 0.16));
@@ -314,8 +324,8 @@ export function SignalGraph({
         ctx.fill();
         if (n.hub || n.kind === "cluster") {
           ctx.beginPath();
-          ctx.arc(n.x, n.y, n.r + 2.5 + pulse * 2, 0, Math.PI * 2);
-          ctx.strokeStyle = hexA(n.color, 0.5);
+          ctx.arc(n.x, n.y, n.r + 2.5 + pulse * 4, 0, Math.PI * 2);
+          ctx.strokeStyle = hexA(n.color, 0.3 + pulse * 0.35);
           ctx.lineWidth = 1;
           ctx.stroke();
         }
@@ -339,7 +349,7 @@ export function SignalGraph({
         setHover({ node: hoverNode, x: hoverNode.x, y: hoverNode.y });
       }
 
-      if (frame % 10 === 0) setIter((v) => v + Math.floor(6 + Math.random() * 18));
+      if (frame % 25 === 0) setIter((v) => v + Math.floor(6 + Math.random() * 18));
 
       raf = requestAnimationFrame(step);
     };

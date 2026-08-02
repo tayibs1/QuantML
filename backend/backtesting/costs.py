@@ -4,22 +4,12 @@ Transaction-cost model used by the backtest.
 Whenever the portfolio is rebalanced, positions are bought, sold, or resized.
 These trades are not free, so the backtest deducts two costs:
 
-- Commission: fees charged by the broker or exchange.
-- Slippage: the difference between the expected trade price and the actual
-  execution price, including spread and market impact.
+- Commission
+- Slippage
 
 Both costs are measured in basis points. One basis point is equal to 0.01%.
 
 Turnover measures how much of the portfolio changes during a rebalance:
-
-    turnover = sum(abs(new_weight - previous_weight))
-
-We do not divide turnover by two. Selling an old position and buying a new
-position are separate trades, and both sides create costs.
-
-The calculated transaction cost is deducted directly from the portfolio's
-return. This means performance measures such as total return, Sharpe ratio,
-and drawdown reflect realistic returns after trading costs.
 """
 
 from __future__ import annotations
@@ -36,8 +26,6 @@ class CostModel:
     """
     Stores the trading costs used by the backtest.
 
-    The class is frozen because these assumptions should remain unchanged
-    after the cost model has been created.
     """
 
     # Fee charged by the broker or exchange for each unit of traded notional.

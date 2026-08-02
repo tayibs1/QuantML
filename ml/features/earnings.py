@@ -1,15 +1,7 @@
 """
 Earnings-cycle features, inferred from the tape.
 
-The honest backstory: reliable historical earnings dates aren't freely available
-anymore - Yahoo put the earnings endpoint behind a cookie/crumb in 2024 and it
-returns empty here, the same flakiness the OHLCV ingestion already works around.
-Rather than ship a fragile network dependency, this infers earnings events from
-the data we already have. Earnings announcements reliably spike trading volume,
-so a per-name abnormal-volume spike, spaced roughly a quarter apart, is a good
-proxy for "this name just reported".
-
-From those inferred events come three causal features:
+From inferred events come three causal features:
   - earn_days_since   trading days since the last inferred report (post-earnings
                       drift, PEAD, is a real and well-documented anomaly)
   - earn_post5        in the 5-day window right after a report

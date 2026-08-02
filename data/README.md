@@ -1,8 +1,5 @@
 # `data/` — Local data & model artifacts
 
-Everything here is **generated** and git-ignored (only `.gitkeep` files are
-tracked). Nothing in here is hand-edited.
-
 ```
 data/
 ├── raw/          downloaded OHLCV + fundamentals (parquet/duckdb)   ← ml/ingestion

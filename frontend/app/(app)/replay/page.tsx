@@ -10,6 +10,7 @@ import { HowItWorks } from "@/components/how-it-works";
 import { Button } from "@/components/ui/button";
 import { ReplayChart } from "@/components/charts/replay-chart";
 import { SignalGraph } from "@/components/charts/signal-graph";
+import { HandoffSettle, HandoffSweep, ScrambleText } from "@/components/charts/signal-handoff";
 import { api, type ReplayScenario, type SignalType } from "@/lib/api";
 import { useCinematic } from "@/lib/cinematic";
 import replaySnapshot from "@/lib/snapshot/replay.json";
@@ -289,15 +290,30 @@ export default function ReplayPage() {
   const mainGrid = (
     <div className={cn("grid grid-cols-1 gap-6 xl:grid-cols-3", cinematic && "min-h-0 flex-1 gap-4")}>
       {/* Chart + transport */}
-      <GlassPanel strong className={cn("flex flex-col xl:col-span-2", cinematic && "min-h-0")}>
+      <GlassPanel
+        strong
+        className={cn("relative flex flex-col xl:col-span-2", cinematic && "min-h-0")}
+      >
+        {/* Light bar wipes the panel each time the call changes. */}
+        <HandoffSweep id={sc.id} accent={sig.accent} />
+
         <div className="flex items-center justify-between border-b border-white/6 px-5 py-3.5">
           <div className="flex items-center gap-2.5">
-            <span className={cn("rounded-md px-2 py-0.5 font-mono text-[11px] font-bold", sig.chip)}>
+            <motion.span
+              key={`${sc.id}-chip`}
+              initial={{ scale: 0.82, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+              className={cn("rounded-md px-2 py-0.5 font-mono text-[11px] font-bold", sig.chip)}
+            >
               {sc.signal}
-            </span>
+            </motion.span>
             <div>
               <h3 className="text-sm font-semibold text-white">
-                {sc.company} <span className="font-mono text-slate-500">· {sc.ticker}</span>
+                <ScrambleText text={sc.company} trigger={sc.id} />{" "}
+                <span className="font-mono text-slate-500">
+                  · <ScrambleText text={sc.ticker} trigger={sc.id} />
+                </span>
               </h3>
               <p className="text-[11px] text-slate-500">Rebased to 100 at the signal · vs QQQ</p>
             </div>
@@ -310,7 +326,7 @@ export default function ReplayPage() {
 
         {/* In cinematic the panel is stretched by whichever column is taller, so the
             chart fills it rather than leaving a gap above the transport bar. */}
-        <div className={cn("p-4", cinematic && "min-h-0 flex-1")}>
+        <HandoffSettle id={sc.id} className={cn("p-4", cinematic && "min-h-0 flex-1")}>
           <ReplayChart
             series={sc.series}
             entryIndex={sc.entryIndex}
@@ -319,7 +335,7 @@ export default function ReplayPage() {
             accent={sig.accent}
             height={cinematic ? "100%" : 380}
           />
-        </div>
+        </HandoffSettle>
 
         <div className="flex flex-wrap items-center gap-3 border-t border-white/6 px-5 py-3.5">
           <Button size="sm" onClick={play} disabled={phase === "playing"}>
@@ -355,6 +371,7 @@ export default function ReplayPage() {
 
       {/* Signal reasoning + outcome */}
       <div className={cn("space-y-6", cinematic && "flex flex-col gap-4 space-y-0")}>
+        <HandoffSettle id={sc.id} delay={0.08}>
         <GlassPanel strong>
           <div className="flex items-center gap-2 border-b border-white/6 px-5 py-3.5">
             <Cpu className="size-4 text-brand-300" />
@@ -374,7 +391,13 @@ export default function ReplayPage() {
                 <span className="font-mono text-xs text-slate-300">{sc.conviction.toFixed(0)}%</span>
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-white/8">
-                <div className={cn("h-full rounded-full", sig.bar)} style={{ width: `${sc.conviction}%` }} />
+                <motion.div
+                  key={`${sc.id}-conv`}
+                  className={cn("h-full rounded-full", sig.bar)}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${sc.conviction}%` }}
+                  transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                />
               </div>
             </div>
 
@@ -384,11 +407,17 @@ export default function ReplayPage() {
               </div>
               <div className="space-y-1.5">
                 {sc.drivers.map((d, i) => (
-                  <div key={d} className="flex items-center gap-2 text-sm text-slate-300">
+                  <motion.div
+                    key={`${sc.id}-${d}`}
+                    className="flex items-center gap-2 text-sm text-slate-300"
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.35, delay: 0.24 + i * 0.07 }}
+                  >
                     <span className="font-mono text-[10px] text-slate-600">{i + 1}</span>
                     <span className={cn("size-1 rounded-full", sig.dot)} />
-                    {d}
-                  </div>
+                    <ScrambleText text={d} trigger={sc.id} durationMs={420} />
+                  </motion.div>
                 ))}
               </div>
             </div>
@@ -399,7 +428,9 @@ export default function ReplayPage() {
             </div>
           </div>
         </GlassPanel>
+        </HandoffSettle>
 
+        <HandoffSettle id={sc.id} delay={0.16}>
         <GlassPanel strong className={cn("transition-all", done && (sc.correct ? "ring-1 ring-bull/30" : "ring-1 ring-bear/30"))}>
           <div className="flex items-center justify-between border-b border-white/6 px-5 py-3.5">
             <h3 className="text-sm font-semibold text-white">{done ? "Outcome" : "Live P&L"}</h3>
@@ -448,6 +479,7 @@ export default function ReplayPage() {
             </AnimatePresence>
           </div>
         </GlassPanel>
+        </HandoffSettle>
       </div>
     </div>
   );

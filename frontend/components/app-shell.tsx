@@ -133,11 +133,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 function FitToScreen({ active, children }: { active: boolean; children: React.ReactNode }) {
   const outerRef = useRef<HTMLDivElement | null>(null);
   const innerRef = useRef<HTMLDivElement | null>(null);
-  const [scale, setScale] = useState(1);
+  const [fit, setFit] = useState({ scale: 1, width: 0 });
 
   useEffect(() => {
     if (!active) {
-      setScale(1);
+      setFit({ scale: 1, width: 0 });
       return;
     }
     const compute = () => {
@@ -147,11 +147,14 @@ function FitToScreen({ active, children }: { active: boolean; children: React.Re
       const availH = o.clientHeight;
       const availW = o.clientWidth;
       const contentH = i.scrollHeight;
-      const contentW = i.scrollWidth;
-      if (!contentH || !contentW) return;
-      const next = Math.min(1, availH / contentH, availW / contentW);
-      // floor so very long pages don't shrink to nothing
-      setScale(Math.max(0.3, Math.round(next * 1000) / 1000));
+      if (!contentH || !availW) return;
+      // Height alone decides the scale. Width can't be part of it: the width
+      // below is derived from the scale, so letting it feed back in here would
+      // shrink the page a bit more on every pass.
+      const next = Math.max(0.3, Math.min(1, Math.round((availH / contentH) * 1000) / 1000));
+      // Lay the page out wider than the screen by exactly as much as the scale
+      // will take back, so it lands edge to edge instead of letterboxed.
+      setFit({ scale: next, width: Math.round(availW / next) });
     };
     compute();
     const ro = new ResizeObserver(compute);
@@ -173,8 +176,12 @@ function FitToScreen({ active, children }: { active: boolean; children: React.Re
     <div ref={outerRef} className="flex h-full w-full items-start justify-center overflow-hidden">
       <div
         ref={innerRef}
-        style={{ transform: `scale(${scale})`, transformOrigin: "top center" }}
-        className="w-full max-w-[1600px]"
+        style={{
+          transform: `scale(${fit.scale})`,
+          transformOrigin: "top center",
+          width: fit.width ? `${fit.width}px` : "100%",
+        }}
+        className="shrink-0"
       >
         {children}
       </div>

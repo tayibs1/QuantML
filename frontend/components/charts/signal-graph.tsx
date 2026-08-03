@@ -105,9 +105,12 @@ export function SignalGraph({
 
     let W = wrap.clientWidth;
     let H = wrap.clientHeight;
+    let seeded = false;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     const resize = () => {
+      const prevW = W;
+      const prevH = H;
       W = wrap.clientWidth;
       H = wrap.clientHeight;
       canvas.width = W * dpr;
@@ -115,6 +118,18 @@ export function SignalGraph({
       canvas.style.width = `${W}px`;
       canvas.style.height = `${H}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      // Switching to cinematic roughly doubles the panel width. Stretch the
+      // layout that's already on screen into the new space, otherwise it stays
+      // huddled where it started and slowly creeps outward.
+      if (seeded && prevW > 0 && prevH > 0 && (W !== prevW || H !== prevH)) {
+        const sx = W / prevW;
+        const sy = H / prevH;
+        for (const n of nodes) {
+          n.x *= sx;
+          n.y *= sy;
+        }
+      }
     };
     resize();
 
@@ -122,6 +137,12 @@ export function SignalGraph({
     const sectors = Array.from(new Set(signals.map((s) => s.sector)));
     const nodes: Node[] = [];
     const clusterBySector = new Map<string, Node>();
+
+    // Sector hubs sit on an ellipse shaped like the panel rather than a circle.
+    // On a wide, short panel a circle would bunch every hub into the middle and
+    // leave the ends bare.
+    const spreadX = W * 0.36;
+    const spreadY = H * 0.3;
 
     sectors.forEach((sector, i) => {
       const a = (i / sectors.length) * Math.PI * 2;
@@ -131,8 +152,8 @@ export function SignalGraph({
         sector,
         color: C.cluster,
         r: 9,
-        x: W / 2 + Math.cos(a) * Math.min(W, H) * 0.26,
-        y: H / 2 + Math.sin(a) * Math.min(W, H) * 0.26,
+        x: W / 2 + Math.cos(a) * spreadX,
+        y: H / 2 + Math.sin(a) * spreadY,
         vx: 0,
         vy: 0,
         label: sector.split(" ")[0].toUpperCase(),
@@ -174,6 +195,9 @@ export function SignalGraph({
         phase: Math.random() * Math.PI * 2,
       });
     });
+
+    // Positions exist from here on, so a resize can carry them across.
+    seeded = true;
 
     // ── Edges: spokes to sector hub + a few cross-sector correlations ────────
     const edges: Edge[] = [];
@@ -258,9 +282,14 @@ export function SignalGraph({
       const cy = H / 2;
       let hoverNode: Node | null = null;
       let hoverDist = 16;
+      // The pull back to the middle is gentler sideways than vertically, in
+      // proportion to how wide the panel is, so the book keeps the width it was
+      // given instead of collapsing into a blob in the centre.
+      const wide = Math.min(3, Math.max(1, W / Math.max(H, 1)));
       for (const n of nodes) {
-        n.vx += (cx - n.x) * (n.kind === "cluster" ? 0.0016 : 0.0009);
-        n.vy += (cy - n.y) * (n.kind === "cluster" ? 0.0016 : 0.0009);
+        const k = n.kind === "cluster" ? 0.0016 : 0.0009;
+        n.vx += (cx - n.x) * (k / wide);
+        n.vy += (cy - n.y) * k;
         n.vx *= GLIDE;
         n.vy *= GLIDE;
         n.x += n.vx * MOTION;

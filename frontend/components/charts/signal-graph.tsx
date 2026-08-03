@@ -29,7 +29,12 @@ const C = {
 
 // Slows everything that moves, without changing where the layout settles.
 // Lower is calmer: nodes glide into place instead of snapping there.
-const MOTION = 0.35;
+const MOTION = 0.5;
+
+// A force-directed layout goes still once it balances out. This keeps a slow
+// wander running underneath so the book always looks live, without pulling the
+// arrangement apart.
+const WANDER = 0.055;
 
 // How much speed a node keeps between frames. Raising this makes the drift
 // springy rather than slow, so it stays where it is and MOTION does the slowing.
@@ -323,10 +328,18 @@ export function SignalGraph({
       // proportion to how wide the panel is, so the book keeps the width it was
       // given instead of collapsing into a blob in the centre.
       const wide = Math.min(3, Math.max(1, W / Math.max(H, 1)));
+      const t = frame * 0.007;
       for (const n of nodes) {
         const k = n.kind === "cluster" ? 0.0016 : 0.0009;
         n.vx += (cx - n.x) * (k / wide);
         n.vy += (cy - n.y) * k;
+
+        // Each name drifts on its own timing - the phase it was given at setup
+        // keeps them from swaying together. Hubs wander less so the sectors stay
+        // where you left them.
+        const w = n.kind === "cluster" ? WANDER * 0.4 : WANDER;
+        n.vx += Math.cos(t + n.phase) * w;
+        n.vy += Math.sin(t * 0.87 + n.phase * 1.3) * w;
         n.vx *= GLIDE;
         n.vy *= GLIDE;
         n.x += n.vx * MOTION;

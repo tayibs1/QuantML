@@ -35,6 +35,19 @@ const MOTION = 0.35;
 // springy rather than slow, so it stays where it is and MOTION does the slowing.
 const GLIDE = 0.86;
 
+// How far the cursor's influence reaches, and how hard it shoves. The push is
+// kept mild on purpose: the springs holding each name to its sector hub should
+// win, so the book bulges around the cursor and settles back rather than
+// scattering out of reach of a hover.
+const CURSOR_REACH = 180;
+const CURSOR_PUSH = 0.8;
+// Nothing right under the cursor gets pushed, so the name you are pointing at
+// stays put and can still be hovered while its neighbours scatter around it.
+const CURSOR_HOLD = 26;
+// A little sideways drift on top of the push, so they curl around the cursor
+// instead of only running from it.
+const CURSOR_SWIRL = 0.35;
+
 type Kind = "signal" | "cluster";
 
 interface Node {
@@ -231,8 +244,13 @@ export function SignalGraph({
 
     const onMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
-      mouse.x = e.clientX - rect.left;
-      mouse.y = e.clientY - rect.top;
+      // The rect is in screen pixels and cinematic scales the whole page down,
+      // so convert back into the canvas's own coordinates. Without this the
+      // cursor's effect lands somewhere off to the side of where it actually is.
+      const kx = rect.width ? canvas.offsetWidth / rect.width : 1;
+      const ky = rect.height ? canvas.offsetHeight / rect.height : 1;
+      mouse.x = (e.clientX - rect.left) * kx;
+      mouse.y = (e.clientY - rect.top) * ky;
     };
     const onLeave = () => {
       mouse.x = -1;
@@ -277,11 +295,30 @@ export function SignalGraph({
         e.b.vx -= fx;
         e.b.vy -= fy;
       }
+
+      // cursor: shove nearby names aside, with a bit of curl
+      if (mouse.x > 0) {
+        for (const n of nodes) {
+          const dx = n.x - mouse.x;
+          const dy = n.y - mouse.y;
+          const d = Math.hypot(dx, dy) || 0.01;
+          if (d >= CURSOR_REACH || d < CURSOR_HOLD) continue;
+          // falls off toward the edge of reach so there's no hard boundary
+          const falloff = 1 - (d - CURSOR_HOLD) / (CURSOR_REACH - CURSOR_HOLD);
+          const push = falloff * falloff * CURSOR_PUSH;
+          n.vx += (dx / d) * push;
+          n.vy += (dy / d) * push;
+          n.vx += (-dy / d) * push * CURSOR_SWIRL;
+          n.vy += (dx / d) * push * CURSOR_SWIRL;
+        }
+      }
+
       // centering + damping + integrate
       const cx = W / 2;
       const cy = H / 2;
       let hoverNode: Node | null = null;
-      let hoverDist = 16;
+      // a little wider than the dot, since the cursor nudges names away from it
+      let hoverDist = 22;
       // The pull back to the middle is gentler sideways than vertically, in
       // proportion to how wide the panel is, so the book keeps the width it was
       // given instead of collapsing into a blob in the centre.
@@ -308,6 +345,18 @@ export function SignalGraph({
 
       // ── Render ──────────────────────────────────────────────────────────────
       ctx.clearRect(0, 0, W, H);
+
+      // soft pool of light under the cursor, so its reach is visible
+      if (mouse.x > 0) {
+        const halo = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, CURSOR_REACH);
+        halo.addColorStop(0, "rgba(45,212,191,0.10)");
+        halo.addColorStop(0.55, "rgba(45,212,191,0.03)");
+        halo.addColorStop(1, "rgba(45,212,191,0)");
+        ctx.fillStyle = halo;
+        ctx.beginPath();
+        ctx.arc(mouse.x, mouse.y, CURSOR_REACH, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
       // edges
       for (const e of edges) {

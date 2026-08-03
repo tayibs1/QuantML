@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import {
   Newspaper,
   Database,
@@ -23,6 +23,7 @@ import { GlassPanel } from "@/components/glass-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ReplayChart } from "@/components/charts/replay-chart";
+import { HandoffSweep, ScrambleText } from "@/components/charts/signal-handoff";
 import { Sparkline } from "@/components/charts/sparkline";
 import replaySnapshot from "@/lib/snapshot/replay.json";
 import type { ReplayScenario } from "@/lib/api";
@@ -36,12 +37,14 @@ const EX: ReplayScenario = (() => {
   return all.find((s) => s.signal === "BUY" && s.correct && s.ret > 20) ?? all[0];
 })();
 
-const STAGES: { id: string; label: string; icon: LucideIcon; blurb: string }[] = [
-  { id: "ingest", label: "Ingest", icon: Newspaper, blurb: "Pull prices, events and headlines" },
-  { id: "features", label: "Engineer", icon: Sigma, blurb: "Turn raw data into features" },
-  { id: "train", label: "Train", icon: Cpu, blurb: "Walk-forward model training" },
-  { id: "predict", label: "Predict", icon: Gauge, blurb: "Score the name" },
-  { id: "signal", label: "Signal", icon: TrendingUp, blurb: "The call and the payoff" },
+// Each stage carries its own colour, so the walkthrough visibly warms up as raw
+// data turns into a call rather than staying one flat shade throughout.
+const STAGES: { id: string; label: string; icon: LucideIcon; blurb: string; accent: string }[] = [
+  { id: "ingest", label: "Ingest", icon: Newspaper, blurb: "Pull prices, events and headlines", accent: "#60a5fa" },
+  { id: "features", label: "Engineer", icon: Sigma, blurb: "Turn raw data into features", accent: "#a78bfa" },
+  { id: "train", label: "Train", icon: Cpu, blurb: "Walk-forward model training", accent: "#fbbf24" },
+  { id: "predict", label: "Predict", icon: Gauge, blurb: "Score the name", accent: "#38bdf8" },
+  { id: "signal", label: "Signal", icon: TrendingUp, blurb: "The call and the payoff", accent: "#2dd4bf" },
 ];
 
 const HEADLINES = [
@@ -60,6 +63,15 @@ const FEATURES = [
   { name: "Sector rel. strength", val: 0.49, top: false },
 ];
 
+// Panels slide the way you're travelling. Written as variants rather than inline
+// props so the leaving panel picks up the current direction too - otherwise it
+// exits the wrong way whenever you step backwards.
+const STAGE_SLIDE = {
+  enter: (d: number) => ({ opacity: 0, x: d * 46, filter: "blur(8px)" }),
+  center: { opacity: 1, x: 0, filter: "blur(0px)" },
+  exit: (d: number) => ({ opacity: 0, x: d * -34, filter: "blur(8px)" }),
+};
+
 const FOLDS = [
   { train: [0, 34], test: [34, 44] },
   { train: [0, 48], test: [48, 60] },
@@ -70,7 +82,17 @@ const FOLDS = [
 export default function PipelinePage() {
   const [stage, setStage] = useState(0);
   const [playing, setPlaying] = useState(false);
+  // which way the last move went, so the incoming panel enters from the side
+  // you'd expect instead of every change looking identical
+  const [dir, setDir] = useState(1);
   const last = STAGES.length - 1;
+  const cur = STAGES[stage];
+
+  const goTo = (next: number, viaPlay = false) => {
+    setDir(next >= stage ? 1 : -1);
+    setStage(next);
+    if (!viaPlay) setPlaying(false);
+  };
 
   // auto-advance while playing; stop on the final stage
   useEffect(() => {
@@ -81,6 +103,7 @@ export default function PipelinePage() {
           setPlaying(false);
           return s;
         }
+        setDir(1);
         return s + 1;
       });
     }, 3400);
@@ -89,6 +112,7 @@ export default function PipelinePage() {
 
   function toggle() {
     if (stage >= last) {
+      setDir(1);
       setStage(0);
       setPlaying(true);
     } else {
@@ -118,31 +142,49 @@ export default function PipelinePage() {
           const doneStep = i < stage;
           return (
             <div key={s.id} className="flex flex-1 items-center last:flex-none">
-              <button onClick={() => { setStage(i); setPlaying(false); }} className="flex flex-col items-center gap-1.5 text-center">
-                <span
-                  className={cn(
-                    "flex size-10 items-center justify-center rounded-xl border transition-colors",
+              <button onClick={() => goTo(i)} className="flex flex-col items-center gap-1.5 text-center">
+                <motion.span
+                  animate={
                     active
-                      ? "border-brand-400/50 bg-brand-500/15 text-brand-200 shadow-glow"
-                      : doneStep
+                      ? { scale: 1.12, borderColor: `${s.accent}80`, boxShadow: `0 0 22px -4px ${s.accent}` }
+                      : { scale: 1, borderColor: "rgba(255,255,255,0.08)", boxShadow: "0 0 0 0 transparent" }
+                  }
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  style={active ? { color: s.accent, background: `${s.accent}1f` } : undefined}
+                  className={cn(
+                    "flex size-10 items-center justify-center rounded-xl border",
+                    !active && (doneStep
                       ? "border-brand-400/25 bg-brand-500/10 text-brand-300"
-                      : "border-white/8 bg-white/[0.02] text-slate-500"
+                      : "border-white/8 bg-white/[0.02] text-slate-500")
                   )}
                 >
                   {doneStep ? <Check className="size-4" /> : <Icon className="size-4" />}
-                </span>
+                </motion.span>
                 <span className={cn("font-mono text-[10px] uppercase tracking-wider", active ? "text-white" : "text-slate-500")}>
                   {s.label}
                 </span>
               </button>
               {i < last && (
-                <div className="mx-2 mb-5 h-px flex-1 overflow-hidden rounded bg-white/8">
+                <div className="relative mx-2 mb-5 h-px flex-1 overflow-hidden rounded bg-white/8">
                   <motion.div
-                    className="h-full rounded bg-brand-400"
+                    className="h-full rounded"
+                    style={{ background: s.accent }}
                     initial={false}
                     animate={{ width: i < stage ? "100%" : "0%" }}
                     transition={{ duration: 0.5 }}
                   />
+                  {/* A packet running down the wire into the stage that's about to
+                      open, so the walkthrough reads as data moving along. */}
+                  {i === stage - 1 && (
+                    <motion.span
+                      key={`packet-${stage}`}
+                      className="absolute top-1/2 size-1.5 -translate-y-1/2 rounded-full"
+                      style={{ background: STAGES[i + 1].accent, boxShadow: `0 0 10px 2px ${STAGES[i + 1].accent}` }}
+                      initial={{ left: "0%", opacity: 0 }}
+                      animate={{ left: "100%", opacity: [0, 1, 1, 0] }}
+                      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                    />
+                  )}
                 </div>
               )}
             </div>
@@ -151,32 +193,64 @@ export default function PipelinePage() {
       </div>
 
       {/* Stage viewport */}
-      <GlassPanel strong className="overflow-hidden">
+      <GlassPanel strong className="relative overflow-hidden">
+        {/* Same light-bar wipe the replay page uses, tinted to the stage. */}
+        <HandoffSweep id={cur.id} accent={cur.accent} />
+
         <div className="flex items-center justify-between border-b border-white/6 px-5 py-3.5">
           <div className="flex items-center gap-2.5">
-            <span className="rounded-md bg-brand-400/15 px-2 py-0.5 font-mono text-[11px] font-bold text-brand-300">
+            <motion.span
+              key={`n-${stage}`}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 380, damping: 18 }}
+              style={{ color: cur.accent, background: `${cur.accent}26` }}
+              className="rounded-md px-2 py-0.5 font-mono text-[11px] font-bold"
+            >
               {stage + 1}/{STAGES.length}
-            </span>
-            <h3 className="text-sm font-semibold text-white">{STAGES[stage].blurb}</h3>
+            </motion.span>
+            <h3 className="text-sm font-semibold text-white">
+              <ScrambleText text={cur.blurb} trigger={cur.id} />
+            </h3>
           </div>
           <span className="font-mono text-[10px] uppercase tracking-wider text-slate-600">
             Example · {EX.ticker}
           </span>
         </div>
 
+        {/* A thin bar showing how long the current stage holds before the
+            walkthrough moves on, so the pacing is visible rather than a surprise. */}
+        <div className="h-px w-full bg-white/5">
+          {playing && (
+            <motion.div
+              key={`t-${stage}`}
+              className="h-full"
+              style={{ background: cur.accent }}
+              initial={{ width: "0%" }}
+              animate={{ width: "100%" }}
+              transition={{ duration: 3.4, ease: "linear" }}
+            />
+          )}
+        </div>
+
         <div className="min-h-[420px] p-5">
-          <motion.div
-            key={stage}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {stage === 0 && <Ingest />}
-            {stage === 1 && <Engineer />}
-            {stage === 2 && <Train />}
-            {stage === 3 && <Predict />}
-            {stage === 4 && <SignalStage />}
-          </motion.div>
+          <AnimatePresence mode="wait" custom={dir}>
+            <motion.div
+              key={stage}
+              custom={dir}
+              variants={STAGE_SLIDE}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {stage === 0 && <Ingest />}
+              {stage === 1 && <Engineer />}
+              {stage === 2 && <Train />}
+              {stage === 3 && <Predict />}
+              {stage === 4 && <SignalStage />}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </GlassPanel>
 

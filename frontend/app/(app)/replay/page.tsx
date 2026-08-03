@@ -431,50 +431,102 @@ export default function ReplayPage() {
         </HandoffSettle>
 
         <HandoffSettle id={sc.id} delay={0.16}>
-        <GlassPanel strong className={cn("transition-all", done && (sc.correct ? "ring-1 ring-bull/30" : "ring-1 ring-bear/30"))}>
+        <GlassPanel
+          strong
+          className={cn(
+            "relative overflow-hidden transition-all duration-500",
+            done && (sc.correct ? "ring-1 ring-bull/30" : "ring-1 ring-bear/30")
+          )}
+        >
+          {/* One sheen across the panel the moment the result lands. */}
+          <AnimatePresence>
+            {done && (
+              <motion.div
+                key={`${sc.id}-land`}
+                className="pointer-events-none absolute inset-0 z-10"
+                style={{
+                  background: `linear-gradient(105deg, transparent 35%, ${sig.accent}26 50%, transparent 65%)`,
+                }}
+                initial={{ x: "-130%" }}
+                animate={{ x: "130%" }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+              />
+            )}
+          </AnimatePresence>
+
           <div className="flex items-center justify-between border-b border-white/6 px-5 py-3.5">
             <h3 className="text-sm font-semibold text-white">{done ? "Outcome" : "Live P&L"}</h3>
-            {done && (
-              <span
-                className={cn(
-                  "flex items-center gap-1 rounded-md px-2 py-0.5 font-mono text-[11px] font-semibold",
-                  sc.correct ? "bg-bull/15 text-bull-soft" : "bg-bear/15 text-bear-soft"
-                )}
-              >
-                {sc.correct ? <Check className="size-3" /> : <X className="size-3" />}
-                {sc.correct ? "Called it" : "Missed"}
-              </span>
-            )}
-          </div>
-          {/* reserve the outcome's height so filling it in doesn't resize the panel */}
-          <div className={cn("p-5", cinematic ? "min-h-[168px] p-4" : "min-h-[212px]")}>
-            <AnimatePresence mode="wait">
-              {!started ? (
-                <motion.p key="wait" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="py-6 text-center text-sm text-slate-500">
-                  Press <span className="text-brand-200">Play</span> to run the next {sc.holdDays} trading days.
-                </motion.p>
-              ) : (
-                <motion.div key="out" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-                  <div>
-                    <div className={cn("font-mono text-4xl font-bold data", retTone)}>{pct(ret)}</div>
-                    <div className="mt-1 font-mono text-sm text-slate-400">
-                      ${sc.notional.toLocaleString()} → <span className={retTone}>${dollar.toLocaleString()}</span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <Field label="vs QQQ" value={pct(benchRet)} />
-                    <Field label="Held" value={`${heldDays} days`} />
-                    <Field label="Entry" value={`$${sc.entryPrice.toFixed(2)}`} />
-                    <Field label={done ? "Exit" : "Now"} value={`$${curPrice.toFixed(2)}`} />
-                  </div>
-                  {done && (
-                    <p className="border-t border-white/6 pt-3 text-[11px] leading-relaxed text-slate-500">
-                      {sc.company} {sc.verdictVerb} over the next {sc.holdDays} trading days
-                      {" "}({pct(sc.ret)} vs QQQ {pct(sc.benchRet ?? 0)}). The model called{" "}
-                      <span className={sig.text}>{sc.signal}</span> — {sc.correct ? "a correct read." : "and got this one wrong."}
-                    </p>
+            <AnimatePresence>
+              {done && (
+                <motion.span
+                  key={`${sc.id}-verdict`}
+                  initial={{ scale: 0.7, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.7, opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 16 }}
+                  className={cn(
+                    "flex items-center gap-1 rounded-md px-2 py-0.5 font-mono text-[11px] font-semibold",
+                    sc.correct ? "bg-bull/15 text-bull-soft" : "bg-bear/15 text-bear-soft"
                   )}
+                >
+                  {sc.correct ? <Check className="size-3" /> : <X className="size-3" />}
+                  {sc.correct ? "Called it" : "Missed"}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </div>
+          {/* Everything below is always in the DOM and only fades. The panel is
+              sized by the finished state from the start, so nothing that appears
+              part-way through a replay can push the box around. */}
+          <div className={cn("relative p-5", cinematic && "p-4")}>
+            <div className={cn("space-y-4 transition-opacity duration-300", !started && "opacity-0")}>
+              <div>
+                <motion.div
+                  key={`${sc.id}-ret-${done}`}
+                  initial={done ? { scale: 1.08 } : false}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 320, damping: 18 }}
+                  className={cn("origin-left font-mono text-4xl font-bold data", retTone)}
+                >
+                  {pct(ret)}
                 </motion.div>
+                <div className="mt-1 font-mono text-sm text-slate-400 data">
+                  ${sc.notional.toLocaleString()} → <span className={retTone}>${dollar.toLocaleString()}</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <Field label="vs QQQ" value={pct(benchRet)} />
+                <Field label="Held" value={`${heldDays} days`} />
+                <Field label="Entry" value={`$${sc.entryPrice.toFixed(2)}`} />
+                <Field label={done ? "Exit" : "Now"} value={`$${curPrice.toFixed(2)}`} />
+              </div>
+              {/* Held in place from the start and revealed at the end, so the
+                  verdict arriving doesn't change the panel's height. */}
+              <motion.p
+                initial={false}
+                animate={{ opacity: done ? 1 : 0 }}
+                transition={{ duration: 0.45, ease: "easeOut" }}
+                aria-hidden={!done}
+                className="border-t border-white/6 pt-3 text-[11px] leading-relaxed text-slate-500"
+              >
+                {sc.company} {sc.verdictVerb} over the next {sc.holdDays} trading days
+                {" "}({pct(sc.ret)} vs QQQ {pct(sc.benchRet ?? 0)}). The model called{" "}
+                <span className={sig.text}>{sc.signal}</span> — {sc.correct ? "a correct read." : "and got this one wrong."}
+              </motion.p>
+            </div>
+
+            <AnimatePresence>
+              {!started && (
+                <motion.p
+                  key="wait"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 flex items-center justify-center px-5 text-center text-sm text-slate-500"
+                >
+                  Press <span className="mx-1 text-brand-200">Play</span> to run the next {sc.holdDays} trading days.
+                </motion.p>
               )}
             </AnimatePresence>
           </div>
@@ -522,7 +574,9 @@ function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <div className="font-mono text-[10px] uppercase tracking-wider text-slate-500">{label}</div>
-      <div className="mt-0.5 text-slate-200">{value}</div>
+      {/* `data` gives every digit the same width, so values that tick upward
+          during a replay don't shuffle the text around them. */}
+      <div className="mt-0.5 text-slate-200 data">{value}</div>
     </div>
   );
 }

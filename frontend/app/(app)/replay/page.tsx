@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Play, RotateCcw, Sparkles, Check, X, Cpu, Sigma, Share2, History } from "lucide-react";
 import { PageTransition } from "@/components/motion-primitives";
@@ -42,6 +42,16 @@ const HOW_IT_WORKS = [
 ];
 
 const INITIAL = (replaySnapshot as { scenarios: ReplayScenario[] }).scenarios;
+
+// The tour plays these in order rather than walking every call: a big win, a
+// fall the model stayed out of, a gain while the market dropped, and a miss.
+// Ending on the miss is deliberate - the wins mean less without it.
+const TOUR_PICKS = [
+  "MU-2026-04-06",
+  "TSLA-2025-01-28",
+  "INTC-2025-03-05",
+  "NFLX-2026-03-25",
+];
 const SPEEDS = [
   { label: "1×", ms: 140 },
   { label: "2×", ms: 65 },
@@ -80,7 +90,17 @@ export default function ReplayPage() {
   const [speed, setSpeed] = useState(SPEEDS[0].ms);
   const [tour, setTour] = useState(false);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
-  const tourTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Two separate handles on purpose. They used to share one, and the cleanup
+  // that cancels the wait between calls was cancelling the next call's start.
+  const playTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Which calls the tour visits, in order. Falls back to whatever is on screen
+  // if a filter has hidden the picks.
+  const tourQueue = useMemo(() => {
+    const picked = TOUR_PICKS.map((id) => scenarios.findIndex((s) => s.id === id)).filter((i) => i >= 0);
+    return picked.length ? picked : scenarios.map((_, i) => i);
+  }, [scenarios]);
 
   useEffect(() => {
     api
@@ -102,9 +122,9 @@ export default function ReplayPage() {
     setRevealed(sc?.entryIndex ?? 0);
     setPhase("armed");
     if (tour && sc) {
-      tourTimer.current = setTimeout(() => setPhase("playing"), 1400);
+      playTimer.current = setTimeout(() => setPhase("playing"), 1400);
       return () => {
-        if (tourTimer.current) clearTimeout(tourTimer.current);
+        if (playTimer.current) clearTimeout(playTimer.current);
       };
     }
   }, [idx, sc, tour, stop]);
@@ -125,16 +145,19 @@ export default function ReplayPage() {
     return stop;
   }, [phase, sc, speed, stop]);
 
-  // Tour: after the reveal lands, pause on the result, then advance.
+  // Tour: after the reveal lands, pause on the result, then move to the next pick.
   useEffect(() => {
     if (!tour || phase !== "done") return;
-    tourTimer.current = setTimeout(() => {
-      setIdx((i) => (i + 1) % scenarios.length);
+    advanceTimer.current = setTimeout(() => {
+      setIdx((cur) => {
+        const at = tourQueue.indexOf(cur);
+        return tourQueue[(at + 1) % tourQueue.length];
+      });
     }, 2600);
     return () => {
-      if (tourTimer.current) clearTimeout(tourTimer.current);
+      if (advanceTimer.current) clearTimeout(advanceTimer.current);
     };
-  }, [tour, phase, scenarios.length]);
+  }, [tour, phase, tourQueue]);
 
   if (!sc) return null;
 
@@ -159,9 +182,12 @@ export default function ReplayPage() {
     if (tour) {
       setTour(false);
       stop();
+      if (playTimer.current) clearTimeout(playTimer.current);
+      if (advanceTimer.current) clearTimeout(advanceTimer.current);
     } else {
       setTour(true);
-      play();
+      // Start at the top of the queue; the reset effect takes it from there.
+      setIdx(tourQueue[0]);
     }
   }
 

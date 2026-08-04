@@ -27,6 +27,7 @@ import { HandoffSweep, ScrambleText } from "@/components/charts/signal-handoff";
 import { Sparkline } from "@/components/charts/sparkline";
 import replaySnapshot from "@/lib/snapshot/replay.json";
 import type { ReplayScenario } from "@/lib/api";
+import * as sfx from "@/lib/sfx";
 import { cn } from "@/lib/utils";
 
 const ACCENT = "#2dd4bf";
@@ -110,6 +111,19 @@ export default function PipelinePage() {
     return () => clearTimeout(id);
   }, [playing, stage, last]);
 
+  // Sound follows the stage rather than the click, so jumping around with the
+  // stepper sounds the same as letting the walkthrough run. No-ops when sound
+  // is off. The one on arrival is skipped.
+  const firstRender = useRef(true);
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    if (stage >= last) sfx.complete();
+    else sfx.stage(stage, STAGES.length);
+  }, [stage, last]);
+
   function toggle() {
     if (stage >= last) {
       setDir(1);
@@ -142,7 +156,12 @@ export default function PipelinePage() {
           const doneStep = i < stage;
           return (
             <div key={s.id} className="flex flex-1 items-center last:flex-none">
-              <button onClick={() => goTo(i)} className="flex flex-col items-center gap-1.5 text-center">
+              {/* silent because changing stage plays its own cue */}
+              <button
+                onClick={() => goTo(i)}
+                data-silent="true"
+                className="flex flex-col items-center gap-1.5 text-center"
+              >
                 <motion.span
                   animate={
                     active

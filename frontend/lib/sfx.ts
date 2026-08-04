@@ -116,6 +116,26 @@ export function arm() {
   note({ from: 340, to: 680, dur: 0.14, type: "triangle", gain: 0.05 });
 }
 
+// ── Pipeline walkthrough ─────────────────────────────────────────────────────
+
+/** Moving to the next stage. The pitch climbs as the walkthrough goes on, so
+ *  the five stages sound like they're heading somewhere rather than repeating. */
+export function stage(index: number, total: number) {
+  const p = total > 1 ? index / (total - 1) : 0;
+  const base = 300 + p * 260;
+  note({ from: base, to: base * 1.5, dur: 0.2, type: "triangle", gain: 0.045 });
+  // a quiet body underneath so it lands rather than just chirping
+  note({ from: base / 2, dur: 0.3, type: "sine", gain: 0.03, delay: 0.02 });
+}
+
+/** The last stage: the call and what it made. Resolves instead of climbing. */
+export function complete() {
+  note({ from: 523, dur: 0.18, type: "sine", gain: 0.055 });
+  note({ from: 659, dur: 0.3, type: "sine", gain: 0.05, delay: 0.09 });
+  note({ from: 784, dur: 0.55, type: "sine", gain: 0.045, delay: 0.18 });
+  note({ from: 262, dur: 0.7, type: "triangle", gain: 0.03, delay: 0.18 });
+}
+
 // ── Interface ────────────────────────────────────────────────────────────────
 // Short, dry and quiet. These fire on ordinary clicks all over the app, so
 // anything longer or louder wears thin within a minute of use.

@@ -2,15 +2,44 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { X, Maximize2, Minimize2, Clapperboard } from "lucide-react";
+import { X, Maximize2, Minimize2, Clapperboard, Volume2, VolumeX } from "lucide-react";
 import { DashboardSidebar } from "./dashboard-sidebar";
 import { TopStatusBar } from "./top-status-bar";
 import { CinematicProvider } from "@/lib/cinematic";
+import * as sfx from "@/lib/sfx";
 import { cn } from "@/lib/utils";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cinematic, setCinematic] = useState(false);
+  const [sound, setSound] = useState(false);
+
+  useEffect(() => setSound(sfx.loadPreference()), []);
+
+  // One listener for the whole app rather than a handler on every button. It
+  // also picks up controls that aren't built from the shared Button component.
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      const el = (e.target as HTMLElement | null)?.closest(
+        "button, a[href], [role='button'], [role='tab'], summary"
+      ) as HTMLElement | null;
+      if (!el || el.hasAttribute("disabled") || el.dataset.silent === "true") return;
+
+      if (el.closest("nav") || el.tagName === "A") sfx.nav();
+      else if (el.getAttribute("aria-pressed") || el.getAttribute("role") === "tab") sfx.tap();
+      else if (el.dataset.press === "true" || el.className.includes("bg-brand-500")) sfx.press();
+      else sfx.tap();
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, []);
+
+  // Has to happen inside a real click: a context built any earlier stays muted.
+  const toggleSound = useCallback(() => {
+    const next = sfx.setOn(!sound);
+    setSound(next);
+    if (next) sfx.toggle(true);
+  }, [sound]);
 
   const enterCinematic = useCallback(async () => {
     setMobileOpen(false);
@@ -103,6 +132,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </CinematicProvider>
         </main>
       </div>
+
+      {/* Sound, off until asked for */}
+      {!cinematic && (
+        <button
+          onClick={toggleSound}
+          data-silent="true"
+          aria-pressed={sound}
+          aria-label={sound ? "Turn sound off" : "Turn sound on"}
+          title={sound ? "Sound on" : "Sound off"}
+          className={cn(
+            "fixed bottom-5 right-[168px] z-50 flex size-9 items-center justify-center rounded-full border bg-ink-900/80 shadow-panel backdrop-blur-xl transition-colors",
+            sound
+              ? "border-brand-400/40 text-brand-300"
+              : "border-white/10 text-slate-500 hover:text-slate-300"
+          )}
+        >
+          {sound ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
+        </button>
+      )}
 
       {/* Cinematic controls */}
       {!cinematic ? (

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Play, RotateCcw, Sparkles, Check, X, Cpu, Sigma, Share2, History, Volume2, VolumeX } from "lucide-react";
+import { Play, RotateCcw, Sparkles, Check, X, Cpu, Sigma, Share2, History } from "lucide-react";
 import { PageTransition } from "@/components/motion-primitives";
 import { PageHeader } from "@/components/page-header";
 import { GlassPanel } from "@/components/glass-panel";
@@ -91,7 +91,6 @@ export default function ReplayPage() {
   const [phase, setPhase] = useState<Phase>("armed");
   const [speed, setSpeed] = useState(SPEEDS[0].ms);
   const [tour, setTour] = useState(false);
-  const [sound, setSound] = useState(false);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
   // Two separate handles on purpose. They used to share one, and the cleanup
   // that cancels the wait between calls was cancelling the next call's start.
@@ -111,9 +110,6 @@ export default function ReplayPage() {
       .then((d) => Array.isArray(d.scenarios) && d.scenarios.length && setAll(d.scenarios))
       .catch(() => {});
   }, []);
-
-  // Sound is off unless it was switched on before, and it never starts on its own.
-  useEffect(() => setSound(sfx.loadPreference()), []);
 
   const stop = useCallback(() => {
     if (timer.current) clearInterval(timer.current);
@@ -208,14 +204,6 @@ export default function ReplayPage() {
     setPhase("playing");
     sfx.arm();
   }
-
-  // The audio context has to be built inside a real click or the browser keeps
-  // it muted, so this is the only place sound can be switched on.
-  function toggleSound() {
-    const next = sfx.setOn(!sound);
-    setSound(next);
-    if (next) sfx.arm();
-  }
   function toggleTour() {
     if (tour) {
       setTour(false);
@@ -240,22 +228,10 @@ export default function ReplayPage() {
       }
       className={cinematic ? "shrink-0" : undefined}
       actions={
-        <span className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={toggleSound}
-            aria-pressed={sound}
-            aria-label={sound ? "Turn sound off" : "Turn sound on"}
-            title={sound ? "Sound on" : "Sound off"}
-          >
-            {sound ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
-          </Button>
-          <Button size="sm" variant={tour ? "primary" : "outline"} onClick={toggleTour}>
-            <Sparkles className="size-4" />
-            {tour ? "Stop tour" : "Auto-play tour"}
-          </Button>
-        </span>
+        <Button size="sm" variant={tour ? "primary" : "outline"} onClick={toggleTour}>
+          <Sparkles className="size-4" />
+          {tour ? "Stop tour" : "Auto-play tour"}
+        </Button>
       }
     />
   );

@@ -115,3 +115,34 @@ export function outcome(correct: boolean) {
 export function arm() {
   note({ from: 340, to: 680, dur: 0.14, type: "triangle", gain: 0.05 });
 }
+
+// ── Interface ────────────────────────────────────────────────────────────────
+// Short, dry and quiet. These fire on ordinary clicks all over the app, so
+// anything longer or louder wears thin within a minute of use.
+
+/** Anything that commits to something: the main action on a panel. */
+export function press() {
+  note({ from: 620, to: 880, dur: 0.075, type: "triangle", gain: 0.038 });
+  note({ from: 1500, dur: 0.03, type: "sine", gain: 0.02 });
+}
+
+/** Ordinary buttons, chips and filters. */
+export function tap() {
+  note({ from: 780, dur: 0.045, type: "triangle", gain: 0.028 });
+}
+
+/** Moving somewhere: sidebar links, tabs. Steps up rather than staying flat. */
+export function nav() {
+  note({ from: 500, to: 760, dur: 0.09, type: "sine", gain: 0.032 });
+}
+
+/** Switching something on or off. Down for off, up for on. */
+export function toggle(on: boolean) {
+  note({
+    from: on ? 480 : 760,
+    to: on ? 820 : 420,
+    dur: 0.1,
+    type: "square",
+    gain: 0.026,
+  });
+}

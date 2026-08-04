@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Play, RotateCcw, Sparkles, Check, X, Cpu, Sigma, Share2, History } from "lucide-react";
+import { Play, RotateCcw, Sparkles, Check, X, Cpu, Sigma, Share2, History, Volume2, VolumeX } from "lucide-react";
 import { PageTransition } from "@/components/motion-primitives";
 import { PageHeader } from "@/components/page-header";
 import { GlassPanel } from "@/components/glass-panel";
@@ -13,6 +13,7 @@ import { SignalGraph } from "@/components/charts/signal-graph";
 import { HandoffSettle, HandoffSweep, ScrambleText } from "@/components/charts/signal-handoff";
 import { api, type ReplayScenario, type SignalType } from "@/lib/api";
 import { useCinematic } from "@/lib/cinematic";
+import * as sfx from "@/lib/sfx";
 import replaySnapshot from "@/lib/snapshot/replay.json";
 import signalsSnapshot from "@/lib/snapshot/signals.json";
 import { cn } from "@/lib/utils";
@@ -90,6 +91,7 @@ export default function ReplayPage() {
   const [phase, setPhase] = useState<Phase>("armed");
   const [speed, setSpeed] = useState(SPEEDS[0].ms);
   const [tour, setTour] = useState(false);
+  const [sound, setSound] = useState(false);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
   // Two separate handles on purpose. They used to share one, and the cleanup
   // that cancels the wait between calls was cancelling the next call's start.
@@ -109,6 +111,9 @@ export default function ReplayPage() {
       .then((d) => Array.isArray(d.scenarios) && d.scenarios.length && setAll(d.scenarios))
       .catch(() => {});
   }, []);
+
+  // Sound is off unless it was switched on before, and it never starts on its own.
+  useEffect(() => setSound(sfx.loadPreference()), []);
 
   const stop = useCallback(() => {
     if (timer.current) clearInterval(timer.current);
@@ -146,6 +151,29 @@ export default function ReplayPage() {
     return stop;
   }, [phase, sc, speed, stop]);
 
+  // ── Sound cues ───────────────────────────────────────────────────────────
+  // All three no-op when sound is off, so they're safe to leave wired up.
+
+  const firstRender = useRef(true);
+  useEffect(() => {
+    // skip the one on arrival, which nobody asked for
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    sfx.transition();
+  }, [sc?.id]);
+
+  useEffect(() => {
+    if (phase !== "playing" || !sc) return;
+    const p = (revealed - sc.entryIndex) / Math.max(1, sc.exitIndex - sc.entryIndex);
+    sfx.tick(p);
+  }, [revealed, phase, sc]);
+
+  useEffect(() => {
+    if (phase === "done" && sc) sfx.outcome(sc.correct);
+  }, [phase, sc]);
+
   // Tour: after the reveal lands, pause on the result, then move to the next pick.
   useEffect(() => {
     if (!tour || phase !== "done") return;
@@ -178,6 +206,15 @@ export default function ReplayPage() {
   function play() {
     if (done) setRevealed(sc.entryIndex);
     setPhase("playing");
+    sfx.arm();
+  }
+
+  // The audio context has to be built inside a real click or the browser keeps
+  // it muted, so this is the only place sound can be switched on.
+  function toggleSound() {
+    const next = sfx.setOn(!sound);
+    setSound(next);
+    if (next) sfx.arm();
   }
   function toggleTour() {
     if (tour) {
@@ -203,10 +240,22 @@ export default function ReplayPage() {
       }
       className={cinematic ? "shrink-0" : undefined}
       actions={
-        <Button size="sm" variant={tour ? "primary" : "outline"} onClick={toggleTour}>
-          <Sparkles className="size-4" />
-          {tour ? "Stop tour" : "Auto-play tour"}
-        </Button>
+        <span className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={toggleSound}
+            aria-pressed={sound}
+            aria-label={sound ? "Turn sound off" : "Turn sound on"}
+            title={sound ? "Sound on" : "Sound off"}
+          >
+            {sound ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
+          </Button>
+          <Button size="sm" variant={tour ? "primary" : "outline"} onClick={toggleTour}>
+            <Sparkles className="size-4" />
+            {tour ? "Stop tour" : "Auto-play tour"}
+          </Button>
+        </span>
       }
     />
   );
